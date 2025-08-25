@@ -34,7 +34,7 @@ function CategoryLink({ category, categoryName }) {
   return (
     <div className="w-full pt-2">
       <Link
-        href={`/category/${category._id}`}
+        href={`/category/${category._id.split(".").join("/")}`}
         className="block w-full text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
       >
         {categoryName || category.name}
