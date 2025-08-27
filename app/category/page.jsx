@@ -1,11 +1,4 @@
-import { getCategories } from "@/lib/categories";
-import Link from "next/link";
-
 export default async function CategoryIndexPage() {
-  const categories = await getCategories();
-
-  const topLevelCategories = categories.filter((cat) => cat.parent === null);
-
   return (
     <div>
       <div className="my-4 mx-4">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import {
@@ -71,13 +71,7 @@ function CategoryCollapsible({ category, onSelect }) {
 }
 
 export default function CategoriesMenuClient({ categoryTree }) {
-  const pathname = usePathname();
   const [rootOpen, setRootOpen] = useState(false);
-
-  // Close the menu on route change
-  useEffect(() => {
-    setRootOpen(false);
-  }, [pathname]);
 
   return (
     <Collapsible open={rootOpen} onOpenChange={setRootOpen}>
