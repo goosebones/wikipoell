@@ -10,9 +10,11 @@ import {
 } from "@/styles/components/ui/collapsible";
 import { ChevronDownIcon } from "lucide-react";
 
-function CategoryLink({ category, categoryName, onSelect }) {
+function CategoryLink({ category, categoryName, onSelect, isRoot }) {
   const pathname = usePathname();
-  const href = `/category/${category._id.split(".").join("/")}`;
+  const href = isRoot
+    ? "/category"
+    : `/category/${category._id.split(".").join("/")}`;
   const isActive = pathname === href;
 
   return (
@@ -84,6 +86,12 @@ export default function CategoriesMenuClient({ categoryTree }) {
         <ChevronDownIcon className="size-5" />
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-4">
+        <CategoryLink
+          category={categoryTree}
+          categoryName={`All Categories`}
+          onSelect={() => setRootOpen(false)}
+          isRoot={true}
+        />
         {categoryTree.map((category) => (
           <CategoryCollapsible
             key={category._id}
