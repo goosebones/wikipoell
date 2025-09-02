@@ -1,19 +1,19 @@
 import { getCategories } from "@/lib/categories";
+import { getGarmentsByCategory } from "@/lib/garments";
+import GarmentCard from "@/components/garment-card";
 import { notFound } from "next/navigation";
 
 export default async function CategoryPage({ params }) {
   const categories = await getCategories();
   const { slug } = await params;
 
-  // Convert URL path segments back to dot notation for database lookup
   const categoryId = slug.join(".");
-
-  // Find the category based on the dot-notation ID
   const currentCategory = categories.find((cat) => cat._id === categoryId);
-
   if (!currentCategory) {
     notFound();
   }
+
+  const garments = await getGarmentsByCategory(categoryId);
 
   return (
     <div>
@@ -21,12 +21,21 @@ export default async function CategoryPage({ params }) {
         <h1 className="text-3xl font-bold mb-2">{currentCategory.name}</h1>
       </div>
 
-      {/* Category Content Placeholder */}
-      <div className="p-6 border bg-muted/50">
-        <p className="text-muted-foreground text-center">
-          Content for {currentCategory.name} will be displayed here
-        </p>
-      </div>
+      {garments.length > 0 ? (
+        <div className="flex flex-wrap gap-4 justify-center">
+          {garments.map((garment) => {
+            return (
+              <div className="w-45" key={garment._id}>
+                <GarmentCard garment={garment} />
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex flex-wrap gap-4 justify-center">
+          <p>No garments found</p>
+        </div>
+      )}
     </div>
   );
 }
