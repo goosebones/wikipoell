@@ -1,9 +1,10 @@
 import { getCategories } from "@/lib/categories";
-import { getGarmentsByCategory } from "@/lib/garments";
+import { getGarments } from "@/lib/garments";
 import GarmentCard from "@/components/garment-card";
 import { notFound } from "next/navigation";
+import FiltersMenu from "@/components/filters-menu";
 
-export default async function CategoryPage({ params }) {
+export default async function CategoryPage({ params, searchParams }) {
   const categories = await getCategories();
   const { slug } = await params;
 
@@ -13,12 +14,19 @@ export default async function CategoryPage({ params }) {
     notFound();
   }
 
-  const garments = await getGarmentsByCategory(categoryId);
+  const garments = await getGarments({
+    ...searchParams,
+    category: categoryId,
+  });
 
   return (
     <div>
       <div className="my-4 mx-4">
         <h1 className="text-3xl font-bold mb-2">{currentCategory.name}</h1>
+      </div>
+
+      <div>
+        <FiltersMenu />
       </div>
 
       {garments.length > 0 ? (

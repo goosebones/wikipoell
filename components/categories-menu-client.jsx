@@ -8,7 +8,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/styles/components/ui/collapsible";
-import { ChevronDownIcon } from "lucide-react";
+import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 
 function CategoryLink({ category, categoryName, onSelect, isRoot }) {
   const pathname = usePathname();
@@ -37,7 +37,7 @@ function CategoryCollapsible({ category, onSelect }) {
   const pathname = usePathname();
   const href = `/category/${category._id.split(".").join("/")}`;
   const isActiveOrDescendant = pathname.startsWith(href);
-
+  const [isOpen, setIsOpen] = useState(isActiveOrDescendant);
   if (category.children.length === 0) {
     return <CategoryLink category={category} onSelect={onSelect} />;
   }
@@ -45,12 +45,17 @@ function CategoryCollapsible({ category, onSelect }) {
   return (
     <Collapsible defaultOpen={isActiveOrDescendant}>
       <CollapsibleTrigger
+        onClick={() => setIsOpen(!isOpen)}
         className={`mt-2 flex items-center justify-between w-full text-sm transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground ${
           isActiveOrDescendant ? "bg-accent text-accent-foreground" : ""
         }`}
       >
         {category.name}
-        <ChevronDownIcon className="size-4" />
+        {isOpen ? (
+          <ChevronDownIcon className="size-4" />
+        ) : (
+          <ChevronRightIcon className="size-4" />
+        )}
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-4">
         <CategoryLink
@@ -77,7 +82,11 @@ export default function CategoriesMenuClient({ categoryTree }) {
     <Collapsible open={rootOpen} onOpenChange={setRootOpen}>
       <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
         Categories
-        <ChevronDownIcon className="size-5" />
+        {rootOpen ? (
+          <ChevronDownIcon className="size-5" />
+        ) : (
+          <ChevronRightIcon className="size-5" />
+        )}
       </CollapsibleTrigger>
       <CollapsibleContent className="pl-4">
         <CategoryLink

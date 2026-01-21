@@ -1,13 +1,19 @@
 import { getGarments } from "@/lib/garments";
 import GarmentCard from "@/components/garment-card";
+import FiltersMenu from "@/components/filters-menu";
 
-export default async function CategoryIndexPage() {
-  const garments = await getGarments();
+export default async function CategoryIndexPage({ searchParams }) {
+  const resolvedSearchParams = await searchParams;
+  const garments = await getGarments(resolvedSearchParams);
 
   return (
     <div>
       <div className="my-4 mx-4">
         <h1 className="text-3xl font-bold mb-2">All Categories</h1>
+      </div>
+
+      <div>
+        <FiltersMenu />
       </div>
 
       {garments.length > 0 ? (
