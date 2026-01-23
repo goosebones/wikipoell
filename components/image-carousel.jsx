@@ -61,16 +61,14 @@ export default function ImageCarousel({ images = [] }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselNext className="right-2 z-10" />
-        <CarouselPrevious className="left-2 z-10" />
+        {images.length > 1 && <CarouselNext className="right-2 z-10" />}
+        {images.length > 1 && <CarouselPrevious className="left-2 z-10" />}
       </Carousel>
 
       {/* Image counter */}
-      {images.length > 1 && (
         <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
           {current} of {count}
         </div>
-      )}
     </div>
   );
 }
