@@ -9,19 +9,26 @@ import {
   CollapsibleTrigger,
 } from "@/styles/components/ui/collapsible";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { useSidebar } from "./sidebar-menu";
 
 function CategoryLink({ category, categoryName, onSelect, isRoot }) {
   const pathname = usePathname();
+  const sidebar = useSidebar();
   const href = isRoot
     ? "/category"
     : `/category/${category._id.split(".").join("/")}`;
   const isActive = pathname === href;
 
+  const handleClick = () => {
+    onSelect?.();
+    sidebar?.closeSidebar?.();
+  };
+
   return (
     <div className="w-full pt-2">
       <Link
         href={href}
-        onClick={() => onSelect?.()}
+        onClick={handleClick}
         className={`block w-full text-sm transition-colors hover:bg-accent hover:text-accent-foreground ${
           isActive ? "bg-accent text-accent-foreground" : ""
         }`}
