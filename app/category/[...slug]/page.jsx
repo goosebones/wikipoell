@@ -8,6 +8,8 @@ export default async function CategoryPage({ params, searchParams }) {
   const categories = await getCategories();
   const { slug } = await params;
 
+  const resolvedSearchParams = await searchParams;
+
   const categoryId = slug.join(".");
   const currentCategory = categories.find((cat) => cat._id === categoryId);
   if (!currentCategory) {
@@ -15,7 +17,7 @@ export default async function CategoryPage({ params, searchParams }) {
   }
 
   const garments = await getGarments({
-    ...searchParams,
+    ...resolvedSearchParams,
     category: categoryId,
   });
 
