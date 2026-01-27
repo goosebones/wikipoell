@@ -50,7 +50,7 @@ export default function ImageCarousel({ images = [] }) {
             <CarouselItem key={index}>
               <div className="w-full h-96 rounded-lg relative bg-muted">
                 <Image
-                  src={"/" + image}
+                  src={image.url}
                   alt={`Image ${index + 1}`}
                   className="object-contain"
                   fill

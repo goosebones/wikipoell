@@ -15,7 +15,7 @@ export default function GarmentCard({ garment }) {
         <div className="relative aspect-square bg-gray-200 overflow-hidden">
           {garment.images && garment.images.length > 0 && (
             <Image
-              src={"/" + garment.images[0]}
+              src={garment.images[0].url}
               alt={garment.title}
               fill
               className="object-contain"
