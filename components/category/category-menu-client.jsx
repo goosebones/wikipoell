@@ -9,7 +9,7 @@ import {
   CollapsibleTrigger,
 } from "@/styles/components/ui/collapsible";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { useSidebar } from "./sidebar-menu";
+import { useSidebar } from "../sidebar-menu";
 
 function CategoryLink({ category, categoryName, onSelect, isRoot }) {
   const pathname = usePathname();

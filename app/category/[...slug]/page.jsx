@@ -2,7 +2,7 @@ import { getCategories } from "@/lib/categories";
 import { getGarments } from "@/lib/garments";
 import GarmentCard from "@/components/garment-card";
 import { notFound } from "next/navigation";
-import FiltersMenu from "@/components/filters-menu";
+import FilterMenuClient from "@/components/filter/filter-menu-client";
 
 export default async function CategoryPage({ params, searchParams }) {
   const categories = await getCategories();
@@ -28,7 +28,7 @@ export default async function CategoryPage({ params, searchParams }) {
       </div>
 
       <div>
-        <FiltersMenu />
+        <FilterMenuClient />
       </div>
 
       {garments.length > 0 ? (

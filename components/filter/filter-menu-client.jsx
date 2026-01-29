@@ -11,6 +11,31 @@ import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { Checkbox } from "@/styles/components/ui/checkbox";
 import { XIcon } from "lucide-react";
 
+import { useProperties } from "@/components/context/property-context-provider";
+
+function buildFilterMap(properties) {
+    // {
+    //   propertyType,
+    //   garmentKey,
+    //   options: [
+    //     {optionName, optionDescription }
+    //   ]
+    // }
+    return properties.reduce((acc, prop) => {
+      if (acc[prop.garmentKey]) {
+        acc[prop.garmentKey].options.push(prop);
+      } else {
+        acc[prop.garmentKey] = {
+          propertyType: prop.propertyType,
+          garmentKey: prop.garmentKey,
+          options: [prop],
+        };
+      }
+      return acc;
+    }, {});
+}
+
+
 function FilterItem({
   propertyType,
   garmentKey,
@@ -81,11 +106,14 @@ function FilterItem({
   );
 }
 
-export default function FiltersMenuClient({ filterMap }) {
+export default function FiltersMenuClient() {
   const [rootOpen, setRootOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const { properties } = useProperties();
+  const filterMap = useMemo(() => buildFilterMap(properties), [properties]);
 
   const selectedBygarmentKey = useMemo(() => {
     const result = {};

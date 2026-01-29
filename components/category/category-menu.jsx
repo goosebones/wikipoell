@@ -1,5 +1,5 @@
 import { getCategories } from "@/lib/categories";
-import CategoriesMenuClient from "./categories-menu-client";
+import CategoriesMenuClient from "./category-menu-client";
 
 function buildCategoryTree(categories) {
   const categoryMap = {};
