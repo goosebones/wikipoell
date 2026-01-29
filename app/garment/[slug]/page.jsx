@@ -1,6 +1,8 @@
 import { getGarmentById } from "@/lib/garments";
 import { notFound } from "next/navigation";
 import ImageCarousel from "@/components/image-carousel";
+import { getGarmentCode } from "@/lib/garments";
+import { getProperties } from "@/lib/properties";
 
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
@@ -10,8 +12,8 @@ export default async function GarmentPage({ params }) {
     notFound();
   }
 
-  const garmentCodeLine1 = `${garment.type}${garment.gender}/${garment.model}${garment.procedure ? '-' + garment.procedure : ''}`
-  const garmentCodeLine2 = `${garment.material}${garment.process ? '-' + garment.process : ''}/${garment.color}`;
+  const {line1: garmentCodeLine1, line2: garmentCodeLine2} = getGarmentCode(garment);
+  const properties = await getProperties();
   
   return (
     <div>
@@ -25,14 +27,16 @@ export default async function GarmentPage({ params }) {
 
         <table className="w-full mt-4">
           <tbody>
-            <tr className="border">
-              <td className="border p-2">Color</td>
-              <td className="border p-2">{garment.color}</td>
-            </tr>
-            <tr className="border">
-              <td className="border p-2">Material</td>
-              <td className="border p-2">{garment.material}</td>
-            </tr>
+            {properties.map(property => {
+              if (property.garmentKey in garment && property.garmentValue === garment[property.garmentKey]) {
+                return (
+                  <tr className="border" key={property._id}>
+                    <td className="border p-2">{property.propertyType}</td>
+                    <td className="border p-2">{garment[property.garmentKey]}</td>
+                  </tr>    
+                )
+              }
+            })}
           </tbody>
         </table>
       </div>
