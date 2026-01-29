@@ -10,6 +10,9 @@ export default async function GarmentPage({ params }) {
     notFound();
   }
 
+  const garmentCodeLine1 = `${garment.type}${garment.gender}/${garment.model}${garment.procedure ? '-' + garment.procedure : ''}`
+  const garmentCodeLine2 = `${garment.material}${garment.process ? '-' + garment.process : ''}/${garment.color}`;
+  
   return (
     <div>
       <div>
@@ -17,6 +20,8 @@ export default async function GarmentPage({ params }) {
       </div>
       <div className="my-4 mx-4">
         <h1 className="text-2xl font-bold">{garment.title}</h1>
+        <h3>{garmentCodeLine1}</h3>
+        <h2>{garmentCodeLine2}</h2>
 
         <table className="w-full mt-4">
           <tbody>
