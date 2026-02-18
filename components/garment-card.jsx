@@ -10,7 +10,8 @@ import Image from "next/image";
 import { getGarmentCode } from "@/lib/garments";
 
 export default function GarmentCard({ garment }) {
-  const {line1: garmentCodeLine1, line2: garmentCodeLine2} = getGarmentCode(garment);
+  const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
+    getGarmentCode(garment);
   return (
     <Link href={`/garment/${garment._id}`}>
       <Card className="gap-1 py-2">

@@ -14,27 +14,26 @@ import { XIcon } from "lucide-react";
 import { useProperties } from "@/components/context/property-context-provider";
 
 function buildFilterMap(properties) {
-    // {
-    //   propertyType,
-    //   garmentKey,
-    //   options: [
-    //     {optionName, optionDescription }
-    //   ]
-    // }
-    return properties.reduce((acc, prop) => {
-      if (acc[prop.garmentKey]) {
-        acc[prop.garmentKey].options.push(prop);
-      } else {
-        acc[prop.garmentKey] = {
-          propertyType: prop.propertyType,
-          garmentKey: prop.garmentKey,
-          options: [prop],
-        };
-      }
-      return acc;
-    }, {});
+  // {
+  //   propertyType,
+  //   garmentKey,
+  //   options: [
+  //     {optionName, optionDescription }
+  //   ]
+  // }
+  return properties.reduce((acc, prop) => {
+    if (acc[prop.garmentKey]) {
+      acc[prop.garmentKey].options.push(prop);
+    } else {
+      acc[prop.garmentKey] = {
+        propertyType: prop.propertyType,
+        garmentKey: prop.garmentKey,
+        options: [prop],
+      };
+    }
+    return acc;
+  }, {});
 }
-
 
 function FilterItem({
   propertyType,
@@ -83,7 +82,10 @@ function FilterItem({
               option.garmentValue
             );
             return (
-              <div key={option._id} className="ml-2 flex items-center gap-2">
+              <div
+                key={option._id}
+                className="ml-2 flex items-center gap-2"
+              >
                 <Checkbox
                   id={`${propertyType}-${option._id}`}
                   checked={isChecked}
@@ -106,7 +108,7 @@ function FilterItem({
   );
 }
 
-export default function FiltersMenuClient() {
+export default function FilterMenuClient() {
   const [rootOpen, setRootOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
@@ -146,7 +148,10 @@ export default function FiltersMenuClient() {
   );
 
   return (
-    <Collapsible open={rootOpen} onOpenChange={setRootOpen}>
+    <Collapsible
+      open={rootOpen}
+      onOpenChange={setRootOpen}
+    >
       <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
         Filters
         {rootOpen ? (

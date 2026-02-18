@@ -12,9 +12,10 @@ export default async function GarmentPage({ params }) {
     notFound();
   }
 
-  const {line1: garmentCodeLine1, line2: garmentCodeLine2} = getGarmentCode(garment);
+  const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
+    getGarmentCode(garment);
   const properties = await getProperties();
-  
+
   return (
     <div>
       <div>
@@ -27,14 +28,22 @@ export default async function GarmentPage({ params }) {
 
         <table className="w-full mt-4">
           <tbody>
-            {properties.map(property => {
-              if (property.garmentKey in garment && property.garmentValue === garment[property.garmentKey]) {
+            {properties.map((property) => {
+              if (
+                property.garmentKey in garment &&
+                property.garmentValue === garment[property.garmentKey]
+              ) {
                 return (
-                  <tr className="border" key={property._id}>
+                  <tr
+                    className="border"
+                    key={property._id}
+                  >
                     <td className="border p-2">{property.propertyType}</td>
-                    <td className="border p-2">{garment[property.garmentKey]}</td>
-                  </tr>    
-                )
+                    <td className="border p-2">
+                      {garment[property.garmentKey]}
+                    </td>
+                  </tr>
+                );
               }
             })}
           </tbody>

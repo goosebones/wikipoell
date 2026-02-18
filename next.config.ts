@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [process.env.GARMENT_IMAGE_DOMAIN || ""],
+    remotePatterns: [new URL(`${process.env.R2_PUBLIC_URL}/**`)],
   },
 };
 

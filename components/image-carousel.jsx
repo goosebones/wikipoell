@@ -66,9 +66,9 @@ export default function ImageCarousel({ images = [] }) {
       </Carousel>
 
       {/* Image counter */}
-        <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
-          {current} of {count}
-        </div>
+      <div className="absolute bottom-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm font-medium">
+        {current} of {count}
+      </div>
     </div>
   );
 }

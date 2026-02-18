@@ -2,16 +2,16 @@
 
 import { createContext, useContext } from "react";
 
-const PropertiesContext = createContext(null)
+const PropertiesContext = createContext(null);
 
 export function PropertiesProvider({ children, properties }) {
-    return (
-        <PropertiesContext.Provider value={{ properties }}>
-            {children}
-        </PropertiesContext.Provider>
-    )
+  return (
+    <PropertiesContext.Provider value={{ properties }}>
+      {children}
+    </PropertiesContext.Provider>
+  );
 }
 
 export function useProperties() {
-    return useContext(PropertiesContext);
+  return useContext(PropertiesContext);
 }
