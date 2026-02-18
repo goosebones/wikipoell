@@ -42,7 +42,7 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
     formData.set("garmentId", garmentId);
     formData.set("imageId", id);
     try {
-      const res = await fetch("/api/upload", {
+      const res = await fetch("/api/image-upload", {
         method: "POST",
         body: formData,
       });

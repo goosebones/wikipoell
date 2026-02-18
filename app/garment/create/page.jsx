@@ -42,7 +42,7 @@ export default function GarmentCreatePage() {
         images,
       };
 
-      const res = await fetch("/api/garments", {
+      const res = await fetch("/api/garment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
