@@ -1,8 +1,10 @@
+import { Info } from "lucide-react";
 import { getGarmentById } from "@/lib/garments";
 import { notFound } from "next/navigation";
 import ImageCarousel from "@/components/image-carousel";
-import { getGarmentCode } from "@/lib/garments";
+import { getGarmentCode, getOrderedGarmentPropertyList } from "@/lib/garments";
 import { getProperties } from "@/lib/properties";
+import { GuntherTooltip } from "@/components/util/tooltip";
 
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
@@ -15,6 +17,7 @@ export default async function GarmentPage({ params }) {
   const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
     getGarmentCode(garment);
   const properties = await getProperties();
+  const orderedGarmentPropertyList = getOrderedGarmentPropertyList();
 
   return (
     <div>
@@ -28,22 +31,31 @@ export default async function GarmentPage({ params }) {
 
         <table className="w-full mt-4">
           <tbody>
-            {properties.map((property) => {
-              if (
-                property.garmentKey in garment &&
-                property.garmentValue === garment[property.garmentKey]
-              ) {
-                return (
-                  <tr
-                    className="border"
-                    key={property._id}
-                  >
-                    <td className="border p-2">{property.propertyType}</td>
-                    <td className="border p-2">
-                      {garment[property.garmentKey]}
-                    </td>
-                  </tr>
+            {orderedGarmentPropertyList.map((garmentKey) => {
+              if (garmentKey in garment) {
+                const property = properties.find(
+                  (p) =>
+                    p.garmentKey === garmentKey &&
+                    p.garmentValue === garment[garmentKey]
                 );
+                if (property) {
+                  return (
+                    <tr
+                      className="border"
+                      key={property._id}
+                    >
+                      <td className="border p-2">{property.propertyType}</td>
+                      <td className="border p-2">
+                        <div className="flex items-center gap-2 justify-between">
+                          {garment[garmentKey]}
+                          <GuntherTooltip content={property.description}>
+                            <Info size={20} />
+                          </GuntherTooltip>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                }
               }
             })}
           </tbody>
