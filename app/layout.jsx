@@ -3,6 +3,7 @@ import "@radix-ui/themes/styles.css";
 import { Theme, Grid, Flex } from "@radix-ui/themes";
 import { UserCircleIcon } from "lucide-react";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/react";
 
 import CategoriesMenu from "@/components/category/category-menu";
 import SidebarMenu from "@/components/sidebar-menu";
@@ -46,6 +47,7 @@ export default async function RootLayout({ children }) {
                 </Flex>
               </Grid>
               {children}
+              <Analytics />
             </CategoriesProvider>
           </PropertiesProvider>
         </Theme>
