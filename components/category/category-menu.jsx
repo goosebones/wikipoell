@@ -24,9 +24,14 @@ function buildCategoryTree(categories) {
   return rootNodes;
 }
 
-export default async function CategoriesMenu() {
+export default async function CategoriesMenu({ className }) {
   const categories = await getCategories();
   const categoryTree = buildCategoryTree(categories);
 
-  return <CategoriesMenuClient categoryTree={categoryTree} />;
+  return (
+    <CategoriesMenuClient
+      categoryTree={categoryTree}
+      className={className}
+    />
+  );
 }

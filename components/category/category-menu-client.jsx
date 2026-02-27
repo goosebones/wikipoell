@@ -87,13 +87,14 @@ function CategoryCollapsible({ category, onSelect }) {
   );
 }
 
-export default function CategoriesMenuClient({ categoryTree }) {
+export default function CategoriesMenuClient({ categoryTree, className }) {
   const [rootOpen, setRootOpen] = useState(false);
 
   return (
     <Collapsible
       open={rootOpen}
       onOpenChange={setRootOpen}
+      className={className}
     >
       <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
         Browse By Category

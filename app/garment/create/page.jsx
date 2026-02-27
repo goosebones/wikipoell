@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
+
 import { Section, Heading, Container, Flex } from "@radix-ui/themes";
 import { useProperties } from "@/components/context/property-context-provider";
 import CategoryTreeSelectClient from "@/components/category/category-tree-select-client";
@@ -9,8 +11,11 @@ import { GuntherCombobox } from "@/components/util/combobox";
 import { GuntherInput } from "@/components/util/input";
 import { ImageUpload } from "@/components/util/image-upload";
 import { Button } from "@/styles/components/ui/button";
+import SignInPrompt from "@/components/sign-in-prompt";
 
 export default function GarmentCreatePage() {
+  const { isSignedIn } = useAuth();
+
   const { properties } = useProperties();
 
   const [garmentData, setGarmentData] = useState({});
@@ -58,6 +63,10 @@ export default function GarmentCreatePage() {
       setIsSubmitting(false);
     }
   };
+
+  if (!isSignedIn) {
+    return <SignInPrompt>Please sign in to upload a garment</SignInPrompt>;
+  }
 
   return (
     <Container>
