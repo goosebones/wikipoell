@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { initMongo } from "@/lib/mongodb";
 import Garment from "@/models/Garment";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(request) {
+  const { isAuthenticated } = await auth();
+  if (!isAuthenticated) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     await initMongo();
 
@@ -25,7 +31,7 @@ export async function POST(request) {
     if (!imageGroupId) {
       return NextResponse.json(
         { error: "imageGroupId is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -36,7 +42,7 @@ export async function POST(request) {
               ? { url: item }
               : item && typeof item.url === "string"
                 ? { ...item, url: item.url }
-                : null
+                : null,
           )
           .filter((item) => item && item.url.length > 0)
       : [];
@@ -44,7 +50,7 @@ export async function POST(request) {
     if (imageList.length === 0) {
       return NextResponse.json(
         { error: "At least one image URL is required" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -66,13 +72,13 @@ export async function POST(request) {
       {
         id: doc._id.toString(),
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (err) {
     console.error("Save garment error:", err);
     return NextResponse.json(
       { error: err.message || "Failed to save garment" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import sharp from "sharp";
 import { uploadToR2 } from "@/lib/r2";
+import { auth } from "@clerk/nextjs/server";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
 export async function POST(request) {
+  const { isAuthenticated } = await auth();
+  if (!isAuthenticated) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const formData = await request.formData();
     const file = formData.get("file");
@@ -15,7 +21,7 @@ export async function POST(request) {
     if (!file || typeof file === "string" || !garmentId || !imageId) {
       return NextResponse.json(
         { error: "Missing file or garmentId or imageId" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -23,13 +29,13 @@ export async function POST(request) {
     if (!ALLOWED_TYPES.includes(type)) {
       return NextResponse.json(
         { error: "Invalid file type. Use JPEG, PNG, GIF, or WebP." },
-        { status: 400 }
+        { status: 400 },
       );
     }
     if (size > MAX_SIZE) {
       return NextResponse.json(
         { error: "File too large. Max 10MB." },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -47,7 +53,7 @@ export async function POST(request) {
     console.error("Upload error:", err);
     return NextResponse.json(
       { error: err.message || "Upload failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
