@@ -46,7 +46,12 @@ function CategoryCollapsible({ category, onSelect }) {
   const isActiveOrDescendant = pathname.startsWith(href);
   const [isOpen, setIsOpen] = useState(isActiveOrDescendant);
   if (category.children.length === 0) {
-    return <CategoryLink category={category} onSelect={onSelect} />;
+    return (
+      <CategoryLink
+        category={category}
+        onSelect={onSelect}
+      />
+    );
   }
 
   return (
@@ -86,9 +91,12 @@ export default function CategoriesMenuClient({ categoryTree }) {
   const [rootOpen, setRootOpen] = useState(false);
 
   return (
-    <Collapsible open={rootOpen} onOpenChange={setRootOpen}>
+    <Collapsible
+      open={rootOpen}
+      onOpenChange={setRootOpen}
+    >
       <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
-        Categories
+        Browse By Category
         {rootOpen ? (
           <ChevronDownIcon className="size-5" />
         ) : (

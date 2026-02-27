@@ -24,8 +24,14 @@ export default function SidebarMenu({ children }) {
         <MenuIcon onClick={() => setIsOpen(!isOpen)} />
         {isOpen && (
           <div className="absolute top-0 left-0 w-full h-full bg-white z-50">
-            <Flex justify="end" align="center">
-              <Button variant="outline" onClick={() => setIsOpen(false)}>
+            <Flex
+              justify="end"
+              align="center"
+            >
+              <Button
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+              >
                 Close
               </Button>
             </Flex>
