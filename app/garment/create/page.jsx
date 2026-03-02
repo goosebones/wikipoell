@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 
 import { Section, Heading, Container, Flex } from "@radix-ui/themes";
 import { useProperties } from "@/components/context/property-context-provider";
@@ -14,7 +14,7 @@ import { Button } from "@/styles/components/ui/button";
 import SignInPrompt from "@/components/sign-in-prompt";
 
 export default function GarmentCreatePage() {
-  const { isSignedIn } = useAuth();
+  const { isSignedIn, user } = useUser();
 
   const { properties } = useProperties();
 
@@ -36,6 +36,8 @@ export default function GarmentCreatePage() {
     setSubmitSuccess(null);
     setIsSubmitting(true);
     try {
+      setGarmentDataField("uploadedByUserId", user.id);
+
       const images =
         (garmentData.images ?? [])
           .filter((img) => img?.url)
@@ -46,7 +48,6 @@ export default function GarmentCreatePage() {
         ...garmentData,
         images,
       };
-
       const res = await fetch("/api/garment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

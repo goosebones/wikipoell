@@ -26,6 +26,7 @@ export async function POST(request) {
       title,
       model,
       images,
+      uploadedByUserId,
     } = body || {};
 
     if (!imageGroupId) {
@@ -66,6 +67,7 @@ export async function POST(request) {
       title: title ?? null,
       model: model ?? null,
       images: imageList,
+      uploadedByUserId: uploadedByUserId ?? null,
     });
 
     return NextResponse.json(
