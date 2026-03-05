@@ -24,6 +24,17 @@ const GarmentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    source: {
+      type: {
+        type: String,
+        enum: ["user", "instagram", "website", "name", "other"],
+        required: true,
+      },
+      userId: String,
+      displayName: { type: String, required: true },
+      url: String,
+      platform: String,
+    },
   },
   {
     timestamps: true,

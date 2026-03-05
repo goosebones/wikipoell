@@ -15,10 +15,11 @@ export function GuntherSelect({
   itemValue = "value",
   itemTitle = "title",
   placeholder = "Select",
+  className = "",
 }) {
   return (
     <Select>
-      <SelectTrigger>
+      <SelectTrigger className={className}>
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>

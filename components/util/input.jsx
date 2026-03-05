@@ -4,6 +4,11 @@ import {
   FieldLabel,
   FieldDescription,
 } from "@/styles/components/ui/field";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from "@/styles/components/ui/input-group";
 
 export function GuntherInput({
   label = null,
@@ -11,6 +16,8 @@ export function GuntherInput({
   placeholder = null,
   onChange,
   className,
+  prepend = null,
+  append = null,
   ...rest
 }) {
   return (
@@ -19,10 +26,14 @@ export function GuntherInput({
       {...rest}
     >
       {label && <FieldLabel>{label}</FieldLabel>}
-      <Input
-        placeholder={placeholder}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      <InputGroup>
+        <InputGroupInput
+          placeholder={placeholder}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <InputGroupAddon align="inline-start">{prepend}</InputGroupAddon>
+        <InputGroupAddon align="inline-end">{append}</InputGroupAddon>
+      </InputGroup>
       {description && <FieldDescription>{description}</FieldDescription>}
     </Field>
   );

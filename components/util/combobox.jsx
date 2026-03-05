@@ -14,9 +14,11 @@ export function GuntherCombobox({
   placeholder = "Select",
   onSelect = () => null,
   multiple = false,
+  className = "",
 }) {
   return (
     <Combobox
+      className={className}
       items={items}
       itemToStringLabel={(item) => item[itemTitle]}
       itemToStringValue={(item) => item[itemValue]}
@@ -34,7 +36,10 @@ export function GuntherCombobox({
         }
       }}
     >
-      <ComboboxInput placeholder={placeholder} />
+      <ComboboxInput
+        placeholder={placeholder}
+        className={className}
+      />
       <ComboboxContent>
         <ComboboxEmpty>No items found</ComboboxEmpty>
         <ComboboxList>

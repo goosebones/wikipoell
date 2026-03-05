@@ -27,6 +27,7 @@ export async function POST(request) {
       model,
       images,
       uploadedByUserId,
+      source,
     } = body || {};
 
     if (!imageGroupId) {
@@ -55,6 +56,38 @@ export async function POST(request) {
       );
     }
 
+    const validSourceTypes = ["user", "instagram", "website", "name", "other"];
+    let sourceDoc = null;
+    if (
+      source &&
+      typeof source === "object" &&
+      validSourceTypes.includes(source.type)
+    ) {
+      let userId = source.userId ?? undefined;
+      let displayName =
+        typeof source.displayName === "string"
+          ? source.displayName.trim() || undefined
+          : undefined;
+
+      const hasContent =
+        source.type === "user" ? userId || displayName : displayName;
+      if (hasContent) {
+        sourceDoc = {
+          type: source.type,
+          ...(source.type === "user" && userId && { userId }),
+          displayName,
+          url:
+            typeof source.url === "string"
+              ? source.url.trim() || undefined
+              : undefined,
+          platform:
+            typeof source.platform === "string"
+              ? source.platform.trim() || undefined
+              : undefined,
+        };
+      }
+    }
+
     const doc = await Garment.create({
       imageGroupId,
       category: category ?? null,
@@ -68,6 +101,7 @@ export async function POST(request) {
       model: model ?? null,
       images: imageList,
       uploadedByUserId: uploadedByUserId ?? null,
+      ...(sourceDoc && { source: sourceDoc }),
     });
 
     return NextResponse.json(
