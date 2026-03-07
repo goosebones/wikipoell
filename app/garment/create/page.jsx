@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
 import { Section, Heading, Container, Flex } from "@radix-ui/themes";
@@ -14,6 +15,7 @@ import { Button } from "@/styles/components/ui/button";
 import SignInPrompt from "@/components/sign-in-prompt";
 
 export default function GarmentCreatePage() {
+  const router = useRouter();
   const { isSignedIn, user } = useUser();
 
   const { properties } = useProperties();
@@ -46,7 +48,6 @@ export default function GarmentCreatePage() {
     setSubmitSuccess(null);
     setIsSubmitting(true);
     try {
-      setGarmentDataField("uploadedByUserId", user.id);
       const images =
         (garmentData.images ?? [])
           .filter((img) => img?.url)
@@ -93,6 +94,7 @@ export default function GarmentCreatePage() {
       const payload = {
         imageGroupId: garmentImageId,
         ...restGarmentData,
+        ...(user?.id && { uploadedByUserId: user.id }),
         images,
         ...(sourcePayload && { source: sourcePayload }),
       };
@@ -105,7 +107,11 @@ export default function GarmentCreatePage() {
       if (!res.ok) {
         throw new Error(data.error || "Failed to save garment");
       }
-      setSubmitSuccess("Garment saved");
+      if (data.id) {
+        router.push(`/garment/${data.id}`);
+      } else {
+        setSubmitSuccess("Garment saved");
+      }
     } catch (err) {
       setSubmitError(err.message || "Something went wrong");
     } finally {
