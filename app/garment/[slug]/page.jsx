@@ -10,6 +10,7 @@ import {
   GarmentUploaderDisplay,
   GarmentSourceDisplay,
 } from "@/components/garment-owner-display";
+import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
 
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
@@ -36,10 +37,16 @@ export default async function GarmentPage({ params }) {
       <div>
         <ImageCarousel images={garment.images} />
       </div>
+
       <div className="my-4 mx-4">
         <h1 className="text-2xl font-bold">{garment.title}</h1>
         <h3>{garmentCodeLine1}</h3>
         <h2>{garmentCodeLine2}</h2>
+
+        <CategoryBreadcrumb
+          className="mt-2"
+          categoryId={garment.category}
+        />
 
         <table className="w-full mt-4">
           <tbody>
@@ -72,9 +79,7 @@ export default async function GarmentPage({ params }) {
             })}
           </tbody>
         </table>
-
         <GarmentUploaderDisplay user={uploader ?? undefined} />
-
         <GarmentSourceDisplay
           source={garment.source}
           sourceUser={sourceUser}
