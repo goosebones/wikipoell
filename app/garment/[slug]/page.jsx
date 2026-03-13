@@ -27,6 +27,15 @@ export default async function GarmentPage({ params }) {
   const properties = await getProperties();
   const orderedGarmentPropertyList = getOrderedGarmentPropertyList();
 
+  const formatGarmentKey = (key) =>
+    key
+      .replace(/[_-]+/g, " ")
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
   return (
     <div>
       <div>
@@ -58,7 +67,7 @@ export default async function GarmentPage({ params }) {
                     key={garmentKey}
                   >
                     <td className="border p-2">
-                      {property?.propertyType || garmentKey}
+                      {property?.propertyType || formatGarmentKey(garmentKey)}
                     </td>
                     <td className="border p-2">
                       <div className="flex items-center gap-2 justify-between">
