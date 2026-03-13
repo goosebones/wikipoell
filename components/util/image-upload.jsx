@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Button } from "@/styles/components/ui/button";
+import { Button } from "@mantine/core";
 import {
   Loader2Icon,
   Trash2Icon,
@@ -31,8 +31,8 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
         prev.map((img) =>
           img.id === id
             ? { ...img, status: "error", error: "Missing garmentId" }
-            : img
-        )
+            : img,
+        ),
       );
       return;
     }
@@ -50,14 +50,14 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
       if (!res.ok) throw new Error(data.error || "Upload failed");
       updateImages((prev) =>
         prev.map((img) =>
-          img.id === id ? { ...img, url: data.url, status: "done" } : img
-        )
+          img.id === id ? { ...img, url: data.url, status: "done" } : img,
+        ),
       );
     } catch (err) {
       updateImages((prev) =>
         prev.map((img) =>
-          img.id === id ? { ...img, status: "error", error: err.message } : img
-        )
+          img.id === id ? { ...img, status: "error", error: err.message } : img,
+        ),
       );
     } finally {
       filesByIdRef.current.delete(id);
@@ -75,7 +75,7 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
       status: "uploading",
     }));
     toAdd.forEach((file, i) =>
-      filesByIdRef.current.set(newEntries[i].id, file)
+      filesByIdRef.current.set(newEntries[i].id, file),
     );
     updateImages((prev) => [...prev, ...newEntries]);
     newEntries.forEach((img) => {
@@ -112,7 +112,7 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
       />
       <Button
         type="button"
-        variant="outline"
+        variant="light"
         size="sm"
         onClick={() => inputRef.current?.click()}
         disabled={disabled || !canAdd}
@@ -160,8 +160,8 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
               <div className="absolute bottom-0 left-0 right-0 flex items-center justify-end gap-1 bg-black/50 p-1.5">
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon-xs"
+                  size="xs"
+                  variant="white"
                   className="text-white hover:bg-white/20"
                   onClick={() => move(index, -1)}
                   disabled={index === 0}
@@ -171,8 +171,8 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
                 </Button>
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon-xs"
+                  size="xs"
+                  variant="white"
                   className="text-white hover:bg-white/20"
                   onClick={() => move(index, 1)}
                   disabled={index === images.length - 1}
@@ -183,8 +183,7 @@ export function ImageUpload({ value = [], onChange, disabled, garmentId }) {
                 <div className="flex-grow" />
                 <Button
                   type="button"
-                  variant="ghost"
-                  size="icon-xs"
+                  size="xs"
                   className="text-white hover:bg-destructive/80"
                   onClick={() => remove(img.id)}
                   disabled={img.status === "uploading"}

@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/styles/components/ui/collapsible";
+import { Collapse, UnstyledButton } from "@mantine/core";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
 import { useSidebar } from "../sidebar-menu";
 
@@ -55,12 +51,12 @@ function CategoryCollapsible({ category, onSelect }) {
   }
 
   return (
-    <Collapsible defaultOpen={isActiveOrDescendant}>
-      <CollapsibleTrigger
-        onClick={() => setIsOpen(!isOpen)}
-        className={`mt-2 flex items-center justify-between w-full text-sm transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground ${
+    <div>
+      <UnstyledButton
+        className={`mt-2 flex items-center justify-between w-full text-sm transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground p-2 rounded ${
           isActiveOrDescendant ? "bg-accent text-accent-foreground" : ""
         }`}
+        onClick={() => setIsOpen((o) => !o)}
       >
         {category.name}
         {isOpen ? (
@@ -68,22 +64,24 @@ function CategoryCollapsible({ category, onSelect }) {
         ) : (
           <ChevronRightIcon className="size-4" />
         )}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4">
-        <CategoryLink
-          category={category}
-          categoryName={`All ${category.name}`}
-          onSelect={onSelect}
-        />
-        {category.children.map((child) => (
-          <CategoryCollapsible
-            key={child._id}
-            category={child}
+      </UnstyledButton>
+      <Collapse in={isOpen}>
+        <div className="pl-4">
+          <CategoryLink
+            category={category}
+            categoryName={`All ${category.name}`}
             onSelect={onSelect}
           />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+          {category.children.map((child) => (
+            <CategoryCollapsible
+              key={child._id}
+              category={child}
+              onSelect={onSelect}
+            />
+          ))}
+        </div>
+      </Collapse>
+    </div>
   );
 }
 
@@ -91,34 +89,35 @@ export default function CategoriesMenuClient({ categoryTree, className }) {
   const [rootOpen, setRootOpen] = useState(false);
 
   return (
-    <Collapsible
-      open={rootOpen}
-      onOpenChange={setRootOpen}
-      className={className}
-    >
-      <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
+    <div className={className}>
+      <UnstyledButton
+        className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground p-2 rounded"
+        onClick={() => setRootOpen((o) => !o)}
+      >
         Browse By Category
         {rootOpen ? (
           <ChevronDownIcon className="size-5" />
         ) : (
           <ChevronRightIcon className="size-5" />
         )}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4">
-        <CategoryLink
-          category={categoryTree}
-          categoryName={`All Categories`}
-          onSelect={() => setRootOpen(false)}
-          isRoot={true}
-        />
-        {categoryTree.map((category) => (
-          <CategoryCollapsible
-            key={category._id}
-            category={category}
+      </UnstyledButton>
+      <Collapse in={rootOpen}>
+        <div className="pl-4">
+          <CategoryLink
+            category={categoryTree}
+            categoryName="All Categories"
             onSelect={() => setRootOpen(false)}
+            isRoot={true}
           />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+          {categoryTree.map((category) => (
+            <CategoryCollapsible
+              key={category._id}
+              category={category}
+              onSelect={() => setRootOpen(false)}
+            />
+          ))}
+        </div>
+      </Collapse>
+    </div>
   );
 }

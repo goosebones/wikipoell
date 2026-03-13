@@ -61,8 +61,19 @@ export default function ImageCarousel({ images = [] }) {
             </CarouselItem>
           ))}
         </CarouselContent>
-        {images.length > 1 && <CarouselNext className="right-2 z-10" />}
-        {images.length > 1 && <CarouselPrevious className="left-2 z-10" />}
+        {images.length > 1 && (
+          <CarouselPrevious
+            className="left-3 z-10"
+            variant="filled"
+          />
+        )}
+
+        {images.length > 1 && (
+          <CarouselNext
+            className="left-6 z-10"
+            variant="filled"
+          />
+        )}
       </Carousel>
 
       {/* Image counter */}

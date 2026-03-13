@@ -28,50 +28,49 @@ export function GarmentUploaderDisplay({ user }) {
   );
 }
 
-export function GarmentSourceDisplay({ source, sourceUser }) {
+export function GarmentSourceDisplay({ source }) {
   if (!source) return null;
 
-  const hasDisplay = source.displayName || source.url;
-  if (!hasDisplay) return null;
+  // { type: "me" } or { type: "external", label, url? }
+  if (source.type === "me") {
+    return (
+      <div className="mt-4 flex items-center gap-3">
+        <span>Source</span>
+        <span className="font-medium text-lg">This user's own garment</span>
+      </div>
+    );
+  }
 
-  const isUserSource = source.type === "user";
-  const showUserLink = isUserSource && sourceUser?.username;
+  if (source.type === "external") {
+    const label =
+      typeof source.label === "string" && source.label.trim().length > 0
+        ? source.label.trim()
+        : undefined;
+    const url =
+      typeof source.url === "string" && source.url.trim().length > 0
+        ? source.url.trim()
+        : undefined;
 
-  return (
-    <div className="mt-4 flex items-center gap-3">
-      <span>Source</span>
-      {showUserLink ? (
-        <Link
-          href={`/user/${encodeURIComponent(sourceUser.username)}`}
-          className="flex items-center gap-3"
-        >
-          {sourceUser.imageUrl && (
-            <div className="relative size-12 shrink-0 overflow-hidden rounded-full bg-muted">
-              <Image
-                src={sourceUser.imageUrl}
-                alt={`${sourceUser.username}'s avatar`}
-                width={48}
-                height={48}
-                unoptimized
-              />
-            </div>
-          )}
-          <span className="font-medium text-lg">{sourceUser.username}</span>
-        </Link>
-      ) : isUserSource && source.displayName ? (
-        <span className="font-medium text-lg">{source.displayName}</span>
-      ) : source.url ? (
-        <a
-          href={source.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium text-lg text-primary hover:underline"
-        >
-          {source.displayName || source.url}
-        </a>
-      ) : (
-        <span className="font-medium text-lg">{source.displayName}</span>
-      )}
-    </div>
-  );
+    if (!label && !url) return null;
+
+    return (
+      <div className="mt-4 flex items-center gap-3">
+        <span>Source</span>
+        {url ? (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-lg text-primary hover:underline"
+          >
+            {label || url}
+          </a>
+        ) : (
+          <span className="font-medium text-lg">{label}</span>
+        )}
+      </div>
+    );
+  }
+
+  return null;
 }

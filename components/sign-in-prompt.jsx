@@ -1,8 +1,7 @@
 "use client";
 
 import { SignInButton, SignUpButton } from "@clerk/nextjs";
-
-import { Button } from "@/styles/components/ui/button";
+import { Button } from "@mantine/core";
 
 export default function SignInPrompt({ children, message }) {
   const text = children ?? message ?? "Please sign in to continue";
@@ -22,7 +21,7 @@ export default function SignInPrompt({ children, message }) {
         <SignInButton>
           <Button
             size="lg"
-            variant="outline"
+            variant="light"
             className="w-full"
           >
             Log In

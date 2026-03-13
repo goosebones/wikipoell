@@ -7,7 +7,7 @@ import useEmblaCarousel, {
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { cn } from "@/styles/lib/utils";
-import { Button } from "@/styles/components/ui/button";
+import { Button } from "@mantine/core";
 
 type CarouselApi = UseEmblaCarouselType[1];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -171,12 +171,19 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   );
 }
 
+type CarouselButtonProps = {
+  className?: string;
+  variant?: "filled" | "light" | "outline" | "subtle" | "default" | "transparent" | "white" | "gradient";
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+  [key: string]: unknown;
+};
+
 function CarouselPrevious({
   className,
-  variant = "outline",
-  size = "icon",
+  variant = "light",
+  size = "sm",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: CarouselButtonProps) {
   const { orientation, scrollPrev, canScrollPrev } = useCarousel();
 
   return (
@@ -203,10 +210,10 @@ function CarouselPrevious({
 
 function CarouselNext({
   className,
-  variant = "outline",
-  size = "icon",
+  variant = "light",
+  size = "sm",
   ...props
-}: React.ComponentProps<typeof Button>) {
+}: CarouselButtonProps) {
   const { orientation, scrollNext, canScrollNext } = useCarousel();
 
   return (

@@ -27,12 +27,10 @@ const GarmentSchema = new mongoose.Schema(
     source: {
       type: {
         type: String,
-        enum: ["user", "instagram", "website", "name", "other"],
+        enum: ["me", "external"],
       },
-      userId: String,
-      displayName: String,
+      label: String,
       url: String,
-      platform: String,
     },
   },
   {

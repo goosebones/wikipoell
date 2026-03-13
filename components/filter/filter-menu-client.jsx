@@ -2,13 +2,8 @@
 
 import { useMemo, useState, useCallback } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@radix-ui/react-collapsible";
+import { Collapse, UnstyledButton, Checkbox } from "@mantine/core";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { Checkbox } from "@/styles/components/ui/checkbox";
 import { XIcon } from "lucide-react";
 
 import { useProperties } from "@/components/context/property-context-provider";
@@ -79,7 +74,7 @@ function FilterItem({
         <div>
           {filterOptions.map((option) => {
             const isChecked = selectedGarmentValues.includes(
-              option.garmentValue
+              option.garmentValue,
             );
             return (
               <div
@@ -89,16 +84,11 @@ function FilterItem({
                 <Checkbox
                   id={`${propertyType}-${option._id}`}
                   checked={isChecked}
-                  onCheckedChange={() => {
+                  onChange={() => {
                     onToggle(garmentKey, option.garmentValue, isChecked);
                   }}
+                  label={option.description || option.garmentValue}
                 />
-                <label
-                  htmlFor={`${propertyType}-${option._id}`}
-                  className="ml-1 cursor-pointer select-none"
-                >
-                  {option.description || option.garmentValue}
-                </label>
               </div>
             );
           })}
@@ -135,7 +125,7 @@ export default function FilterMenuClient() {
       }
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   );
 
   const clearFilter = useCallback(
@@ -144,36 +134,38 @@ export default function FilterMenuClient() {
       params.delete(garmentKey);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [pathname, router, searchParams]
+    [pathname, router, searchParams],
   );
 
   return (
-    <Collapsible
-      open={rootOpen}
-      onOpenChange={setRootOpen}
-    >
-      <CollapsibleTrigger className="flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground">
+    <div>
+      <UnstyledButton
+        className={`flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground p-2 rounded ${rootOpen ? "bg-accent text-accent-foreground" : ""}`}
+        onClick={() => setRootOpen((o) => !o)}
+      >
         Filters
         {rootOpen ? (
           <ChevronDownIcon className="size-5" />
         ) : (
           <ChevronRightIcon className="size-5" />
         )}
-      </CollapsibleTrigger>
-      <CollapsibleContent className="pl-4">
-        {Object.entries(filterMap).map(([garmentKey, filterInfo]) => (
-          <FilterItem
-            key={garmentKey}
-            propertyType={filterInfo.propertyType}
-            garmentKey={garmentKey}
-            filterOptions={filterInfo.options}
-            selectedGarmentValues={selectedBygarmentKey[garmentKey] || []}
-            isActive={selectedBygarmentKey[garmentKey]?.length > 0}
-            onToggle={updateQueryParams}
-            onClear={clearFilter}
-          />
-        ))}
-      </CollapsibleContent>
-    </Collapsible>
+      </UnstyledButton>
+      <Collapse in={rootOpen}>
+        <div className="pl-4">
+          {Object.entries(filterMap).map(([garmentKey, filterInfo]) => (
+            <FilterItem
+              key={garmentKey}
+              propertyType={filterInfo.propertyType}
+              garmentKey={garmentKey}
+              filterOptions={filterInfo.options}
+              selectedGarmentValues={selectedBygarmentKey[garmentKey] || []}
+              isActive={selectedBygarmentKey[garmentKey]?.length > 0}
+              onToggle={updateQueryParams}
+              onClear={clearFilter}
+            />
+          ))}
+        </div>
+      </Collapse>
+    </div>
   );
 }

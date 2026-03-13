@@ -56,35 +56,28 @@ export async function POST(request) {
       );
     }
 
-    const validSourceTypes = ["user", "instagram", "website", "name", "other"];
     let sourceDoc = null;
-    if (
-      source &&
-      typeof source === "object" &&
-      validSourceTypes.includes(source.type)
-    ) {
-      let userId = source.userId ?? undefined;
-      let displayName =
-        typeof source.displayName === "string"
-          ? source.displayName.trim() || undefined
-          : undefined;
 
-      const hasContent =
-        source.type === "user" ? userId || displayName : displayName;
-      if (hasContent) {
-        sourceDoc = {
-          type: source.type,
-          ...(source.type === "user" && userId && { userId }),
-          displayName,
-          url:
-            typeof source.url === "string"
-              ? source.url.trim() || undefined
-              : undefined,
-          platform:
-            typeof source.platform === "string"
-              ? source.platform.trim() || undefined
-              : undefined,
-        };
+    if (source && typeof source === "object") {
+      if (source.type === "me") {
+        sourceDoc = { type: "me" };
+      } else if (source.type === "external") {
+        const label =
+          typeof source.label === "string"
+            ? source.label.trim() || undefined
+            : undefined;
+        const url =
+          typeof source.url === "string"
+            ? source.url.trim() || undefined
+            : undefined;
+
+        if (label || url) {
+          sourceDoc = {
+            type: "external",
+            ...(label && { label }),
+            ...(url && { url }),
+          };
+        }
       }
     }
 

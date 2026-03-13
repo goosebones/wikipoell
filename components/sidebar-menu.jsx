@@ -2,8 +2,7 @@
 
 import { MenuIcon } from "lucide-react";
 import { useState, createContext, useContext } from "react";
-import { Flex, Section } from "@radix-ui/themes";
-import { Button } from "@/styles/components/ui/button";
+import { Box, Flex, Button } from "@mantine/core";
 
 const SidebarContext = createContext(null);
 
@@ -20,25 +19,24 @@ export default function SidebarMenu({ children }) {
 
   return (
     <SidebarContext.Provider value={{ closeSidebar: handleCategorySelect }}>
-      <div>
-        <MenuIcon onClick={() => setIsOpen(!isOpen)} />
-        {isOpen && (
-          <div className="absolute top-0 left-0 w-full h-full bg-white z-50">
-            <Flex
-              justify="end"
-              align="center"
+      <MenuIcon onClick={() => setIsOpen(!isOpen)} />
+      {isOpen && (
+        <div className="absolute top-0 left-0 w-full h-full bg-white z-50">
+          <Flex
+            justify="end"
+            align="center"
+            className="p-2"
+          >
+            <Button
+              variant="subtle"
+              onClick={() => setIsOpen(false)}
             >
-              <Button
-                variant="ghost"
-                onClick={() => setIsOpen(false)}
-              >
-                Close
-              </Button>
-            </Flex>
-            <Section>{children}</Section>
-          </div>
-        )}
-      </div>
+              Close
+            </Button>
+          </Flex>
+          <Box p="md">{children}</Box>
+        </div>
+      )}
     </SidebarContext.Provider>
   );
 }

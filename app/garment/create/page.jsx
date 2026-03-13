@@ -4,14 +4,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 
-import { Section, Heading, Container, Flex } from "@radix-ui/themes";
 import { useProperties } from "@/components/context/property-context-provider";
 import CategoryTreeSelectClient from "@/components/category/category-tree-select-client";
-import { GuntherSelect } from "@/components/util/select";
-import { GuntherCombobox } from "@/components/util/combobox";
-import { GuntherInput } from "@/components/util/input";
+import {
+  Container,
+  Title,
+  Box,
+  TextInput,
+  Select,
+  Button,
+  Autocomplete,
+} from "@mantine/core";
 import { ImageUpload } from "@/components/util/image-upload";
-import { Button } from "@/styles/components/ui/button";
 import SignInPrompt from "@/components/sign-in-prompt";
 
 export default function GarmentCreatePage() {
@@ -28,19 +32,28 @@ export default function GarmentCreatePage() {
   const [submitSuccess, setSubmitSuccess] = useState(null);
 
   const setGarmentDataField = (k, v) => {
-    const newGarmentData = { ...garmentData };
-    newGarmentData[k] = v;
-    setGarmentData(newGarmentData);
+    setGarmentData((prev) => ({
+      ...prev,
+      [k]: v,
+    }));
   };
 
   const setSourceField = (field, value) => {
-    setGarmentData((prev) => ({
-      ...prev,
-      source: {
-        ...(prev.source || {}),
-        [field]: value === "" || value == null ? undefined : value,
-      },
-    }));
+    setGarmentData((prev) => {
+      const cleaned = value === "" || value == null ? undefined : value;
+      const prevSource = prev.source || {};
+      const nextSource = {
+        ...prevSource,
+        [field]: cleaned,
+      };
+
+      const hasAnyField = nextSource.type || nextSource.label || nextSource.url;
+
+      return {
+        ...prev,
+        ...(hasAnyField ? { source: nextSource } : { source: undefined }),
+      };
+    });
   };
 
   const handleSubmit = async () => {
@@ -55,38 +68,24 @@ export default function GarmentCreatePage() {
 
       const rawSource = garmentData.source;
       let sourcePayload = null;
-      if (rawSource?.type) {
-        const displayName =
-          typeof rawSource.displayName === "string"
-            ? rawSource.displayName.trim()
+      if (rawSource?.type === "me") {
+        sourcePayload = { type: "me" };
+      } else if (rawSource?.type === "external") {
+        const label =
+          typeof rawSource.label === "string"
+            ? rawSource.label.trim() || undefined
             : undefined;
-        if (rawSource.type === "instagram" && displayName) {
-          const handle = displayName.replace(/^@/, "");
+        const url =
+          typeof rawSource.url === "string"
+            ? rawSource.url.trim() || undefined
+            : undefined;
+
+        if (label || url) {
           sourcePayload = {
-            type: "instagram",
-            displayName: handle,
-            url: `https://instagram.com/${encodeURIComponent(handle)}`,
+            type: "external",
+            ...(label && { label }),
+            ...(url && { url }),
           };
-        } else if (
-          rawSource.type === "website" ||
-          rawSource.type === "name" ||
-          rawSource.type === "other"
-        ) {
-          sourcePayload = {
-            type: rawSource.type,
-            displayName: displayName || undefined,
-            url:
-              typeof rawSource.url === "string"
-                ? rawSource.url.trim() || undefined
-                : undefined,
-            platform:
-              rawSource.type === "other" &&
-              typeof rawSource.platform === "string"
-                ? rawSource.platform.trim() || undefined
-                : undefined,
-          };
-        } else if (rawSource.type === "user" && displayName) {
-          sourcePayload = { type: "user", displayName };
         }
       }
 
@@ -125,234 +124,241 @@ export default function GarmentCreatePage() {
 
   return (
     <Container>
-      <Section size="1">
-        <Heading size="7">Upload Garment</Heading>
-      </Section>
+      <Title
+        order={1}
+        py="md"
+      >
+        Upload Garment
+      </Title>
+
       {/* category */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
-        >
-          Category
-        </Heading>
+      <Box py="sm">
+        <Title order={3}>Category</Title>
         <CategoryTreeSelectClient
-          value={garmentData["category"]}
+          value={garmentData.category}
           onChange={(v) => setGarmentDataField("category", v)}
         />
-      </Section>
+      </Box>
+
       {/* type selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Type
-        </Heading>
-        <GuntherSelect
-          items={properties.filter((p) => p.garmentKey === "type")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select type"
-          onSelect={(v) => setGarmentDataField("type", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "type")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.type}
+          searchable
+          onChange={(v) => setGarmentDataField("type", v)}
         />
-      </Section>
+      </Box>
+
       {/* Gender selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Gender
-        </Heading>
-        <GuntherSelect
-          items={properties.filter((p) => p.garmentKey === "gender")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select gender"
-          onSelect={(v) => setGarmentDataField("gender", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "gender")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.gender}
+          searchable
+          onChange={(v) => setGarmentDataField("gender", v)}
         />
-      </Section>
+      </Box>
+
       {/* Special procedure selection TODO ability to add multiple */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Procedures
-        </Heading>
-        <GuntherCombobox
-          items={properties.filter((p) => p.garmentKey === "procedure")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select procedure"
-          onSelect={(v) => setGarmentDataField("procedure", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "procedure")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.procedure}
+          searchable
+          onChange={(v) => setGarmentDataField("procedure", v)}
         />
-      </Section>
+      </Box>
+
       {/* Material selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Material
-        </Heading>
-        <GuntherCombobox
-          items={properties.filter((p) => p.garmentKey === "material")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select material"
-          onSelect={(v) => setGarmentDataField("material", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "material")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.material}
+          searchable
+          onChange={(v) => setGarmentDataField("material", v)}
         />
-      </Section>
+      </Box>
       {/* Process selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Process
-        </Heading>
-        <GuntherSelect
-          items={properties.filter((p) => p.garmentKey === "process")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select process"
-          onSelect={(v) => setGarmentDataField("process", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "process")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.process}
+          searchable
+          onChange={(v) => setGarmentDataField("process", v)}
         />
-      </Section>
+      </Box>
+
       {/* Color selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
           Color
-        </Heading>
-        <GuntherCombobox
-          items={properties.filter((p) => p.garmentKey === "color")}
-          itemValue="garmentValue"
-          itemTitle="description"
+        </Title>
+        <Select
           placeholder="Select color"
-          onSelect={(v) => setGarmentDataField("color", v)}
+          data={properties
+            .filter((p) => p.garmentKey === "color")
+            .map((p) => ({
+              value: p.garmentValue,
+              label: p.description ?? p.garmentValue,
+            }))}
+          value={garmentData.color}
+          searchable
+          onChange={(v) => setGarmentDataField("color", v)}
         />
-      </Section>
-      {/* Title & model selection */}
-      <Section size="1">
-        <Heading
-          size="5"
-          className="pb-2"
+      </Box>
+
+      {/* model & title selection */}
+      <Box py="sm">
+        <Title
+          order={3}
+          pb="xs"
         >
-          Title & Model
-        </Heading>
-        <GuntherInput
+          Model &amp; Title
+        </Title>
+        <Autocomplete
+          label="Model"
+          placeholder="Select model"
+          data={properties
+            .filter((p) => p.garmentKey === "model")
+            .map((p) => `${p.garmentValue} - ${p.propertyName}`)}
+          value={garmentData.model}
+          onChange={(v) => {
+            const garmentValue = v.split(" - ")[0];
+            const property = properties.find(
+              (p) =>
+                p.garmentKey === "model" && p.garmentValue === garmentValue,
+            );
+            console.log("property", property);
+            if (property && property.propertyName) {
+              setGarmentDataField("model", property.garmentValue);
+              setGarmentDataField("title", property.propertyName);
+            } else {
+              setGarmentDataField("model", v);
+            }
+          }}
+          className="mb-2"
+        />
+        <TextInput
           label="Title"
           placeholder="Scarstitch Leather Jacket"
-          onChange={(v) => setGarmentDataField("title", v)}
-          className="mb-4"
+          value={garmentData.title}
+          onChange={(e) => setGarmentDataField("title", e.currentTarget.value)}
         />
-        <GuntherInput
-          label="Model Number"
-          placeholder="2498"
-          onChange={(v) => setGarmentDataField("model", v)}
-        />
-      </Section>
+      </Box>
+
       {/* Source (optional) TODO add option to choose me (current user) */}
-      <Section size="1">
-        <Heading
-          size="5"
+      <Box py="sm">
+        <Title
+          order={3}
           className="pb-2"
         >
           Source (optional)
-        </Heading>
+        </Title>
         <p className="text-sm text-muted-foreground mb-2">
-          Where this garment is from — e.g. another user, a store, Instagram, or
+          Where this garment is from — e.g. your own, a store, Instagram, or
           somewhere else online.
         </p>
-        <GuntherCombobox
-          items={[
-            { value: "user", label: "Another user on this site" },
-            { value: "website", label: "Retailer / Website" },
-            { value: "instagram", label: "Instagram" },
-            { value: "name", label: "Name only" },
-            { value: "other", label: "Other" },
-          ]}
-          itemValue="value"
-          itemTitle="label"
+        <Select
           placeholder="Select source"
-          onSelect={(v) => setSourceField("type", v)}
           className="mb-4"
+          data={[
+            { value: "me", label: "This is my own garment" },
+            { value: "external", label: "From someone/somewhere else" },
+          ]}
+          value={garmentData.source?.type ?? null}
+          onChange={(v) => setSourceField("type", v ?? undefined)}
         />
-        {/* TODO add user selection to query list of users */}
-        {garmentData.source?.type === "user" && (
-          <GuntherInput
-            label="Username"
-            placeholder="username"
-            onChange={(v) => setSourceField("displayName", v)}
-          />
-        )}
-        {garmentData.source?.type === "website" && (
+        {garmentData.source?.type === "external" && (
           <>
-            <GuntherInput
-              label="Name"
-              placeholder="Retailer or website name"
-              onChange={(v) => setSourceField("displayName", v)}
+            <TextInput
+              label="Name / Username / Title"
+              placeholder="e.g. Store, person, or account name"
+              value={garmentData.source?.label ?? ""}
+              onChange={(e) => setSourceField("label", e.currentTarget.value)}
               className="mb-4"
             />
-            <GuntherInput
-              label="URL"
-              placeholder="https://..."
-              onChange={(v) => setSourceField("url", v)}
-            />
-          </>
-        )}
-        {/* TODO add verification this person is actually on instagram */}
-        {garmentData.source?.type === "instagram" && (
-          <GuntherInput
-            label="Handle"
-            placeholder="carolchristianpoell"
-            prepend="@"
-            onChange={(v) => setSourceField("displayName", v)}
-          />
-        )}
-        {garmentData.source?.type === "name" && (
-          <GuntherInput
-            label="Name"
-            placeholder="Person or place name"
-            onChange={(v) => setSourceField("displayName", v)}
-          />
-        )}
-        {garmentData.source?.type === "other" && (
-          <>
-            <GuntherInput
-              label="Name"
-              placeholder="Display name"
-              onChange={(v) => setSourceField("displayName", v)}
-              className="mb-4"
-            />
-            <GuntherInput
+            <TextInput
               label="URL (optional)"
               placeholder="https://..."
-              onChange={(v) => setSourceField("url", v)}
-              className="mb-4"
-            />
-            <GuntherInput
-              label="Platform (optional)"
-              placeholder="e.g. Etsy, Depop"
-              onChange={(v) => setSourceField("platform", v)}
+              value={garmentData.source?.url ?? ""}
+              onChange={(e) => setSourceField("url", e.currentTarget.value)}
             />
           </>
         )}
-      </Section>
+      </Box>
 
       {/* Images selection */}
-      <Section size="1">
-        <Heading
-          size="5"
+      <Box py="sm">
+        <Title
+          order={3}
           className="pb-2"
         >
           Images
-        </Heading>
+        </Title>
         <ImageUpload
           garmentId={garmentImageId}
           value={garmentData.images}
@@ -366,10 +372,10 @@ export default function GarmentCreatePage() {
             }))
           }
         />
-      </Section>
+      </Box>
 
       {/* Submit */}
-      <Section size="1">
+      <Box py="sm">
         {submitError && (
           <p className="mb-2 text-sm text-red-600 dark:text-red-400">
             {submitError}
@@ -387,7 +393,7 @@ export default function GarmentCreatePage() {
         >
           {isSubmitting ? "Saving…" : "Submit"}
         </Button>
-      </Section>
+      </Box>
     </Container>
   );
 }

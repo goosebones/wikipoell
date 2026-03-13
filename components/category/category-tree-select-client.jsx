@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { GuntherSelect } from "@/components/util/select";
+import { Select } from "@mantine/core";
 import { useCategories } from "@/components/context/category-context-provider";
 
 export default function CategoryTreeSelectClient({ value, onChange }) {
@@ -36,13 +36,15 @@ export default function CategoryTreeSelectClient({ value, onChange }) {
           className="pb-2"
           key={currentLevel}
         >
-          <GuntherSelect
-            items={currentItems}
-            itemValue="_id"
-            itemTitle="name"
+          <Select
             placeholder="Select category"
+            data={currentItems.map((c) => ({
+              value: c._id,
+              label: c.name ?? c._id,
+            }))}
             value={selectedIdAtLevel}
-            onSelect={(id) => handleSelect(currentLevel, id)}
+            searchable
+            onChange={(id) => handleSelect(currentLevel, id ?? undefined)}
           />
         </div>,
       );

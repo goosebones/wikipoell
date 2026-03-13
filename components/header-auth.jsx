@@ -8,8 +8,7 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
-
-import { Button } from "@/styles/components/ui/button";
+import { Button as MantineButton } from "@mantine/core";
 import { CircleUserIcon } from "lucide-react";
 
 export default function HeaderAuth() {
@@ -19,20 +18,20 @@ export default function HeaderAuth() {
     <>
       <SignedOut>
         <SignInButton>
-          <Button
-            size="xs"
-            variant="ghost"
+          <MantineButton
+            size="compact-xs"
+            variant="transparent"
           >
             Log In
-          </Button>
+          </MantineButton>
         </SignInButton>
         <SignUpButton>
-          <Button
-            size="xs"
-            variant="ghost"
+          <MantineButton
+            size="compact-xs"
+            variant="transparent"
           >
             Sign Up
-          </Button>
+          </MantineButton>
         </SignUpButton>
       </SignedOut>
       <SignedIn>

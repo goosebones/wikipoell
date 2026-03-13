@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import ImageCarousel from "@/components/image-carousel";
 import { getGarmentCode, getOrderedGarmentPropertyList } from "@/lib/garments";
 import { getProperties } from "@/lib/properties";
-import { GuntherTooltip } from "@/components/util/tooltip";
+import { Tooltip } from "@mantine/core";
 import { getUserByClerkId } from "@/lib/users";
 import {
   GarmentUploaderDisplay,
@@ -20,12 +20,7 @@ export default async function GarmentPage({ params }) {
     notFound();
   }
 
-  // TODO move this to the component
   const uploader = await getUserByClerkId(garment.uploadedByUserId);
-  const sourceUser =
-    garment.source?.type === "user" && garment.source?.userId
-      ? await getUserByClerkId(garment.source.userId)
-      : null;
 
   const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
     getGarmentCode(garment);
@@ -57,33 +52,40 @@ export default async function GarmentPage({ params }) {
                     p.garmentKey === garmentKey &&
                     p.garmentValue === garment[garmentKey],
                 );
-                if (property) {
-                  return (
-                    <tr
-                      className="border"
-                      key={property._id}
-                    >
-                      <td className="border p-2">{property.propertyType}</td>
-                      <td className="border p-2">
-                        <div className="flex items-center gap-2 justify-between">
-                          {garment[garmentKey]}
-                          <GuntherTooltip content={property.description}>
+                return (
+                  <tr
+                    className="border"
+                    key={garmentKey}
+                  >
+                    <td className="border p-2">
+                      {property?.propertyType || garmentKey}
+                    </td>
+                    <td className="border p-2">
+                      <div className="flex items-center gap-2 justify-between">
+                        {garment[garmentKey]}
+                        {property &&
+                          (property.description ? (
+                            <Tooltip
+                              label={property.description}
+                              withArrow
+                            >
+                              <span className="inline-block cursor-pointer">
+                                <Info size={20} />
+                              </span>
+                            </Tooltip>
+                          ) : (
                             <Info size={20} />
-                          </GuntherTooltip>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                }
+                          ))}
+                      </div>
+                    </td>
+                  </tr>
+                );
               }
             })}
           </tbody>
         </table>
         <GarmentUploaderDisplay user={uploader ?? undefined} />
-        <GarmentSourceDisplay
-          source={garment.source}
-          sourceUser={sourceUser}
-        />
+        <GarmentSourceDisplay source={garment.source} />
       </div>
     </div>
   );
