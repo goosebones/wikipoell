@@ -3,6 +3,30 @@ import { initMongo } from "@/lib/mongodb";
 import Garment from "@/models/Garment";
 import { auth } from "@clerk/nextjs/server";
 
+/**
+ * Accept string | string[] | null from clients.
+ * - Trims strings; drops empty entries from arrays.
+ * - Single value after cleanup → string (matches legacy documents).
+ * - Multiple values → string[].
+ */
+function normalizeProcedure(procedure) {
+  if (procedure == null || procedure === "") return null;
+  if (typeof procedure === "string") {
+    const t = procedure.trim();
+    return t.length ? t : null;
+  }
+  if (Array.isArray(procedure)) {
+    const cleaned = procedure
+      .filter((p) => typeof p === "string")
+      .map((p) => p.trim())
+      .filter((p) => p.length > 0);
+    if (cleaned.length === 0) return null;
+    if (cleaned.length === 1) return cleaned[0];
+    return cleaned;
+  }
+  return null;
+}
+
 export async function POST(request) {
   const { isAuthenticated } = await auth();
   if (!isAuthenticated) {
@@ -86,7 +110,7 @@ export async function POST(request) {
       category: category ?? null,
       type: type ?? null,
       gender: gender ?? null,
-      procedure: procedure ?? null,
+      procedure: normalizeProcedure(procedure),
       material: material ?? null,
       process: process ?? null,
       color: color ?? null,

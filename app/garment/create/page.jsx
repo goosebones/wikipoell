@@ -12,6 +12,7 @@ import {
   Box,
   TextInput,
   Select,
+  MultiSelect,
   Button,
   Autocomplete,
 } from "@mantine/core";
@@ -184,7 +185,7 @@ export default function GarmentCreatePage() {
         />
       </Box>
 
-      {/* Special procedure selection TODO ability to add multiple */}
+      {/* Procedures: one or more (stored as string if single, string[] if multiple) */}
       <Box py="sm">
         <Title
           order={3}
@@ -192,17 +193,26 @@ export default function GarmentCreatePage() {
         >
           Procedures
         </Title>
-        <Select
-          placeholder="Select procedure"
+        <MultiSelect
+          placeholder="Select procedure(s)"
           data={properties
             .filter((p) => p.garmentKey === "procedure")
             .map((p) => ({
               value: p.garmentValue,
               label: p.description ?? p.garmentValue,
             }))}
-          value={garmentData.procedure}
+          value={
+            Array.isArray(garmentData.procedure)
+              ? garmentData.procedure
+              : garmentData.procedure
+                ? [garmentData.procedure]
+                : []
+          }
           searchable
-          onChange={(v) => setGarmentDataField("procedure", v)}
+          clearable
+          onChange={(v) =>
+            setGarmentDataField("procedure", v.length === 0 ? undefined : v)
+          }
         />
       </Box>
 

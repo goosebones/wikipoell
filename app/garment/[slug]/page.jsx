@@ -55,36 +55,64 @@ export default async function GarmentPage({ params }) {
         <table className="w-full mt-4">
           <tbody>
             {orderedGarmentPropertyList.map((garmentKey) => {
-              if (garmentKey in garment) {
-                const property = properties.find(
-                  (p) =>
-                    p.garmentKey === garmentKey &&
-                    p.garmentValue === garment[garmentKey],
-                );
+              if (garmentKey in garment && !!garment[garmentKey]) {
+                let items = [];
+                if (Array.isArray(garment[garmentKey])) {
+                  items = garment[garmentKey].map((item) => {
+                    return {
+                      value: item,
+                      label:
+                        properties.find(
+                          (p) =>
+                            p.garmentKey === garmentKey &&
+                            p.garmentValue === item,
+                        )?.description || item,
+                    };
+                  });
+                } else {
+                  items = [
+                    {
+                      value: garment[garmentKey],
+                      label:
+                        properties.find(
+                          (p) =>
+                            p.garmentKey === garmentKey &&
+                            p.garmentValue === garment[garmentKey],
+                        )?.description || garment[garmentKey],
+                    },
+                  ];
+                }
+
+                const propertyType = properties.find(
+                  (p) => p.garmentKey === items[0].value,
+                )?.propertyType;
                 return (
                   <tr
                     className="border"
                     key={garmentKey}
                   >
                     <td className="border p-2">
-                      {property?.propertyType || formatGarmentKey(garmentKey)}
+                      {propertyType || formatGarmentKey(garmentKey)}
                     </td>
                     <td className="border p-2">
-                      <div className="flex items-center gap-2 justify-between">
-                        {garment[garmentKey]}
-                        {property &&
-                          (property.description ? (
+                      <div className="flex flex-col">
+                        {items.map((item) => (
+                          <div
+                            key={item.value}
+                            className="flex items-center gap-2"
+                          >
+                            <span>{item.value}</span>
                             <Tooltip
-                              label={property.description}
+                              label={item.label}
                               withArrow
                             >
                               <span className="inline-block cursor-pointer">
-                                <Info size={20} />
+                                <Info size={16} />
                               </span>
                             </Tooltip>
-                          ) : (
-                            <Info size={20} />
-                          ))}
+                            <br />
+                          </div>
+                        ))}
                       </div>
                     </td>
                   </tr>
