@@ -54,13 +54,6 @@ export async function POST(request) {
       source,
     } = body || {};
 
-    if (!imageGroupId) {
-      return NextResponse.json(
-        { error: "imageGroupId is required" },
-        { status: 400 },
-      );
-    }
-
     const imageList = Array.isArray(images)
       ? images
           .map((item) =>

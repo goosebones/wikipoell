@@ -12,10 +12,7 @@ function procedureValidator(value) {
 
 const GarmentSchema = new mongoose.Schema(
   {
-    imageGroupId: {
-      type: String,
-      required: true,
-    },
+    imageGroupId: String,
     category: String,
     type: String,
     gender: String,
