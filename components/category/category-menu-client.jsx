@@ -106,14 +106,14 @@ export default function CategoriesMenuClient({ categoryTree, className }) {
           <CategoryLink
             category={categoryTree}
             categoryName="All Categories"
-            onSelect={() => setRootOpen(false)}
+            // onSelect={() => setRootOpen(false)}
             isRoot={true}
           />
           {categoryTree.map((category) => (
             <CategoryCollapsible
               key={category._id}
               category={category}
-              onSelect={() => setRootOpen(false)}
+              // onSelect={() => setRootOpen(false)}
             />
           ))}
         </div>

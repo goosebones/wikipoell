@@ -1,105 +1,46 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Collapse, UnstyledButton, Checkbox } from "@mantine/core";
+import {
+  MultiSelect,
+  Button,
+  SimpleGrid,
+  Collapse,
+  UnstyledButton,
+} from "@mantine/core";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { XIcon } from "lucide-react";
 
 import { useProperties } from "@/components/context/property-context-provider";
 
 function buildFilterMap(properties) {
-  // {
-  //   propertyType,
-  //   garmentKey,
-  //   options: [
-  //     {optionName, optionDescription }
-  //   ]
-  // }
   return properties.reduce((acc, prop) => {
-    if (acc[prop.garmentKey]) {
-      acc[prop.garmentKey].options.push(prop);
-    } else {
+    if (!acc[prop.garmentKey]) {
       acc[prop.garmentKey] = {
         propertyType: prop.propertyType,
         garmentKey: prop.garmentKey,
-        options: [prop],
+        options: [],
       };
     }
+
+    const optionLabel = prop.description ?? prop.garmentValue;
+    const hasOption = acc[prop.garmentKey].options.some(
+      (option) => option.value === prop.garmentValue,
+    );
+
+    if (!hasOption) {
+      acc[prop.garmentKey].options.push({
+        value: prop.garmentValue,
+        label: optionLabel,
+      });
+    }
+
     return acc;
   }, {});
 }
 
-function FilterItem({
-  propertyType,
-  garmentKey,
-  filterOptions,
-  selectedGarmentValues,
-  onToggle,
-  onClear,
-  isActive,
-}) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div>
-      <h3
-        onClick={() => setIsOpen(!isOpen)}
-        style={{ cursor: "pointer" }}
-        className={`flex items-center w-full ${isActive ? "bg-accent text-accent-foreground" : ""}`}
-      >
-        {propertyType}
-        <div className="ml-2">
-          {selectedGarmentValues.length > 0 &&
-            `(${selectedGarmentValues.length})`}
-        </div>
-        {selectedGarmentValues.length > 0 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Prevents opening/closing the section when clearing
-              onClear(garmentKey);
-            }}
-            className="ml-2"
-          >
-            <XIcon />
-          </button>
-        )}
-        <div className="flex-1"></div>
-        {isOpen ? (
-          <ChevronDownIcon className="size-4" />
-        ) : (
-          <ChevronRightIcon className="size-4" />
-        )}
-      </h3>
-      {isOpen && (
-        <div>
-          {filterOptions.map((option) => {
-            const isChecked = selectedGarmentValues.includes(
-              option.garmentValue,
-            );
-            return (
-              <div
-                key={option._id}
-                className="ml-2 flex items-center gap-2"
-              >
-                <Checkbox
-                  id={`${propertyType}-${option._id}`}
-                  checked={isChecked}
-                  onChange={() => {
-                    onToggle(garmentKey, option.garmentValue, isChecked);
-                  }}
-                  label={option.description || option.garmentValue}
-                />
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function FilterMenuClient() {
-  const [rootOpen, setRootOpen] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -115,56 +56,68 @@ export default function FilterMenuClient() {
     return result;
   }, [filterMap, searchParams]);
 
-  const updateQueryParams = useCallback(
-    (garmentKey, garmentValue, currentlyChecked) => {
+  const setFilterValues = useCallback(
+    (garmentKey, selectedValues) => {
       const params = new URLSearchParams(searchParams.toString());
-      if (currentlyChecked) {
-        params.delete(garmentKey, garmentValue);
-      } else {
-        params.append(garmentKey, garmentValue);
-      }
+      params.delete(garmentKey);
+      selectedValues.forEach((value) => params.append(garmentKey, value));
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     },
     [pathname, router, searchParams],
   );
 
-  const clearFilter = useCallback(
-    (garmentKey) => {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete(garmentKey);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    },
-    [pathname, router, searchParams],
+  const clearAllFilters = useCallback(() => {
+    router.replace(pathname, { scroll: false });
+  }, [pathname, router]);
+
+  const hasActiveFilters = useMemo(
+    () =>
+      Object.values(selectedBygarmentKey).some(
+        (selectedValues) => selectedValues.length > 0,
+      ),
+    [selectedBygarmentKey],
   );
 
   return (
-    <div>
-      <UnstyledButton
-        className={`flex items-center justify-between w-full text-lg font-semibold transition-colors cursor-pointer hover:bg-accent hover:text-accent-foreground p-2 rounded ${rootOpen ? "bg-accent text-accent-foreground" : ""}`}
-        onClick={() => setRootOpen((o) => !o)}
-      >
-        Filters
-        {rootOpen ? (
-          <ChevronDownIcon className="size-5" />
-        ) : (
-          <ChevronRightIcon className="size-5" />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <UnstyledButton
+          className="flex items-center gap-2 text-lg font-semibold"
+          onClick={() => setFiltersOpen((open) => !open)}
+        >
+          <span>Filters</span>
+          {filtersOpen ? (
+            <ChevronDownIcon className="size-5" />
+          ) : (
+            <ChevronRightIcon className="size-5" />
+          )}
+        </UnstyledButton>
+        {hasActiveFilters && (
+          <Button
+            size="compact-xs"
+            variant="subtle"
+            onClick={clearAllFilters}
+          >
+            Clear all
+          </Button>
         )}
-      </UnstyledButton>
-      <Collapse in={rootOpen}>
-        <div className="pl-4">
+      </div>
+
+      <Collapse in={filtersOpen}>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
           {Object.entries(filterMap).map(([garmentKey, filterInfo]) => (
-            <FilterItem
+            <MultiSelect
               key={garmentKey}
-              propertyType={filterInfo.propertyType}
-              garmentKey={garmentKey}
-              filterOptions={filterInfo.options}
-              selectedGarmentValues={selectedBygarmentKey[garmentKey] || []}
-              isActive={selectedBygarmentKey[garmentKey]?.length > 0}
-              onToggle={updateQueryParams}
-              onClear={clearFilter}
+              label={filterInfo.propertyType}
+              placeholder={`Select ${filterInfo.propertyType.toLowerCase()}`}
+              data={filterInfo.options}
+              value={selectedBygarmentKey[garmentKey] || []}
+              searchable
+              clearable
+              onChange={(values) => setFilterValues(garmentKey, values)}
             />
           ))}
-        </div>
+        </SimpleGrid>
       </Collapse>
     </div>
   );
