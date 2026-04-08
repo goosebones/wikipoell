@@ -8,8 +8,10 @@ import {
   UserButton,
   useUser,
 } from "@clerk/nextjs";
-import { Button as MantineButton } from "@mantine/core";
 import { CircleUserIcon } from "lucide-react";
+
+const authTriggerClassName =
+  "inline-flex items-center rounded px-2 py-1 text-xs font-medium text-black hover:bg-gray-100";
 
 export default function HeaderAuth() {
   const { user } = useUser();
@@ -18,20 +20,20 @@ export default function HeaderAuth() {
     <>
       <SignedOut>
         <SignInButton>
-          <MantineButton
-            size="compact-xs"
-            variant="transparent"
+          <button
+            type="button"
+            className={authTriggerClassName}
           >
             Log In
-          </MantineButton>
+          </button>
         </SignInButton>
         <SignUpButton>
-          <MantineButton
-            size="compact-xs"
-            variant="transparent"
+          <button
+            type="button"
+            className={authTriggerClassName}
           >
             Sign Up
-          </MantineButton>
+          </button>
         </SignUpButton>
       </SignedOut>
       <SignedIn>
