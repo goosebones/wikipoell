@@ -9,7 +9,7 @@ import { getUserByClerkId } from "@/lib/users";
 import {
   GarmentUploaderDisplay,
   GarmentSourceDisplay,
-} from "@/components/garment-owner-display";
+} from "@/components/garment/garment-owner-display";
 import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
 
 export default async function GarmentPage({ params }) {

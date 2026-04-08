@@ -21,7 +21,7 @@ export default function SidebarMenu({ children }) {
     <SidebarContext.Provider value={{ closeSidebar: handleCategorySelect }}>
       <MenuIcon onClick={() => setIsOpen(!isOpen)} />
       {isOpen && (
-        <div className="absolute top-0 left-0 w-full h-full bg-white z-50">
+        <div className="fixed inset-0 bg-white z-9999 overflow-y-auto">
           <Flex
             justify="end"
             align="center"

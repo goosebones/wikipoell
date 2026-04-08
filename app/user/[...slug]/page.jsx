@@ -1,18 +1,11 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 
-import {
-  Container,
-  Title,
-  Center,
-  Flex,
-  Divider,
-  SimpleGrid,
-} from "@mantine/core";
+import { Container, Title, Center, Flex, Divider } from "@mantine/core";
 
 import { getUserByUsername } from "@/lib/users";
 import { getGarmentsByUserId } from "@/lib/garments";
-import GarmentCard from "@/components/garment-card";
+import GarmentCardList from "@/components/garment/garment-card-list";
 
 export default async function UserProfilePage({ params }) {
   const { slug } = await params;
@@ -56,21 +49,7 @@ export default async function UserProfilePage({ params }) {
         Uploaded garments
       </Title>
 
-      {garments.length > 0 ? (
-        <SimpleGrid
-          cols={2}
-          className="mb-10"
-        >
-          {garments.map((garment) => (
-            <GarmentCard
-              key={garment._id}
-              garment={garment}
-            />
-          ))}
-        </SimpleGrid>
-      ) : (
-        <p className="text-muted-foreground">No garments uploaded yet.</p>
-      )}
+      <GarmentCardList garments={garments} />
     </Container>
   );
 }
