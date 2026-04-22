@@ -1,5 +1,5 @@
 import { Info } from "lucide-react";
-import { getGarmentById } from "@/lib/garments";
+import { getGarmentById, getSimilarGarments } from "@/lib/garments";
 import { notFound } from "next/navigation";
 import ImageCarousel from "@/components/image-carousel";
 import { getGarmentCode, getOrderedGarmentPropertyList } from "@/lib/garments";
@@ -11,6 +11,7 @@ import {
   GarmentSourceDisplay,
 } from "@/components/garment/garment-owner-display";
 import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
+import GarmentCardList from "@/components/garment/garment-card-list";
 
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
@@ -20,11 +21,13 @@ export default async function GarmentPage({ params }) {
     notFound();
   }
 
-  const uploader = await getUserByClerkId(garment.uploadedByUserId);
-
   const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
     getGarmentCode(garment);
-  const properties = await getProperties();
+  const [uploader, properties, similarGarments] = await Promise.all([
+    getUserByClerkId(garment.uploadedByUserId),
+    getProperties(),
+    getSimilarGarments(garment, { limit: 10 }),
+  ]);
   const orderedGarmentPropertyList = getOrderedGarmentPropertyList();
 
   const formatGarmentKey = (key) =>
@@ -123,6 +126,13 @@ export default async function GarmentPage({ params }) {
         </table>
         <GarmentUploaderDisplay user={uploader ?? undefined} />
         <GarmentSourceDisplay source={garment.source} />
+
+        {similarGarments.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-3">Similar Garments</h2>
+            <GarmentCardList garments={similarGarments} />
+          </div>
+        )}
       </div>
     </div>
   );
