@@ -39,7 +39,7 @@ export default function AppShellLayout({ categories, children }) {
     [categories],
   );
 
-  const [opened, { toggle }] = useDisclosure(false);
+  const [opened, { toggle, close }] = useDisclosure(false);
 
   return (
     <AppShell
@@ -56,10 +56,14 @@ export default function AppShellLayout({ categories, children }) {
           direction="column"
           className="bg-white"
         >
-          <UploadGarmentLink className="mb-6" />
+          <UploadGarmentLink
+            className="mb-6"
+            onNavigate={close}
+          />
           <CategoriesMenuClient
             categoryTree={categoryTree}
             className="mb-6"
+            onNavigate={close}
           />
         </Flex>
       </AppShell.Navbar>

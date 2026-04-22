@@ -320,7 +320,7 @@ export default function GarmentCreatePage() {
         />
       </Box>
 
-      {/* Source (optional) TODO add option to choose me (current user) */}
+      {/* Source (optional) */}
       <Box py="sm">
         <Title
           order={3}

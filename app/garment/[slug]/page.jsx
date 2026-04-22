@@ -112,7 +112,6 @@ export default async function GarmentPage({ params }) {
                             className="flex items-center gap-2"
                           >
                             <span>{item.value}</span>
-                            {/* TODO get tooltip to work on mobile */}
                             <Tooltip
                               label={item.label}
                               withArrow

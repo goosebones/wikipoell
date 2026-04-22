@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Collapse, UnstyledButton } from "@mantine/core";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
-import { useSidebar } from "../sidebar-menu";
 
 function CategoryLink({ category, categoryName, onSelect, isRoot }) {
   const pathname = usePathname();
-  const sidebar = useSidebar();
   const href = isRoot
     ? "/category"
     : `/category/${category._id.split(".").join("/")}`;
@@ -17,7 +15,6 @@ function CategoryLink({ category, categoryName, onSelect, isRoot }) {
 
   const handleClick = () => {
     onSelect?.();
-    sidebar?.closeSidebar?.();
   };
 
   return (
@@ -85,7 +82,11 @@ function CategoryCollapsible({ category, onSelect }) {
   );
 }
 
-export default function CategoriesMenuClient({ categoryTree, className }) {
+export default function CategoriesMenuClient({
+  categoryTree,
+  className,
+  onNavigate,
+}) {
   const [rootOpen, setRootOpen] = useState(false);
 
   return (
@@ -106,14 +107,14 @@ export default function CategoriesMenuClient({ categoryTree, className }) {
           <CategoryLink
             category={categoryTree}
             categoryName="All Categories"
-            // onSelect={() => setRootOpen(false)}
+            onSelect={onNavigate}
             isRoot={true}
           />
           {categoryTree.map((category) => (
             <CategoryCollapsible
               key={category._id}
               category={category}
-              // onSelect={() => setRootOpen(false)}
+              onSelect={onNavigate}
             />
           ))}
         </div>

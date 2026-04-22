@@ -2,14 +2,11 @@
 
 import Link from "next/link";
 import { ChevronRightIcon } from "lucide-react";
-import { useSidebar } from "./sidebar-menu";
 import { cn } from "@/styles/lib/utils";
 
-export default function UploadGarmentLink({ className }) {
-  const sidebar = useSidebar();
-
+export default function UploadGarmentLink({ className, onNavigate }) {
   const handleClick = () => {
-    sidebar?.closeSidebar?.();
+    onNavigate?.();
   };
 
   return (
