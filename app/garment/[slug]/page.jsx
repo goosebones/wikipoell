@@ -6,6 +6,7 @@ import { getGarmentCode, getOrderedGarmentPropertyList } from "@/lib/garments";
 import { getProperties } from "@/lib/properties";
 import { Tooltip } from "@mantine/core";
 import { getUserByClerkId } from "@/lib/users";
+import Link from "next/link";
 import {
   GarmentUploaderDisplay,
   GarmentSourceDisplay,
@@ -38,6 +39,12 @@ export default async function GarmentPage({ params }) {
       .filter(Boolean)
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+
+  const getBrowseHref = (garmentKey, garmentValue) => {
+    const params = new URLSearchParams();
+    params.append(garmentKey, garmentValue);
+    return `/category?${params.toString()}`;
+  };
 
   return (
     <div>
@@ -105,6 +112,7 @@ export default async function GarmentPage({ params }) {
                             className="flex items-center gap-2"
                           >
                             <span>{item.value}</span>
+                            {/* TODO get tooltip to work on mobile */}
                             <Tooltip
                               label={item.label}
                               withArrow
@@ -113,6 +121,15 @@ export default async function GarmentPage({ params }) {
                                 <Info size={16} />
                               </span>
                             </Tooltip>
+                            <div className="flex-1 flex justify-end">
+                              <Link
+                                href={getBrowseHref(garmentKey, item.value)}
+                                className="text-xs underline text-muted-foreground hover:text-foreground"
+                              >
+                                Browse
+                              </Link>
+                            </div>
+
                             <br />
                           </div>
                         ))}
