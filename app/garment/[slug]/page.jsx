@@ -116,6 +116,9 @@ export default async function GarmentPage({ params }) {
                             <Tooltip
                               label={item.label}
                               withArrow
+                              events={{ hover: true, focus: true, touch: true }}
+                              openDelay={100}
+                              closeDelay={150}
                             >
                               <span className="inline-block cursor-pointer">
                                 <Info size={16} />
