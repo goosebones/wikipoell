@@ -3,9 +3,8 @@
 import {
   SignInButton,
   SignUpButton,
-  SignedIn,
-  SignedOut,
   UserButton,
+  useAuth,
   useUser,
 } from "@clerk/nextjs";
 import { CircleUserIcon } from "lucide-react";
@@ -14,11 +13,31 @@ const authTriggerClassName =
   "inline-flex items-center rounded px-2 py-1 text-xs font-medium text-black hover:bg-gray-100";
 
 export default function HeaderAuth() {
+  const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
-  return (
-    <>
-      <SignedOut>
+  if (!isLoaded) {
+    return (
+      <div
+        className="flex justify-end gap-1"
+        aria-busy="true"
+        aria-label="Account"
+      >
+        <span
+          className="h-7 w-14 shrink-0 rounded"
+          aria-hidden
+        />
+        <span
+          className="h-7 w-16 shrink-0 rounded"
+          aria-hidden
+        />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <>
         <SignInButton>
           <button
             type="button"
@@ -35,22 +54,23 @@ export default function HeaderAuth() {
             Sign Up
           </button>
         </SignUpButton>
-      </SignedOut>
-      <SignedIn>
-        <UserButton userProfileMode="modal">
-          <UserButton.MenuItems>
-            {user && (
-              <UserButton.Link
-                label="Profile"
-                labelIcon={<CircleUserIcon className="size-4" />}
-                href={`/user/${user.username}`}
-              />
-            )}
-            <UserButton.Action label="manageAccount" />
-            <UserButton.Action label="signOut" />
-          </UserButton.MenuItems>
-        </UserButton>
-      </SignedIn>
-    </>
+      </>
+    );
+  }
+
+  return (
+    <UserButton userProfileMode="modal">
+      <UserButton.MenuItems>
+        {user?.username ? (
+          <UserButton.Link
+            label="Profile"
+            labelIcon={<CircleUserIcon className="size-4" />}
+            href={`/user/${user.username}`}
+          />
+        ) : null}
+        <UserButton.Action label="manageAccount" />
+        <UserButton.Action label="signOut" />
+      </UserButton.MenuItems>
+    </UserButton>
   );
 }

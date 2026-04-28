@@ -40,7 +40,7 @@ function buildFilterMap(properties) {
 }
 
 export default function FilterMenuClient() {
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -104,7 +104,10 @@ export default function FilterMenuClient() {
       </div>
 
       <Collapse in={filtersOpen}>
-        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="sm">
+        <SimpleGrid
+          cols={{ base: 1, sm: 2, md: 3 }}
+          spacing="sm"
+        >
           {Object.entries(filterMap).map(([garmentKey, filterInfo]) => (
             <MultiSelect
               key={garmentKey}

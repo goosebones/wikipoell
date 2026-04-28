@@ -8,6 +8,7 @@ import { useDisclosure } from "@mantine/hooks";
 import UploadGarmentLink from "@/components/upload-garment-link";
 import HeaderAuth from "@/components/header-auth";
 import CategoriesMenuClient from "@/components/category/category-menu-client";
+import CategoriesMenuDesktopDropdown from "@/components/category/category-menu-desktop-dropdown";
 
 function buildCategoryTree(categories) {
   const categoryMap = {};
@@ -44,11 +45,12 @@ export default function AppShellLayout({ categories, children }) {
   return (
     <AppShell
       padding={0}
-      header={{ height: 56 }}
+      className="min-h-dvh"
+      header={{ height: { base: 56, sm: 96 } }}
       navbar={{
         width: 280,
         breakpoint: "sm",
-        collapsed: { desktop: false, mobile: !opened },
+        collapsed: { desktop: true, mobile: !opened },
       }}
     >
       <AppShell.Navbar p="xs">
@@ -69,26 +71,40 @@ export default function AppShellLayout({ categories, children }) {
       </AppShell.Navbar>
 
       <AppShell.Header p={0}>
-        <div className="grid grid-cols-3 items-center w-full h-full bg-white px-2">
-          <div className="flex items-center">
-            <Burger
-              opened={opened}
-              onClick={toggle}
-              hiddenFrom="sm"
-              size="sm"
-              aria-label="Toggle sidebar"
-            />
+        <div className="w-full h-full bg-white">
+          <div className="grid grid-cols-3 items-center h-14 px-2 border-b border-black/10">
+            <div className="flex items-center">
+              <Burger
+                opened={opened}
+                onClick={toggle}
+                hiddenFrom="sm"
+                size="sm"
+                aria-label="Toggle sidebar"
+              />
+            </div>
+            <h1 className="text-2xl font-bold text-center">
+              <Link href="/">Wikipoell</Link>
+            </h1>
+            <div className="flex justify-end">
+              <HeaderAuth />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-center">
-            <Link href="/">Wikipoell</Link>
-          </h1>
-          <div className="flex justify-end">
-            <HeaderAuth />
+
+          <div className="hidden md:flex h-10 items-center justify-center gap-12 px-4">
+            <Link
+              href="/garment/create"
+              className="inline-flex items-center gap-1  tracking-wide"
+            >
+              Upload
+            </Link>
+            <CategoriesMenuDesktopDropdown categoryTree={categoryTree} />
           </div>
         </div>
       </AppShell.Header>
 
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main className="flex min-h-0 flex-1 flex-col">
+        {children}
+      </AppShell.Main>
     </AppShell>
   );
 }
