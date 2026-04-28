@@ -12,6 +12,7 @@ import {
   Box,
   TextInput,
   Select,
+  NativeSelect,
   MultiSelect,
   Button,
   Autocomplete,
@@ -295,7 +296,7 @@ export default function GarmentCreatePage() {
           data={properties
             .filter((p) => p.garmentKey === "model")
             .map((p) => `${p.garmentValue} - ${p.propertyName}`)}
-          value={garmentData.model}
+          value={garmentData.model ?? ""}
           onChange={(v) => {
             const garmentValue = v.split(" - ")[0];
             const property = properties.find(
@@ -315,7 +316,7 @@ export default function GarmentCreatePage() {
         <TextInput
           label="Title"
           placeholder="Scarstitch Leather Jacket"
-          value={garmentData.title}
+          value={garmentData.title ?? ""}
           onChange={(e) => setGarmentDataField("title", e.currentTarget.value)}
         />
       </Box>
@@ -332,15 +333,17 @@ export default function GarmentCreatePage() {
           Where this garment is from — e.g. your own, a store, Instagram, or
           somewhere else online.
         </p>
-        <Select
-          placeholder="Select source"
+        <NativeSelect
           className="mb-4"
           data={[
+            { value: "", label: "Select source" },
             { value: "me", label: "This is my own garment" },
             { value: "external", label: "From someone/somewhere else" },
           ]}
-          value={garmentData.source?.type ?? null}
-          onChange={(v) => setSourceField("type", v ?? undefined)}
+          value={garmentData.source?.type ?? ""}
+          onChange={(e) =>
+            setSourceField("type", e.currentTarget.value || undefined)
+          }
         />
         {garmentData.source?.type === "external" && (
           <>
