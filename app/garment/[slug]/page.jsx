@@ -13,20 +13,27 @@ import {
 } from "@/components/garment/garment-owner-display";
 import { CategoryBreadcrumb } from "@/components/category/category-breadcrumb";
 import GarmentCardList from "@/components/garment/garment-card-list";
+import EditGarmentModal from "@/components/garment/edit-garment-modal";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
 
-  const garment = await getGarmentById(slug);
+  const [garment, { userId }, properties] = await Promise.all([
+    getGarmentById(slug),
+    auth(),
+    getProperties(),
+  ]);
   if (!garment) {
     notFound();
   }
 
+  const isOwner = !!userId && garment.uploadedByUserId === userId;
+
   const { line1: garmentCodeLine1, line2: garmentCodeLine2 } =
     getGarmentCode(garment);
-  const [uploader, properties, similarGarments] = await Promise.all([
+  const [uploader, similarGarments] = await Promise.all([
     getUserByClerkId(garment.uploadedByUserId),
-    getProperties(),
     getSimilarGarments(garment, { limit: 10 }),
   ]);
   const orderedGarmentPropertyList = getOrderedGarmentPropertyList();
@@ -62,7 +69,10 @@ export default async function GarmentPage({ params }) {
           categoryId={garment.category}
         />
 
-        <table className="w-full mt-4">
+        <div className="flex justify-end mt-4 mb-1">
+          {isOwner && <EditGarmentModal garment={garment} />}
+        </div>
+        <table className="w-full">
           <tbody>
             {orderedGarmentPropertyList.map((garmentKey) => {
               if (garmentKey in garment && !!garment[garmentKey]) {

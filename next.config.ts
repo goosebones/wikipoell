@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ["local.wikipoell.com"],
   images: {
     unoptimized: true,
     remotePatterns: [

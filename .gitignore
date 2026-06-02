@@ -46,3 +46,4 @@ next-env.d.ts
 
 # project specific stuff
 /bulk_upload
+certificates

@@ -34,6 +34,11 @@ const GarmentSchema = new mongoose.Schema(
         url: { type: String, required: true },
       },
     ],
+    status: {
+      type: String,
+      enum: ["pending", "published", "rejected"],
+      default: "pending",
+    },
     uploadedByUserId: {
       type: String,
       required: true,

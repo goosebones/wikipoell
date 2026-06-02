@@ -100,6 +100,7 @@ export async function POST(request) {
 
     const doc = await Garment.create({
       imageGroupId,
+      status: "pending",
       category: category ?? null,
       type: type ?? null,
       gender: gender ?? null,
