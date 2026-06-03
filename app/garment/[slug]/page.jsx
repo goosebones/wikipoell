@@ -19,11 +19,10 @@ import { auth } from "@clerk/nextjs/server";
 export default async function GarmentPage({ params }) {
   const { slug } = await params;
 
-  const [garment, { userId }, properties] = await Promise.all([
-    getGarmentById(slug),
-    auth(),
-    getProperties(),
-  ]);
+  const [{ userId }, properties] = await Promise.all([auth(), getProperties()]);
+  const garment = await getGarmentById(slug, {
+    viewerUserId: userId ?? undefined,
+  });
   if (!garment) {
     notFound();
   }

@@ -79,6 +79,7 @@ export async function GET(request) {
         .limit(60)
         .lean(),
       Garment.find({
+        status: "published",
         $or: SEARCHABLE_GARMENT_KEYS.map((key) => ({ [key]: regex })),
       })
         .sort({ createdAt: -1 })
