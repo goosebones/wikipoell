@@ -5,10 +5,11 @@
  * and uses them as few-shot examples for each review.
  *
  * Usage:
- *   node scripts/agent-review.js [--limit=10] [--auto-apply-corrections]
+ *   node scripts/agent-review.js [--limit=10] [--auto-apply-corrections] [--deterministic]
  *
  * --limit=N    number of pending garments to process (default: 10)
  * --auto-apply-corrections      auto-apply corrections to MongoDB for garments with confidence >= 0.8
+ * --deterministic               skip the agent; apply deterministic rules only (no API cost)
  *
  * Skips garments that already have any document in the agentproposals collection.
  */
@@ -21,11 +22,8 @@ if (!MONGODB_URL) {
   console.error("Missing MONGODB_URL");
   process.exit(1);
 }
-if (!ANTHROPIC_API_KEY) {
-  console.error("Missing ANTHROPIC_API_KEY");
-  process.exit(1);
-}
 
+const DETERMINISTIC = process.argv.includes("--deterministic");
 const AUTH_APPLY_CORRECTIONS = process.argv.includes(
   "--auto-apply-corrections",
 );
@@ -38,7 +36,9 @@ import { randomUUID } from "crypto";
 import { connect, model as _model, Schema, disconnect } from "mongoose";
 import Anthropic from "@anthropic-ai/sdk";
 
-const anthropicClient = new Anthropic({ apiKey: ANTHROPIC_API_KEY });
+const anthropicClient = DETERMINISTIC
+  ? null
+  : new Anthropic({ apiKey: ANTHROPIC_API_KEY });
 
 // ---------------------------------------------------------------------------
 // Static context — categories and property values, will load from DB dynamically
@@ -56,14 +56,56 @@ function formatTitle(raw) {
     .trim()
     .replace(/\bO\.\s*DYED\b/gi, "Object Dyed") // O.DYED / O.Dyed / O. Dyed
     .replace(/\bO\.D\.\s*/gi, "Object Dyed ") // O.D.
+    .replace(/\bO\. D\.\s*/gi, "Object Dyed ") // O.D.
     .replace(/\bL\.\s+JACKET\b/gi, "Leather Jacket")
     .replace(/\bL\.\s+JKT\b/gi, "Leather Jacket")
     .replace(/\bJKT\b/gi, "Jacket")
     .replace(/\bH\.\s+NECK\b/gi, "High Neck")
+    .replace(/[,.]/g, "")
     .replace(/\s+/g, " ") // collapse any double spaces
     .trim()
     .toLowerCase()
     .replace(/(^|[\s\-.])\w/g, (m) => m.toUpperCase());
+}
+
+// ---------------------------------------------------------------------------
+// Deterministic proposal (no agent) — extend as more rules are added
+// ---------------------------------------------------------------------------
+function buildDeterministicProposal(garment) {
+  return {
+    title: formatTitle(garment.title) ?? garment.title,
+    category: garment.category ?? null,
+    type: garment.type ?? null,
+    gender: garment.gender ?? null,
+    model: garment.model ?? null,
+    procedure: garment.procedure ?? null,
+    material: garment.material ?? null,
+    process: garment.process ?? null,
+    color: garment.color ?? null,
+    confidence: 1,
+    notes: "Deterministic pass (no agent)",
+  };
+}
+
+function garmentBeforeSnapshot(garment) {
+  return {
+    title: garment.title,
+    category: garment.category,
+    type: garment.type,
+    gender: garment.gender,
+    model: garment.model,
+    procedure: garment.procedure,
+    material: garment.material,
+    process: garment.process,
+    color: garment.color,
+  };
+}
+
+function hasProposalChanges(before, proposal) {
+  return Object.keys(before).some(
+    (k) =>
+      JSON.stringify(before[k] ?? null) !== JSON.stringify(proposal[k] ?? null),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -286,41 +328,46 @@ async function main() {
   await connect(MONGODB_URL);
   console.log("Connected to MongoDB.\n");
 
-  // Load valid property values from DB
-  const PropModel = _model(
-    "Property",
-    new Schema({}, { strict: false }),
-    "properties",
-  );
-  const props = await PropModel.find({}).lean();
-  for (const p of props) {
-    if (!VALID_PROPERTIES[p.garmentKey]) VALID_PROPERTIES[p.garmentKey] = [];
-    VALID_PROPERTIES[p.garmentKey].push({
-      value: p.garmentValue,
-      description: p.description || p.garmentValue,
-    });
+  let examples = [];
+  if (!DETERMINISTIC) {
+    // Load valid property values from DB
+    const PropModel = _model(
+      "Property",
+      new Schema({}, { strict: false }),
+      "properties",
+    );
+    const props = await PropModel.find({}).lean();
+    for (const p of props) {
+      if (!VALID_PROPERTIES[p.garmentKey]) VALID_PROPERTIES[p.garmentKey] = [];
+      VALID_PROPERTIES[p.garmentKey].push({
+        value: p.garmentValue,
+        description: p.description || p.garmentValue,
+      });
+    }
+
+    // Load valid categories from DB
+    const CategoryModel = _model(
+      "Category",
+      new Schema({}, { strict: false }),
+      "categories",
+    );
+    const categories = await CategoryModel.find({}).lean();
+    VALID_CATEGORIES = categories.map((c) => c._id);
+
+    // Load correction examples from AgentCorrection collection
+    const AgentCorrectionModel = _model(
+      "AgentCorrection",
+      new Schema({}, { strict: false }),
+      "agentcorrections",
+    );
+    const corrections = await AgentCorrectionModel.find({}).lean();
+    examples = pickExamples(corrections);
+    console.log(
+      `Using ${examples.length} few-shot examples (${corrections.length} total corrections).\n`,
+    );
+  } else {
+    console.log("Deterministic mode — skipping agent (no API calls).\n");
   }
-
-  // Load valid categories from DB
-  const CategoryModel = _model(
-    "Category",
-    new Schema({}, { strict: false }),
-    "categories",
-  );
-  const categories = await CategoryModel.find({}).lean();
-  VALID_CATEGORIES = categories.map((c) => c._id);
-
-  // Load correction examples from AgentCorrection collection
-  const AgentCorrectionModel = _model(
-    "AgentCorrection",
-    new Schema({}, { strict: false }),
-    "agentcorrections",
-  );
-  const corrections = await AgentCorrectionModel.find({}).lean();
-  const examples = pickExamples(corrections);
-  console.log(
-    `Using ${examples.length} few-shot examples (${corrections.length} total corrections).\n`,
-  );
 
   // Load pending garments without an existing proposal
   const AgentProposalModel = _model(
@@ -346,47 +393,53 @@ async function main() {
 
   const runId = randomUUID();
   const runAt = new Date();
-  console.log(`Run ID: ${runId}\n`);
+  const model = DETERMINISTIC ? "deterministic" : "claude-sonnet-4-6";
+  console.log(`Run ID: ${runId} (${model})\n`);
 
   const results = [];
   let autoApplied = 0;
+  let skippedNoChanges = 0;
 
   for (let i = 0; i < pending.length; i++) {
     const garment = pending[i];
     const num = `[${i + 1}]`;
     console.log(`${num} ${garment.title}`);
 
+    const before = garmentBeforeSnapshot(garment);
     let proposal;
-    try {
-      proposal = await reviewGarment(garment, examples);
-    } catch (err) {
-      console.error(`  ✗ Error: ${err.message}`);
-      results.push({
-        _id: String(garment._id),
-        title: garment.title,
-        error: err.message,
-      });
-      continue;
+
+    if (DETERMINISTIC) {
+      proposal = buildDeterministicProposal(garment);
+      if (!hasProposalChanges(before, proposal)) {
+        console.log("  — skipped (no deterministic changes)");
+        skippedNoChanges++;
+        console.log();
+        continue;
+      }
+    } else {
+      try {
+        proposal = await reviewGarment(garment, examples);
+      } catch (err) {
+        console.error(`  ✗ Error: ${err.message}`);
+        results.push({
+          _id: String(garment._id),
+          title: garment.title,
+          error: err.message,
+        });
+        continue;
+      }
+      // Always apply deterministic title formatting on top of agent output
+      proposal.title = formatTitle(garment.title);
     }
 
-    // Always apply deterministic title formatting
-    proposal.title = formatTitle(garment.title);
-
     console.log(`  confidence: ${proposal.confidence}`);
-    console.log(`  category: ${garment.category} → ${proposal.category}`);
-    if (proposal.notes) console.log(`  notes: ${proposal.notes}`);
-
-    const before = {
-      title: garment.title,
-      category: garment.category,
-      type: garment.type,
-      gender: garment.gender,
-      model: garment.model,
-      procedure: garment.procedure,
-      material: garment.material,
-      process: garment.process,
-      color: garment.color,
-    };
+    if (before.title !== proposal.title) {
+      console.log(`  title: ${before.title} → ${proposal.title}`);
+    }
+    if (!DETERMINISTIC) {
+      console.log(`  category: ${garment.category} → ${proposal.category}`);
+      if (proposal.notes) console.log(`  notes: ${proposal.notes}`);
+    }
 
     await AgentProposalModel.findOneAndUpdate(
       { garmentId: String(garment._id), runId },
@@ -394,7 +447,7 @@ async function main() {
         garmentId: String(garment._id),
         runId,
         runAt,
-        model: "claude-sonnet-4-6",
+        model,
         before,
         proposal,
         status: "pending",
@@ -411,14 +464,18 @@ async function main() {
       autoApplied++;
     }
 
-    // Brief pause to avoid rate limits
-    await new Promise((r) => setTimeout(r, 300));
+    if (!DETERMINISTIC) {
+      // Brief pause to avoid rate limits
+      await new Promise((r) => setTimeout(r, 300));
+    }
     console.log();
   }
 
   console.log(`\n--- Summary ---`);
   console.log(`Run ID     : ${runId}`);
+  console.log(`Mode       : ${model}`);
   console.log(`Processed  : ${results.length}`);
+  if (DETERMINISTIC) console.log(`Skipped (no changes): ${skippedNoChanges}`);
   if (AUTH_APPLY_CORRECTIONS)
     console.log(`Auto-applied (confidence >= 0.8): ${autoApplied}`);
 
