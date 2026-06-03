@@ -30,7 +30,7 @@ export default function AgentProposalCard({
     source,
   } = proposal;
   const { line1, line2 } = getGarmentCode(before);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(true);
   const [fields, setFields] = useState({
     ...proposed,
     procedure: Array.isArray(proposed.procedure)
