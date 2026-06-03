@@ -45,18 +45,6 @@ export default async function AdminPage({ searchParams }) {
         >
           {total} {statusFilter}
         </Badge>
-        <a
-          href="/admin/agent"
-          style={{ textDecoration: "none" }}
-        >
-          <Badge
-            variant="outline"
-            color="violet"
-            style={{ cursor: "pointer" }}
-          >
-            Agent Review
-          </Badge>
-        </a>
       </Group>
 
       <AdminFilters

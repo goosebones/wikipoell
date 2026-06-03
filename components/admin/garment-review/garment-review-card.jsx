@@ -14,7 +14,7 @@ import GarmentSourceLink from "@/components/admin/shared/garment-source-link";
 import UnknownPropertyBanner from "@/components/admin/shared/unknown-property-banner";
 import GarmentReviewActions from "@/components/admin/garment-review/garment-review-actions";
 import ImageLightboxModal from "@/components/admin/garment-review/image-lightbox-modal";
-import AddPropertyModal from "@/components/admin/garment-review/add-property-modal";
+import PropertyModal from "@/components/admin/shared/property-modal";
 
 export default function GarmentReviewCard({ garment, properties }) {
   const [localProperties, setLocalProperties] = useState(properties);
@@ -169,14 +169,14 @@ export default function GarmentReviewCard({ garment, properties }) {
         onClose={() => setLightboxUrl(null)}
       />
 
-      <AddPropertyModal
+      <PropertyModal
         opened={addModal.open}
         garmentKey={addModal.garmentKey}
         garmentValue={addModal.garmentValue}
         onClose={() =>
           setAddModal({ open: false, garmentKey: "", garmentValue: "" })
         }
-        onCreated={(property) =>
+        onSaved={(property) =>
           setLocalProperties((prev) => [...prev, property])
         }
       />

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Container, Title, Text } from "@mantine/core";
 import { getProperties } from "@/lib/properties";
 import { getCategories } from "@/lib/categories";
@@ -44,12 +43,6 @@ export default async function AgentReviewPage() {
       size="lg"
       py="md"
     >
-      <Link
-        href="/admin"
-        style={{ textDecoration: "none", display: "block" }}
-      >
-        ← Back to Admin
-      </Link>
       <Title mb={4}>Agent Review</Title>
       <Text
         size="sm"
