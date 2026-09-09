@@ -16,10 +16,22 @@ export async function POST(request) {
 
   try {
     await initMongo();
-    const { propertyType, propertyName, garmentKey, garmentValue, description } = await request.json();
+    const {
+      propertyType,
+      propertyName,
+      garmentKey,
+      garmentValue,
+      description,
+    } = await request.json();
 
     if (!propertyType || !propertyName || !garmentKey || !garmentValue) {
-      return NextResponse.json({ error: "propertyType, propertyName, garmentKey, and garmentValue are required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          error:
+            "propertyType, propertyName, garmentKey, and garmentValue are required",
+        },
+        { status: 400 },
+      );
     }
 
     const property = await Property.create({
@@ -31,9 +43,15 @@ export async function POST(request) {
       description: description || undefined,
     });
 
-    return NextResponse.json({ property: JSON.parse(JSON.stringify(property)) }, { status: 201 });
+    return NextResponse.json(
+      { property: JSON.parse(JSON.stringify(property)) },
+      { status: 201 },
+    );
   } catch (err) {
     console.error("Admin property create error:", err);
-    return NextResponse.json({ error: err.message || "Create failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Create failed" },
+      { status: 500 },
+    );
   }
 }

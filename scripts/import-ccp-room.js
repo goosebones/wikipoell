@@ -90,7 +90,7 @@ async function uploadToR2(buffer, key) {
       Key: key,
       Body: buffer,
       ContentType: "image/webp",
-    })
+    }),
   );
   return `${R2_BASE}/${key}`;
 }
@@ -103,7 +103,11 @@ function download(url) {
     const lib = url.startsWith("https") ? https : http;
     lib
       .get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
           return download(res.headers.location).then(resolve).catch(reject);
         }
         if (res.statusCode !== 200) {
@@ -134,7 +138,11 @@ const GarmentSchema = new mongoose.Schema(
     title: String,
     model: String,
     images: [{ url: { type: String, required: true } }],
-    status: { type: String, enum: ["pending", "published", "rejected"], default: "pending" },
+    status: {
+      type: String,
+      enum: ["pending", "published", "rejected"],
+      default: "pending",
+    },
     uploadedByUserId: String,
     source: {
       type: { type: String, enum: ["me", "external"] },
@@ -142,11 +150,12 @@ const GarmentSchema = new mongoose.Schema(
       url: String,
     },
   },
-  { strict: false, timestamps: true }
+  { strict: false, timestamps: true },
 );
 
 const Garment =
-  mongoose.models.Garment || mongoose.model("Garment", GarmentSchema, "garments");
+  mongoose.models.Garment ||
+  mongoose.model("Garment", GarmentSchema, "garments");
 
 // ---------------------------------------------------------------------------
 // Normalize procedure (string | string[] | null)
@@ -190,14 +199,18 @@ async function main() {
     const imageGroupId = crypto.randomUUID();
     const uploadedImages = [];
 
-    console.log(`[${gi + 1}/${garments.length}] ${g.title ?? "(no title)"} — ${g.images?.length ?? 0} image(s)`);
+    console.log(
+      `[${gi + 1}/${garments.length}] ${g.title ?? "(no title)"} — ${g.images?.length ?? 0} image(s)`,
+    );
 
     for (const img of g.images ?? []) {
       const imageId = crypto.randomUUID();
       const key = `${imageGroupId}/${imageId}.webp`;
 
       if (DRY_RUN) {
-        console.log(`  [dry-run] ${img.url.split("/").pop()} → ${R2_BASE}/${key}`);
+        console.log(
+          `  [dry-run] ${img.url.split("/").pop()} → ${R2_BASE}/${key}`,
+        );
         uploadedImages.push({ url: `${R2_BASE}/${key}` });
         continue;
       }

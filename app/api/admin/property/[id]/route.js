@@ -17,8 +17,13 @@ export async function PATCH(request, { params }) {
 
   try {
     const body = await request.json();
-    const { propertyType, propertyName, garmentKey, garmentValue, description } =
-      body;
+    const {
+      propertyType,
+      propertyName,
+      garmentKey,
+      garmentValue,
+      description,
+    } = body;
 
     if (!propertyType || !propertyName || !garmentKey || !garmentValue) {
       return NextResponse.json(

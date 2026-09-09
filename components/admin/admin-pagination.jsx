@@ -9,13 +9,14 @@ export default function AdminPagination({
   status,
   title,
   id,
+  basePath = "/admin",
 }) {
   const router = useRouter();
   const go = (p) => {
-    const params = new URLSearchParams({ status, page: p });
+    const params = new URLSearchParams({ status, page: String(p) });
     if (title) params.set("title", title);
     if (id) params.set("id", id);
-    router.push(`/admin?${params.toString()}`);
+    router.push(`${basePath}?${params.toString()}`);
   };
 
   const pageOptions = Array.from({ length: totalPages }, (_, i) => ({

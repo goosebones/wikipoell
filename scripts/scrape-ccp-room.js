@@ -50,20 +50,33 @@ function mapCategory(section, title) {
   }
 
   if (section === "clothes") {
-    if (t.includes("TROUSERS") || t.includes("PANTS")) return "bottoms.trousers";
+    if (t.includes("TROUSERS") || t.includes("PANTS"))
+      return "bottoms.trousers";
     if (t.includes("SHORTS")) return "bottoms.shorts";
     if (t.includes("SKIRT")) return "bottoms.skirts";
     if (t.includes("DENIM") || t.includes("JEANS")) return "bottoms.denim";
-    if (t.includes("SWEATPANTS") || t.includes("JOGGER")) return "bottoms.sweatpants";
+    if (t.includes("SWEATPANTS") || t.includes("JOGGER"))
+      return "bottoms.sweatpants";
     if (t.includes("DRESS")) return "tops.dresses";
-    if (t.includes("HOODIE") || t.includes("SWEATSHIRT")) return "tops.hoodiesAndSweatshirts";
-    if (t.includes("SWEATER") || t.includes("KNIT") || t.includes("KNITWEAR") || t.includes("PULLOVER"))
+    if (t.includes("HOODIE") || t.includes("SWEATSHIRT"))
+      return "tops.hoodiesAndSweatshirts";
+    if (
+      t.includes("SWEATER") ||
+      t.includes("KNIT") ||
+      t.includes("KNITWEAR") ||
+      t.includes("PULLOVER")
+    )
       return "tops.sweatersAndKnitwear";
-    if (t.includes("TANK") || t.includes("SLEEVELESS")) return "tops.tankTopsAndSleeveless";
+    if (t.includes("TANK") || t.includes("SLEEVELESS"))
+      return "tops.tankTopsAndSleeveless";
     if (t.includes("POLO")) return "tops.polos";
     if (t.includes("BLOUSE")) return "tops.blouses";
     if (t.includes("SHIRT")) return "tops.shirts";
-    if (t.includes("LONG SLEEVE") || t.includes("LS T-SHIRT") || t.includes("LS TSHIRT"))
+    if (
+      t.includes("LONG SLEEVE") ||
+      t.includes("LS T-SHIRT") ||
+      t.includes("LS TSHIRT")
+    )
       return "tops.longSleeveTshirts";
     if (t.includes("T-SHIRT") || t.includes("TSHIRT") || t.includes("TEE"))
       return "tops.shortSleeveTshirts";
@@ -87,13 +100,24 @@ function mapCategory(section, title) {
   }
 
   if (section === "accessories") {
-    if (t.includes("BAG") || t.includes("TOTE") || t.includes("BACKPACK") || t.includes("CLUTCH") || t.includes("POUCH"))
+    if (
+      t.includes("BAG") ||
+      t.includes("TOTE") ||
+      t.includes("BACKPACK") ||
+      t.includes("CLUTCH") ||
+      t.includes("POUCH")
+    )
       return "accessories.bags";
     if (t.includes("BELT")) return "accessories.belts";
     if (t.includes("GLOVE")) return "accessories.gloves";
     if (t.includes("SCARF") || t.includes("STOLE") || t.includes("WRAP"))
       return "accessories.scarves";
-    if (t.includes("HAT") || t.includes("CAP") || t.includes("BERET") || t.includes("BEANIE"))
+    if (
+      t.includes("HAT") ||
+      t.includes("CAP") ||
+      t.includes("BERET") ||
+      t.includes("BEANIE")
+    )
       return "accessories.hats";
     if (t.includes("TIE") || t.includes("NECKTIE")) return "accessories.ties";
     if (t.includes("SOCK")) return "accessories.socks";
@@ -103,7 +127,11 @@ function mapCategory(section, title) {
     if (t.includes("BRACELET") || t.includes("CUFF") || t.includes("BANGLE"))
       return "accessories.jewelry.bracelets";
     if (t.includes("EARRING")) return "accessories.jewelry.earrings";
-    if (t.includes("GLASSES") || t.includes("SUNGLASSES") || t.includes("EYEWEAR"))
+    if (
+      t.includes("GLASSES") ||
+      t.includes("SUNGLASSES") ||
+      t.includes("EYEWEAR")
+    )
       return "accessories.glasses";
     return "accessories";
   }
@@ -123,14 +151,48 @@ function parseArticle(article) {
   //   "LM/2638R-IN CORS-PTC/010"    → model=2638, proc=[R,IN], material=CORS, process=PTC
   //   "LM//2399 BIMS-PTC/12"        → double slash before model
   //   "OM/2734-IN XITCH/7"          → no process segment
-  const match = article.trim().match(
-    /^([A-Z])([MF])\/{1,2}([0-9]+)([A-Z]*)(?:-([A-Z/]+))?\s+([A-Z]+)(?:-([A-Z]+))?\/(.+?)\s*$/
-  );
-  if (!match) return { type: null, gender: null, model: null, procedure: null, material: null, process: null, color: null };
-  const [, type, gender, model, attachedProc, dashProc, material, process, color] = match;
+  const match = article
+    .trim()
+    .match(
+      /^([A-Z])([MF])\/{1,2}([0-9]+)([A-Z]*)(?:-([A-Z/]+))?\s+([A-Z]+)(?:-([A-Z]+))?\/(.+?)\s*$/,
+    );
+  if (!match)
+    return {
+      type: null,
+      gender: null,
+      model: null,
+      procedure: null,
+      material: null,
+      process: null,
+      color: null,
+    };
+  const [
+    ,
+    type,
+    gender,
+    model,
+    attachedProc,
+    dashProc,
+    material,
+    process,
+    color,
+  ] = match;
   const procedures = [attachedProc, dashProc].filter(Boolean);
-  const procedure = procedures.length === 0 ? null : procedures.length === 1 ? procedures[0] : procedures;
-  return { type, gender, model, procedure, material, process: process || null, color };
+  const procedure =
+    procedures.length === 0
+      ? null
+      : procedures.length === 1
+        ? procedures[0]
+        : procedures;
+  return {
+    type,
+    gender,
+    model,
+    procedure,
+    material,
+    process: process || null,
+    color,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -141,7 +203,11 @@ function fetch(url) {
   return new Promise((resolve, reject) => {
     https
       .get(url, { headers: { "User-Agent": "Mozilla/5.0" } }, (res) => {
-        if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        if (
+          res.statusCode >= 300 &&
+          res.statusCode < 400 &&
+          res.headers.location
+        ) {
           return fetch(res.headers.location).then(resolve).catch(reject);
         }
         const chunks = [];
@@ -165,7 +231,9 @@ function extractAttr(tag, name) {
 function parseSection(html, sectionId) {
   // Extract the section block — terminated by the next section or end of info__inner
   const sectionMatch = html.match(
-    new RegExp(`id="${sectionId}"[\\s\\S]*?(?=<div class="info__wrap" id="|<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/section>|$)`)
+    new RegExp(
+      `id="${sectionId}"[\\s\\S]*?(?=<div class="info__wrap" id="|<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/div>\\s*<\\/section>|$)`,
+    ),
   );
   if (!sectionMatch) return [];
 
@@ -201,11 +269,21 @@ function buildGarment(tag, section) {
     .filter(Boolean)
     .map((p) => ({ url: `${BASE_URL}${p}` }));
 
-  const { type, gender, model, procedure, material, process, color: colorParsed } = parseArticle(article);
+  const {
+    type,
+    gender,
+    model,
+    procedure,
+    material,
+    process,
+    color: colorParsed,
+  } = parseArticle(article);
 
   // Title: strip trailing /COLOR from data-name, then convert to title case
   const rawTitle = name.replace(/\/[^/]+$/, "").trim();
-  const title = rawTitle.toLowerCase().replace(/(^|[\s\-.])\w/g, (m) => m.toUpperCase());
+  const title = rawTitle
+    .toLowerCase()
+    .replace(/(^|[\s\-.])\w/g, (m) => m.toUpperCase());
 
   const category = mapCategory(section, title);
 

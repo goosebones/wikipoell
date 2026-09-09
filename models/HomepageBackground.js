@@ -21,4 +21,3 @@ const HomepageBackgroundSchema = new mongoose.Schema(
 
 export default mongoose.models.HomepageBackground ||
   mongoose.model("HomepageBackground", HomepageBackgroundSchema);
-

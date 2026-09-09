@@ -1,11 +1,7 @@
 import { Group, Button } from "@mantine/core";
 import { Check, X } from "lucide-react";
 
-export default function AgentProposalActions({
-  applying,
-  onAccept,
-  onSkip,
-}) {
+export default function AgentProposalActions({ applying, onAccept, onSkip }) {
   return (
     <Group
       gap="xs"

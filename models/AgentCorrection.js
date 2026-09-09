@@ -10,9 +10,10 @@ const AgentCorrectionSchema = new Schema(
     images: [{ type: String }],
     source: { type: String, default: "agent-feedback" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 AgentCorrectionSchema.index({ garmentId: 1 }, { unique: true });
 
-export default models.AgentCorrection || model("AgentCorrection", AgentCorrectionSchema);
+export default models.AgentCorrection ||
+  model("AgentCorrection", AgentCorrectionSchema);
