@@ -1,26 +1,25 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, Group, Badge, Button, Text, Collapse } from "@mantine/core";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getGarmentCode } from "@/lib/garment-utils";
 import {
   agentConfidenceColor,
+  collectUnknownFields,
   getChangedGarmentFields,
 } from "@/lib/admin-garment-properties";
 import GarmentImageStrip from "@/components/admin/shared/garment-image-strip";
 import GarmentFieldGrid from "@/components/admin/shared/garment-field-grid";
 import GarmentSourceLink from "@/components/admin/shared/garment-source-link";
+import UnknownPropertyBanner from "@/components/admin/shared/unknown-property-banner";
+import PropertyModal from "@/components/admin/shared/property-modal";
 import ProposalDiffTable from "@/components/admin/agent-proposal/proposal-diff-table";
 import AgentProposalActions from "@/components/admin/agent-proposal/agent-proposal-actions";
 
-export default function AgentProposalCard({
-  proposal,
-  properties,
-  categories: _categories,
-  state,
-  onStateChange,
-}) {
+export default function AgentProposalCard({ proposal, properties, status }) {
+  const router = useRouter();
   const {
     _id: proposalId,
     garmentId,
@@ -30,6 +29,12 @@ export default function AgentProposalCard({
     source,
   } = proposal;
   const { line1, line2 } = getGarmentCode(before);
+  const [localProperties, setLocalProperties] = useState(properties);
+  const [addModal, setAddModal] = useState({
+    open: false,
+    garmentKey: "",
+    garmentValue: "",
+  });
   const [editing, setEditing] = useState(true);
   const [fields, setFields] = useState({
     ...proposed,
@@ -43,6 +48,12 @@ export default function AgentProposalCard({
   const [error, setError] = useState(null);
 
   const set = (k, v) => setFields((prev) => ({ ...prev, [k]: v }));
+
+  const unknownFields = collectUnknownFields(fields, localProperties);
+
+  function openAddProperty(garmentKey, garmentValue) {
+    setAddModal({ open: true, garmentKey, garmentValue });
+  }
 
   const changedFields = getChangedGarmentFields(before, proposed);
   const images = (proposal.images || []).slice(0, 3);
@@ -79,7 +90,7 @@ export default function AgentProposalCard({
         body: JSON.stringify({ status: "accepted" }),
       });
 
-      onStateChange("accepted");
+      router.refresh();
     } catch (e) {
       setError(e.message);
     } finally {
@@ -88,12 +99,22 @@ export default function AgentProposalCard({
   }
 
   async function handleSkip() {
-    await fetch(`/api/admin/agent-proposal/${proposalId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: "skipped" }),
-    });
-    onStateChange("skipped");
+    setApplying(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/admin/agent-proposal/${proposalId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "skipped" }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      router.refresh();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setApplying(false);
+    }
   }
 
   return (
@@ -101,7 +122,7 @@ export default function AgentProposalCard({
       withBorder
       shadow="sm"
       p="sm"
-      style={{ opacity: state === "skipped" ? 0.45 : 1 }}
+      style={{ opacity: status === "skipped" ? 0.45 : 1 }}
     >
       <Group
         align="flex-start"
@@ -137,7 +158,7 @@ export default function AgentProposalCard({
               >
                 {Math.round(proposed.confidence * 100)}% confidence
               </Badge>
-              {state === "accepted" && (
+              {status === "accepted" && (
                 <Badge
                   size="xs"
                   color="green"
@@ -145,7 +166,7 @@ export default function AgentProposalCard({
                   Accepted
                 </Badge>
               )}
-              {state === "skipped" && (
+              {status === "skipped" && (
                 <Badge
                   size="xs"
                   color="gray"
@@ -190,8 +211,14 @@ export default function AgentProposalCard({
             </Text>
           )}
 
-          {state === "pending" && (
+          {status === "pending" && (
             <>
+              {unknownFields.length > 0 && (
+                <div style={{ marginBottom: 6 }}>
+                  <UnknownPropertyBanner unknownFields={unknownFields} />
+                </div>
+              )}
+
               <Button
                 size="xs"
                 variant="subtle"
@@ -210,7 +237,8 @@ export default function AgentProposalCard({
                 <GarmentFieldGrid
                   fields={fields}
                   set={set}
-                  properties={properties}
+                  properties={localProperties}
+                  onAddProperty={openAddProperty}
                   mt={4}
                 />
               </Collapse>
@@ -227,7 +255,7 @@ export default function AgentProposalCard({
             </Text>
           )}
 
-          {state === "pending" && (
+          {status === "pending" && (
             <AgentProposalActions
               applying={applying}
               onAccept={handleAccept}
@@ -236,6 +264,17 @@ export default function AgentProposalCard({
           )}
         </div>
       </Group>
+      <PropertyModal
+        opened={addModal.open}
+        garmentKey={addModal.garmentKey}
+        garmentValue={addModal.garmentValue}
+        onClose={() =>
+          setAddModal({ open: false, garmentKey: "", garmentValue: "" })
+        }
+        onSaved={(property) =>
+          setLocalProperties((prev) => [...prev, property])
+        }
+      />
     </Card>
   );
 }
