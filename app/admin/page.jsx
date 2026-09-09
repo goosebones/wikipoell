@@ -10,7 +10,7 @@ const PAGE_SIZE = 50;
 
 export default async function AdminPage({ searchParams }) {
   const resolved = await searchParams;
-  const page = Math.max(1, parseInt(resolved.page ?? "1", PAGE_SIZE));
+  const page = Math.max(1, parseInt(resolved.page ?? "1", 10));
   const statusFilter = resolved.status ?? "pending";
   const titleFilter = resolved.title ?? "";
   const idFilter = resolved.id ?? "";
