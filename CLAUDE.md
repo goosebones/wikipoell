@@ -4,62 +4,156 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Wikipoell is a community-driven archival and documentation platform for Carol Christian Poell's clothing designs. Users can submit garments with images and metadata, browse by category, and filter by properties.
+Wikipoell is a community-driven archival and documentation platform for Carol Christian Poell's clothing designs. Users submit garments with images and metadata, browse by category, and filter by properties. Submissions land in a `pending` queue and an admin publishes them — optionally with help from a Claude-backed review agent.
 
 ## Commands
 
 ```bash
-npm run dev        # Start dev server with Turbopack
-npm run build      # Production build
-npm run lint       # ESLint
-npm run lint:fix   # ESLint with auto-fix
-npm run format     # Prettier format
-npm run format:check  # Check formatting without writing
+npm run dev           # Dev server: Turbopack, HTTPS, port 443
+npm run build         # Production build
+npm run start         # Serve the production build
+npm run lint          # eslint .
+npm run lint:fix      # eslint . --fix
+npm run format        # Prettier write
+npm run format:check  # Prettier check
 ```
 
-No test suite exists in this project.
+Dev runs on **https://local.wikipoell.com** (port 443, `--experimental-https`, allowlisted via `allowedDevOrigins` in `next.config.ts`); certs live in `certificates/`.
+
+No test suite exists in this project. `npm run build` is the main correctness gate — run it after non-trivial changes.
 
 ## Tech Stack
 
-- **Framework**: Next.js (App Router) with TypeScript config but mostly `.js`/`.jsx` files
+- **Framework**: Next.js 16 (App Router). TypeScript is configured, but source is mostly `.js`/`.jsx`.
 - **UI**: Mantine v8 + Tailwind v4 (via `@tailwindcss/postcss`) + Lucide icons
 - **Database**: MongoDB via Mongoose
 - **Auth**: Clerk (`@clerk/nextjs`)
 - **Storage**: Cloudflare R2 (via `@aws-sdk/client-s3`)
 - **Image processing**: Sharp (converts uploads to WebP before R2 storage)
+- **Agent**: `@anthropic-ai/sdk` (used only by `scripts/agent-review.js`, never at request time)
+
+## Code Style
+
+Prettier is authoritative and `.prettierrc` sets **`singleAttributePerLine: true`** — JSX puts one attribute per line. This is the house style; without that config Prettier's defaults collapse it and produce a very large spurious diff. Run `npm run format` before committing.
+
+ESLint uses flat config (`eslint.config.mjs`) built on `eslint-config-next/core-web-vitals` and `/typescript`. Note `next lint` no longer exists in Next 16 — the scripts call `eslint` directly.
 
 ## Architecture
 
-### App Router Structure
+### Routes
 
-- `app/` — pages and layouts using Next.js App Router
-- `components/` — shared React components
-- `lib/` — utilities for MongoDB connection, R2 uploads, garment/category helpers
-- `models/` — Mongoose schemas (Garment, User, HomepageBackground)
+```
+app/
+  page.jsx                      homepage (search + random background)
+  garment/                      listing, [slug] detail, create
+  category/[...slug]/           nested category browsing + filtering
+  user/[...slug]/               public user profiles
+  admin/                        admin-only, gated by app/admin/layout.jsx
+    page.jsx                    garment review queue
+    agent/page.jsx              agent proposal review queue
+    properties/page.jsx         property management
+  api/
+    garment/, garment/[id]/     create / patch (owner-scoped)
+    image-upload/               Sharp → WebP → R2
+    properties/                 property list
+    search-suggestions/         homepage typeahead
+    webhooks/clerk/             user.created/updated/deleted → MongoDB
+    admin/*                     admin-only mutations
+```
 
-### Data Flow
+`proxy.ts` at the repo root is the Next 16 middleware file (renamed from `middleware.ts`); it just wires up `clerkMiddleware()`.
 
-1. **Global state**: `app/layout.js` fetches properties and categories server-side, then injects them via `PropertiesProvider` and `CategoriesProvider` context (in `components/`).
-2. **Auth**: Clerk handles auth; a webhook at `app/api/webhooks/clerk/route.js` syncs `user.created/updated/deleted` events into MongoDB.
-3. **Image uploads**: Client POSTs to `/api/image-upload` → Sharp converts to WebP → uploaded to Cloudflare R2 → public URL returned.
-4. **Garment creation**: POST to `/api/garment` requires Clerk auth and writes a Mongoose `Garment` document.
+### Global state
 
-### Category System
+`app/layout.jsx` fetches properties and categories server-side and injects them via `PropertiesProvider` and `CategoriesProvider` (`components/context/`). Client components read them with `useProperties()` / `useCategories()` rather than refetching — `CategoryTreeSelectClient`, for example, needs no `categories` prop.
 
-Categories are hierarchical with parent/child relationships stored in MongoDB. The `app/category/[...slug]/` catch-all route handles nested category browsing and filtering.
+Both `getProperties()` and `getCategories()` are wrapped in React `cache()`, so repeated calls within one request hit MongoDB once.
 
-### MongoDB Connection
+### Auth and admin gating
 
-`lib/mongodb.js` uses a module-level cached connection to avoid reconnecting on every serverless invocation.
+Clerk handles auth. Admin access is a Clerk session claim: `sessionClaims.metadata.role === "admin"`.
+
+This is checked in **two independent places**, and both are required — `app/admin/layout.jsx` (redirects non-admins to `/`) and every route under `app/api/admin/` (returns 403). The layout does not protect the API.
+
+### Data model
+
+`models/` holds the Mongoose schemas:
+
+- **`Garment`** — `status: pending | published | rejected` drives the review queue. `procedure` is `Mixed`: legacy documents store a string, newer ones a `string[]`; use `normalizeProcedure()` from `lib/patch-garment.js` rather than assuming either. `source` is `{ type: "me" | "external", label, url }`.
+- **`User`** — synced from Clerk webhooks.
+- **`HomepageBackground`** — rotating homepage imagery.
+- **`AgentProposal`** — one per (garment, run). Holds `before`, `proposal`, and `status: pending | accepted | skipped`. Note the document field is `proposal`, usually destructured as `proposed` in components.
+- **`AgentCorrection`** — records what an admin actually accepted, keyed uniquely by `garmentId`. These become the few-shot examples for the next agent run.
+
+`Category` and `Property` are defined inline in `lib/categories.js` and `lib/properties.js`, not in `models/`.
+
+### Properties system
+
+The `Property` collection is the vocabulary for every garment field. Each row maps `garmentKey` (e.g. `material`) → `garmentValue` (e.g. `ROOMS`) with a human-readable `description`. It drives every select, the filter menu, and the "unknown value" warnings in admin review.
+
+`Property._id` is a string — `crypto.randomUUID()` for new rows, legacy ObjectId hex for old ones. Use `propertyByIdFilter(id)` to match either.
+
+Garment codes are rendered from these fields by `getGarmentCode()` as two lines: `<type><gender>/<model>[-procedure]` and `<material>[-process]/<color>`.
+
+### Category system
+
+Categories are hierarchical via a `parent` reference and dot-delimited ids (`footwear.boots`). `app/category/[...slug]/` is a catch-all handling nested browsing and filtering; category matching is a `^` prefix regex, so `footwear` also returns `footwear.boots`.
+
+### Agent review pipeline
+
+1. `node scripts/agent-review.js` loads pending garments that have no existing proposal, sends each to Claude with prior `AgentCorrection` rows as few-shot examples, and writes an `AgentProposal`.
+2. An admin reviews at `/admin/agent`, edits inline, and accepts or skips.
+3. Accepting patches the garment via `/api/admin/garment/[id]`, then posts to `/api/admin/agent-feedback`, which upserts an `AgentCorrection` — feeding the next run.
+
+`/admin/agent` filters and paginates server-side via `lib/agent-proposals.js`; the cards call `router.refresh()` after acting rather than holding local state.
+
+### lib/
+
+| File                                           | Purpose                                                                               |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `mongodb.js`                                   | Module-level cached connection (`initMongo()`), avoids reconnecting per invocation    |
+| `garments.js`                                  | Garment queries incl. `getAdminQueue()` and `getSimilarGarments()` (weighted scoring) |
+| `garment-utils.js`                             | **Pure** helpers — safe to import from client components, must never import Mongoose  |
+| `agent-proposals.js`                           | Agent proposal queue + status counts                                                  |
+| `properties.js` / `categories.js`              | Schemas and cached fetchers                                                           |
+| `patch-garment.js`                             | Shared garment PATCH logic, with separate owner/admin field allowlists                |
+| `admin-garment-properties.js`                  | Admin review field metadata and unknown-value detection                               |
+| `r2.js`, `users.js`, `homepage-backgrounds.js` | R2 upload, Clerk user lookups, homepage imagery                                       |
+
+`garment-utils.js` exists specifically so client components can compute garment codes without pulling server-only code into the bundle — keep it dependency-free.
+
+### Images
+
+`next.config.ts` sets `images.unoptimized: true`, so `next/image` here is about layout and consistency, not optimization. Remote hosts must still be listed in `remotePatterns` (R2 public URLs plus `thelibrary1994.com`) or images fail to render.
+
+Uploads go client → `/api/image-upload` → Sharp (WebP, quality 85) → R2 under `<imageGroupId>/<uuid>.webp`. Max 10 MB; JPEG, PNG, GIF, and WebP accepted.
+
+## Scripts
+
+Run directly with `node` (no npm scripts wired up):
+
+```bash
+node scripts/scrape-ccp-room.js                  # ccp-room.com catalog → ccp-room-garments.json
+node scripts/import-ccp-room.js [--dry-run]      # that JSON → R2 + MongoDB as pending garments
+node scripts/backfill-article-codes.js [--dry-run]
+node scripts/agent-review.js [--limit=10] [--auto-apply-corrections] [--deterministic]
+```
+
+`--deterministic` skips the Claude call and applies rule-based fixes only, which costs nothing — prefer it when testing changes to the pipeline.
+
+`agent-review.js` uses ESM; the other three are CommonJS, which is why `eslint.config.mjs` disables `no-require-imports` for `scripts/**/*.js`.
 
 ## Environment Variables
 
-See `.env.example`. Required groups:
+See `.env.example`:
 
-- `MONGODB_URL` — MongoDB connection string
-- `R2_*` — Cloudflare R2 credentials and bucket config (`R2_TOKEN_VALUE`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_S3_API_URL`, `R2_PUBLIC_URL`, `R2_BACKGROUND_PUBLIC_URL`)
+- `MONGODB_URL`
+- `R2_TOKEN_VALUE`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_S3_API_URL`, `R2_PUBLIC_URL`, `R2_BACKGROUND_PUBLIC_URL`
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET`
+- `ANTHROPIC_API_KEY` — only needed by `scripts/agent-review.js`
+
+`R2_PUBLIC_URL` and `R2_BACKGROUND_PUBLIC_URL` are read at build time by `next.config.ts` to construct `remotePatterns`, so the build needs them set.
 
 ## Path Aliases
 
-`@/*` maps to the project root (configured in `tsconfig.json`). Use `@/components/...`, `@/lib/...`, `@/models/...` for imports.
+`@/*` maps to the project root (`tsconfig.json`). Use `@/components/...`, `@/lib/...`, `@/models/...`.
