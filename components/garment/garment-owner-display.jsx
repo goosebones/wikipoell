@@ -36,7 +36,9 @@ export function GarmentSourceDisplay({ source }) {
     return (
       <div className="mt-4 flex items-center gap-3">
         <span>Source</span>
-        <span className="font-medium text-lg">This user's own garment</span>
+        <span className="font-medium text-lg">
+          This user&apos;s own garment
+        </span>
       </div>
     );
   }

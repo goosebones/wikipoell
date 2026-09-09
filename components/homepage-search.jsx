@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Loader2Icon, SearchIcon } from "lucide-react";
@@ -131,12 +132,14 @@ export default function HomepageSearch() {
                       </div>
                     ) : (
                       <div className="flex items-center gap-4">
-                        <div className="h-20 w-20 shrink-0 overflow-hidden rounded-md border border-black/10 bg-black/5">
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-md border border-black/10 bg-black/5">
                           {suggestion.thumbnailUrl ? (
-                            <img
+                            <Image
                               src={suggestion.thumbnailUrl}
                               alt={suggestion.title || "Garment thumbnail"}
-                              className="h-full w-full object-cover"
+                              fill
+                              sizes="80px"
+                              className="object-cover"
                             />
                           ) : null}
                         </div>
