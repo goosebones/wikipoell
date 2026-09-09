@@ -20,6 +20,17 @@ const eslintConfig = [
       semi: ["error", "always"],
       "no-extra-semi": "error",
       "semi-spacing": ["error", { before: false, after: true }],
+      // `const { dropMe, ...rest } = obj` is the idiom used across this
+      // codebase to omit keys; `_name` marks a binding that exists only to
+      // be discarded.
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          ignoreRestSiblings: true,
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
+        },
+      ],
     },
   },
   {

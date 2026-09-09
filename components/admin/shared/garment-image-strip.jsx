@@ -25,12 +25,14 @@ export default function GarmentImageStrip({
   const normalized = normalizeImages(images);
   const dims = SIZES[size] ?? SIZES.lg;
 
-  const dragIndex = useRef(null);
+  // dragIndex drives the dimming of the tile being dragged, so it has to be
+  // state: a ref read during render does not trigger the re-render that shows it.
+  const [dragIndex, setDragIndex] = useState(null);
   const didDrag = useRef(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
 
   function onDragStart(i) {
-    dragIndex.current = i;
+    setDragIndex(i);
     didDrag.current = false;
   }
 
@@ -41,7 +43,7 @@ export default function GarmentImageStrip({
   }
 
   function onDrop(i) {
-    const from = dragIndex.current;
+    const from = dragIndex;
     if (from === null || from === i) {
       setDragOverIndex(null);
       return;
@@ -50,12 +52,12 @@ export default function GarmentImageStrip({
     const [moved] = next.splice(from, 1);
     next.splice(i, 0, moved);
     onReorder?.(next);
-    dragIndex.current = null;
+    setDragIndex(null);
     setDragOverIndex(null);
   }
 
   function onDragEnd() {
-    dragIndex.current = null;
+    setDragIndex(null);
     setDragOverIndex(null);
   }
 
@@ -107,7 +109,7 @@ export default function GarmentImageStrip({
                   ? "2px dashed #aaa"
                   : "2px solid transparent"
                 : undefined,
-              opacity: draggable && dragIndex.current === i ? 0.4 : 1,
+              opacity: draggable && dragIndex === i ? 0.4 : 1,
               background: "#f1f3f5",
             }}
           >

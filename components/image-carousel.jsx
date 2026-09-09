@@ -12,20 +12,25 @@ import Image from "next/image";
 
 export default function ImageCarousel({ images = [] }) {
   const [api, setApi] = useState();
-  const [current, setCurrent] = useState(0);
-  const [count, setCount] = useState(0);
+  // Embla starts on the first slide, and there is one snap point per slide,
+  // so both counters are known before the carousel initialises.
+  const [current, setCurrent] = useState(1);
+  const count = images.length;
 
   useEffect(() => {
     if (!api) {
       return;
     }
 
-    setCount(api.scrollSnapList().length);
-    setCurrent(api.selectedScrollSnap() + 1);
+    const onSelect = () => setCurrent(api.selectedScrollSnap() + 1);
 
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    });
+    api.on("select", onSelect);
+    api.on("reInit", onSelect);
+
+    return () => {
+      api.off("select", onSelect);
+      api.off("reInit", onSelect);
+    };
   }, [api]);
 
   if (!images || images.length === 0) {
