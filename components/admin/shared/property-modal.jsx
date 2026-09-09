@@ -1,14 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  Modal,
-  Stack,
-  TextInput,
-  Button,
-  Text,
-  Select,
-} from "@mantine/core";
+import { Modal, Stack, TextInput, Button, Text, Select } from "@mantine/core";
 import {
   GARMENT_PROPERTY_KEY_LABEL,
   CHECKED_GARMENT_PROPERTY_FIELDS,

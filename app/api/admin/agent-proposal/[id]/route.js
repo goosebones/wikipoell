@@ -22,11 +22,18 @@ export async function PATCH(request, { params }) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
 
-    const doc = await AgentProposal.findByIdAndUpdate(id, { status }, { new: true });
+    const doc = await AgentProposal.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true },
+    );
     if (!doc) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    return NextResponse.json({ error: err.message || "Failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Failed" },
+      { status: 500 },
+    );
   }
 }

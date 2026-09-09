@@ -11,12 +11,15 @@
 const fs = require("fs");
 const path = require("path");
 
-for (const line of fs.readFileSync(path.resolve(__dirname, "../.env"), "utf8").split("\n")) {
+for (const line of fs
+  .readFileSync(path.resolve(__dirname, "../.env"), "utf8")
+  .split("\n")) {
   const t = line.trim();
   if (!t || t.startsWith("#")) continue;
   const eq = t.indexOf("=");
   if (eq === -1) continue;
-  const k = t.slice(0, eq).trim(), v = t.slice(eq + 1).trim();
+  const k = t.slice(0, eq).trim(),
+    v = t.slice(eq + 1).trim();
   if (!process.env[k]) process.env[k] = v;
 }
 
@@ -28,27 +31,59 @@ const mongoose = require("mongoose");
 // Fixed parser — allows letter suffixes on model number (e.g. 2638R, 2638SP)
 function parseArticle(rawArticle) {
   // Normalize: ≡ → = (appears in X≡NIT material codes), fix ? typo before color, collapse spaces
-  let article = rawArticle.trim()
+  let article = rawArticle
+    .trim()
     .replace(/≡/g, "=")
     .replace(/\?(\d)/, "/$1")
     .replace(/\s{2,}/g, " ");
 
   // Full format: {TYPE}{GENDER}/{1,2}{MODEL}{attachedProc}[-{dashProc}] {MATERIAL}[-{PROCESS}]/{COLOR}
   const full = article.match(
-    /^([A-Z])([MF])\/{1,2}([0-9]+)([A-Z=]*)(?:-([A-Z/=]+))?\s+([A-Z=]+)(?:-([A-Z]+))?\/(.+?)\s*$/
+    /^([A-Z])([MF])\/{1,2}([0-9]+)([A-Z=]*)(?:-([A-Z/=]+))?\s+([A-Z=]+)(?:-([A-Z]+))?\/(.+?)\s*$/,
   );
   if (full) {
-    const [, type, gender, model, attachedProc, dashProc, material, process, color] = full;
+    const [
+      ,
+      type,
+      gender,
+      model,
+      attachedProc,
+      dashProc,
+      material,
+      process,
+      color,
+    ] = full;
     const procedures = [attachedProc, dashProc].filter(Boolean);
-    const procedure = procedures.length === 0 ? null : procedures.length === 1 ? procedures[0] : procedures;
-    return { type, gender, model, procedure, material, process: process || null, color };
+    const procedure =
+      procedures.length === 0
+        ? null
+        : procedures.length === 1
+          ? procedures[0]
+          : procedures;
+    return {
+      type,
+      gender,
+      model,
+      procedure,
+      material,
+      process: process || null,
+      color,
+    };
   }
 
   // Incomplete format: {TYPE}{GENDER}/{MODEL} — no material/process/color (metal accessories etc.)
   const incomplete = article.match(/^([A-Z])([MF])\/{1,2}([0-9]+[A-Z]*)\s*$/);
   if (incomplete) {
     const [, type, gender, model] = incomplete;
-    return { type, gender, model, procedure: null, material: null, process: null, color: null };
+    return {
+      type,
+      gender,
+      model,
+      procedure: null,
+      material: null,
+      process: null,
+      color: null,
+    };
   }
 
   return null;
@@ -69,7 +104,12 @@ function normalizeProcedure(procedure) {
 }
 
 async function main() {
-  const garments = JSON.parse(fs.readFileSync(path.resolve(__dirname, "../ccp-room-garments.json"), "utf8"));
+  const garments = JSON.parse(
+    fs.readFileSync(
+      path.resolve(__dirname, "../ccp-room-garments.json"),
+      "utf8",
+    ),
+  );
   console.log(`Loaded ${garments.length} garments from JSON.\n`);
 
   // Build a map of source URL → parsed fields (only where parser now succeeds)
@@ -80,8 +120,14 @@ async function main() {
   for (const g of garments) {
     if (!g.article) continue;
     const parsed = parseArticle(g.article);
-    if (!parsed) { stillNull++; continue; }
-    if (!parsed.type) { stillNull++; continue; }
+    if (!parsed) {
+      stillNull++;
+      continue;
+    }
+    if (!parsed.type) {
+      stillNull++;
+      continue;
+    }
     parseable++;
     const url = g.source?.url;
     if (!url) continue;
@@ -98,7 +144,13 @@ async function main() {
     console.log("Connected to MongoDB.\n");
   }
 
-  const G = DRY_RUN ? null : mongoose.model("Garment", new mongoose.Schema({}, { strict: false }), "garments");
+  const G = DRY_RUN
+    ? null
+    : mongoose.model(
+        "Garment",
+        new mongoose.Schema({}, { strict: false }),
+        "garments",
+      );
 
   let updated = 0;
   let notFound = 0;
@@ -106,13 +158,19 @@ async function main() {
   for (const [sourceUrl, candidates] of fixes) {
     for (const parsed of candidates) {
       if (DRY_RUN) {
-        console.log(`[dry-run] ${parsed.title}: type=${parsed.type}, material=${parsed.material}, procedure=${JSON.stringify(parsed.procedure)}`);
+        console.log(
+          `[dry-run] ${parsed.title}: type=${parsed.type}, material=${parsed.material}, procedure=${JSON.stringify(parsed.procedure)}`,
+        );
         updated++;
         continue;
       }
 
       // Match by source URL; if multiple candidates for same URL, also match title
-      const query = { "source.url": sourceUrl, "source.label": "CCP-ROOM", type: null };
+      const query = {
+        "source.url": sourceUrl,
+        "source.label": "CCP-ROOM",
+        type: null,
+      };
       if (candidates.length > 1) query.title = parsed.title;
 
       const result = await G.updateOne(query, {

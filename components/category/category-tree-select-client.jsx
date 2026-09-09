@@ -14,7 +14,9 @@ export default function CategoryTreeSelectClient({ value, onChange }) {
   const { categoryTree } = useCategories();
 
   // Internal representation: full path of ids from root to the current leaf.
-  const [selectedCategoryIds, setSelectedCategoryIds] = useState(() => valueToPath(value));
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState(() =>
+    valueToPath(value),
+  );
 
   const handleSelect = (level, categoryId) => {
     // When a level is (re)selected, throw away any deeper selections.

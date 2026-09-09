@@ -37,7 +37,13 @@ export default function PropertiesManager({ initialProperties }) {
     const q = query.trim().toLowerCase();
     if (!q) return properties;
     return properties.filter((p) =>
-      [p.garmentValue, p.description, p.propertyName, p.propertyType, p.garmentKey]
+      [
+        p.garmentValue,
+        p.description,
+        p.propertyName,
+        p.propertyType,
+        p.garmentKey,
+      ]
         .filter(Boolean)
         .some((s) => String(s).toLowerCase().includes(q)),
     );
@@ -278,8 +284,11 @@ export default function PropertiesManager({ initialProperties }) {
             >
               {deleteTarget?.garmentValue}
             </Text>{" "}
-            from {GARMENT_PROPERTY_KEY_LABEL[deleteTarget?.garmentKey] ?? deleteTarget?.garmentKey}?
-            Existing garments keep this value but it will show as unknown in review.
+            from{" "}
+            {GARMENT_PROPERTY_KEY_LABEL[deleteTarget?.garmentKey] ??
+              deleteTarget?.garmentKey}
+            ? Existing garments keep this value but it will show as unknown in
+            review.
           </Text>
           {deleteError && (
             <Text
