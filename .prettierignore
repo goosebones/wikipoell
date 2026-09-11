@@ -5,16 +5,12 @@ public/
 *.min.css
 package-lock.json
 
-# local tooling: virtualenv, git worktrees, dev certs, notebook scratch space
+# local tooling: git worktrees, dev certs
 .claude/
-.venv/
 certificates/
-bulk_upload/
 
 # build artifacts
 *.tsbuildinfo
 
-# large machine-generated data dumps
-# (garments_backup_*.json is JSONL, which Prettier cannot parse at all)
-ccp-room-garments.json
-garments_backup_*.json
+# separate project, not webapp source (see wikipoell-ingest/README.md)
+wikipoell-ingest/

@@ -15,8 +15,11 @@
  */
 
 // ---------------------------------------------------------------------------
-// Load .env
+// Load the webapp's .env (repo root). Shell-exported vars win.
 // ---------------------------------------------------------------------------
+import { resolve } from "path";
+process.loadEnvFile(resolve(import.meta.dirname, "../../.env"));
+
 const { MONGODB_URL, ANTHROPIC_API_KEY } = process.env;
 if (!MONGODB_URL) {
   console.error("Missing MONGODB_URL");

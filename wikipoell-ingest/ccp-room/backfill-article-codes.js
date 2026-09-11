@@ -1,5 +1,5 @@
 /**
- * Re-parses article codes from ccp-room-garments.json using the fixed regex
+ * Re-parses article codes from data/ccp-room-garments.json using the fixed regex
  * and updates MongoDB documents where type/material parsed as null.
  *
  * Matches documents by source.url (unique per catalog item).
@@ -11,17 +11,8 @@
 const fs = require("fs");
 const path = require("path");
 
-for (const line of fs
-  .readFileSync(path.resolve(__dirname, "../.env"), "utf8")
-  .split("\n")) {
-  const t = line.trim();
-  if (!t || t.startsWith("#")) continue;
-  const eq = t.indexOf("=");
-  if (eq === -1) continue;
-  const k = t.slice(0, eq).trim(),
-    v = t.slice(eq + 1).trim();
-  if (!process.env[k]) process.env[k] = v;
-}
+// Load the webapp's .env (repo root). Shell-exported vars win, as before.
+process.loadEnvFile(path.resolve(__dirname, "../../.env"));
 
 const DRY_RUN = process.argv.includes("--dry-run");
 if (DRY_RUN) console.log("[dry-run] No changes will be made.\n");
@@ -106,7 +97,7 @@ function normalizeProcedure(procedure) {
 async function main() {
   const garments = JSON.parse(
     fs.readFileSync(
-      path.resolve(__dirname, "../ccp-room-garments.json"),
+      path.resolve(__dirname, "../data/ccp-room-garments.json"),
       "utf8",
     ),
   );

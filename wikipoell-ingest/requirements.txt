@@ -1,0 +1,6 @@
+# Python deps for the-library/ notebooks (Python 3.14).
+#   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+firecrawl-py==4.19.0
+ipykernel==7.2.0
+PySocks==1.7.1
+selenium==4.41.0

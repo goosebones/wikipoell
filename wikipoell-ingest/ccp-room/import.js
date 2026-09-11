@@ -1,5 +1,5 @@
 /**
- * Imports garments from ccp-room-garments.json into MongoDB.
+ * Imports garments from data/ccp-room-garments.json into MongoDB.
  *
  * For each garment:
  *   1. Downloads each image from ccp-room.com
@@ -20,18 +20,9 @@ const https = require("https");
 const http = require("http");
 
 // ---------------------------------------------------------------------------
-// Load .env
+// Load the webapp's .env (repo root). Shell-exported vars win, as before.
 // ---------------------------------------------------------------------------
-const envPath = path.resolve(__dirname, "../.env");
-for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
-  const trimmed = line.trim();
-  if (!trimmed || trimmed.startsWith("#")) continue;
-  const eq = trimmed.indexOf("=");
-  if (eq === -1) continue;
-  const key = trimmed.slice(0, eq).trim();
-  const val = trimmed.slice(eq + 1).trim();
-  if (!process.env[key]) process.env[key] = val;
-}
+process.loadEnvFile(path.resolve(__dirname, "../../.env"));
 
 const {
   MONGODB_URL,
@@ -178,7 +169,7 @@ function normalizeProcedure(procedure) {
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
-  const inputPath = path.resolve(__dirname, "../ccp-room-garments.json");
+  const inputPath = path.resolve(__dirname, "../data/ccp-room-garments.json");
   const garments = JSON.parse(fs.readFileSync(inputPath, "utf8"));
   console.log(`Loaded ${garments.length} garments from ccp-room-garments.json`);
   if (FROM > 0) console.log(`Skipping first ${FROM} (already inserted)\n`);
@@ -267,7 +258,10 @@ async function main() {
   console.log(`Images failed  : ${imagesFailed}`);
 
   if (errors.length > 0) {
-    const errorLog = path.resolve(__dirname, "../import-ccp-room-errors.json");
+    const errorLog = path.resolve(
+      __dirname,
+      "../data/import-ccp-room-errors.json",
+    );
     fs.writeFileSync(errorLog, JSON.stringify(errors, null, 2));
     console.log(`\nErrors written to: ${errorLog}`);
   }

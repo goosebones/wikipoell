@@ -1,0 +1,17 @@
+{
+  "name": "wikipoell-ingest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Scrapers, importers and data-quality tooling that feed the Wikipoell archive. Run manually; nothing here is part of the webapp's request path.",
+  "type": "commonjs",
+  "scripts": {
+    "ccp-room:scrape": "node ccp-room/scrape.js",
+    "ccp-room:import": "node ccp-room/import.js",
+    "ccp-room:backfill": "node ccp-room/backfill-article-codes.js",
+    "agent-review": "node agent-review/review.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  }
+}

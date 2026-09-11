@@ -8,7 +8,7 @@
  *   node scripts/scrape-ccp-room.js
  *
  * Output:
- *   ccp-room-garments.json  — array of garment objects, one per product
+ *   data/ccp-room-garments.json  — array of garment objects, one per product
  */
 
 const https = require("https");
@@ -17,7 +17,7 @@ const path = require("path");
 
 const CATALOG_URL = "https://www.ccp-room.com/catalog/";
 const BASE_URL = "https://www.ccp-room.com";
-const OUTPUT = path.resolve(__dirname, "../ccp-room-garments.json");
+const OUTPUT = path.resolve(__dirname, "../data/ccp-room-garments.json");
 
 // ---------------------------------------------------------------------------
 // Category mapping
