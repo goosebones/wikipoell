@@ -1,0 +1,7 @@
+.venv/
+
+# Machine-generated: scrape output, dumps, and the 313-file product folders.
+# data/garments_backup_*.json is JSONL, which Prettier cannot parse at all.
+data/
+the-library/products/
+the-library/processed_products/

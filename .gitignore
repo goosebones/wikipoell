@@ -45,5 +45,4 @@ next-env.d.ts
 .vscode
 
 # project specific stuff
-/bulk_upload
 certificates

@@ -6,10 +6,10 @@ const eslintConfig = [
   {
     ignores: [
       ".next/**",
-      ".venv/**",
       ".claude/**",
-      "bulk_upload/**",
       "certificates/**",
+      // Separate project, not webapp source — see wikipoell-ingest/README.md
+      "wikipoell-ingest/**",
     ],
   },
   ...coreWebVitals,
@@ -31,13 +31,6 @@ const eslintConfig = [
           argsIgnorePattern: "^_",
         },
       ],
-    },
-  },
-  {
-    // Standalone CommonJS scripts, run directly with `node scripts/<name>.js`
-    files: ["scripts/**/*.js"],
-    rules: {
-      "@typescript-eslint/no-require-imports": "off",
     },
   },
 ];

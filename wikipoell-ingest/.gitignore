@@ -1,0 +1,9 @@
+# Python
+.venv/
+__pycache__/
+
+# Scrape and processing artifacts — regenerable, and large
+the-library/products/
+the-library/processed_products/
+data/library.json
+data/import-ccp-room-errors.json
