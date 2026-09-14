@@ -1,0 +1,32 @@
+[project]
+name = "wikipoell-ingest"
+version = "0.1.0"
+description = "Scraping and ingest pipeline for the Wikipoell archive"
+requires-python = ">=3.12"
+dependencies = [
+    "anthropic>=0.40",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "selectolax>=0.3.21",
+]
+
+[project.optional-dependencies]
+# Only for the legacy notebooks under legacy/. Not used by the pipeline.
+notebooks = ["firecrawl-py", "ipykernel", "PySocks", "selenium"]
+
+[dependency-groups]
+dev = ["ruff>=0.6"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["ingest"]

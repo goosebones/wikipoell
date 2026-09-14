@@ -22,7 +22,7 @@ const http = require("http");
 // ---------------------------------------------------------------------------
 // Load the webapp's .env (repo root). Shell-exported vars win, as before.
 // ---------------------------------------------------------------------------
-process.loadEnvFile(path.resolve(__dirname, "../../.env"));
+process.loadEnvFile(path.resolve(__dirname, "../../../.env"));
 
 const {
   MONGODB_URL,

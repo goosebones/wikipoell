@@ -12,7 +12,7 @@ const fs = require("fs");
 const path = require("path");
 
 // Load the webapp's .env (repo root). Shell-exported vars win, as before.
-process.loadEnvFile(path.resolve(__dirname, "../../.env"));
+process.loadEnvFile(path.resolve(__dirname, "../../../.env"));
 
 const DRY_RUN = process.argv.includes("--dry-run");
 if (DRY_RUN) console.log("[dry-run] No changes will be made.\n");

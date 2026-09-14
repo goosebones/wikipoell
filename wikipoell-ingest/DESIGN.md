@@ -47,7 +47,7 @@ Marketplace sites (Grailed, eBay) are out of scope for now. (DECIDED)
 
 All nine respond 200 to a plain request and render products server-side. No headless browser in the design. Sites with two entry URLs (darklands, ink) are one module with two start points, so gender comes from the entry point rather than being inferred.
 
-**Politeness** (DECIDED as "be smart"): one request at a time per source, a configurable delay between requests (default 1.5 s), honour `Retry-After` on 429, one realistic User-Agent, and sources run sequentially. A source that throws is recorded as failed in the run and the run moves on.
+**Politeness** (DECIDED as "be smart"): one request at a time per source, a configurable delay between requests (default 1.5 s), honour `Retry-After` on 429, and sources run sequentially. No user-agent spoofing — httpx's default identifies the client honestly, and all nine sources were verified to serve it normally. A source that throws is recorded as failed in the run and the run moves on.
 
 ### Source contract (PROPOSED)
 
@@ -106,6 +106,7 @@ Ports the existing logic rather than reinventing it:
 - **Article code parser** — the regex from `backfill-article-codes.js`, extended per site for SKU variants (The Library's `AF-0874-ORG-36` embeds the code plus a size). Full format `{TYPE}{GENDER}/{MODEL}[{PROC}][-{PROC}] {MATERIAL}[-{PROCESS}]/{COLOR}`, and the incomplete `{TYPE}{GENDER}/{MODEL}` form used by metal accessories.
 - **Title formatter** — `formatTitle()` from `agent-review.js`: strip trailing `/COLOR`, expand `O.DYED` / `L. JKT` / `H. NECK`, Title Case.
 - **Vocabulary mapping** — every field value checked against the `Property` collection for its `garmentKey`. Unknown → recorded, never coerced.
+- **Color padding** — retailers write single-digit colors bare (`7`) where CCP pads them (`07`), so the bare form is padded on the way in. Only when the bare form is unknown and the padded one is known: **a leading zero denotes a different color, not a different spelling.** `10` (Black, Fabric) and `010` (Black, Leather) are separate entries, as are 19/019, 33/033, 35/035, 36/036 — and `3` (Grey, Reflective) is a genuine code, not an unpadded `03`. A blanket pad would mislabel hundreds of garments.
 - **Category** — from the site's category hint, the article code's type letter, and title keywords; falls back to unknown.
 
 Each field comes out as `FieldValue(value, confidence, origin)` where origin is one of `code`, `sku`, `title`, `hint`, `llm`. The webapp stores these so the review UI can show _why_ a field has the value it has.
@@ -309,7 +310,7 @@ Sources are positional (DECIDED): `python -m ingest run ccp-room the-library` ru
 - A source whose module throws is marked failed with the error and the run continues. A source that returns **zero listings** when it previously returned some is also flagged — that is the "HTML changed, scraper silently broken" case, and it is the one that would otherwise go unnoticed.
 - Run output goes to stdout in a form a scheduler log can keep, and to the `IngestRun` document for the admin page.
 - No scraper test suite. If a module breaks, the run reports it.
-- Scheduler is external and unspecified — cron, GitHub Actions, anything. Secrets live in a `.env` file (DECIDED): the script needs `WIKIPOELL_API_URL`, `INGEST_API_TOKEN`, and `ANTHROPIC_API_KEY`, read from the repo-root `.env` the webapp already uses, with shell-exported values taking precedence. The webapp side needs `INGEST_API_TOKEN` and `INGEST_SYSTEM_USER_ID`.
+- Scheduler is external and unspecified — cron, GitHub Actions, anything. Secrets live in a `.env` file (DECIDED): `wikipoell-ingest/.env`, this project's own, holding `WIKIPOELL_API_URL`, `INGEST_API_TOKEN`, and `ANTHROPIC_API_KEY`, with shell-exported values taking precedence. It is deliberately separate from the webapp's `.env`, which needs `INGEST_API_TOKEN` (matching) and `INGEST_SYSTEM_USER_ID`.
 
 ## 11. Build order (PROPOSED)
 
