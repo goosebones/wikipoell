@@ -1,9 +1,10 @@
 # Python
 .venv/
 __pycache__/
+*.egg-info/
 
 # Scrape and processing artifacts — regenerable, and large
-the-library/products/
-the-library/processed_products/
-data/library.json
-data/import-ccp-room-errors.json
+legacy/the-library/products/
+legacy/the-library/processed_products/
+legacy/data/library.json
+legacy/data/import-ccp-room-errors.json

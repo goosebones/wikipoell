@@ -6,12 +6,7 @@ import globals from "globals";
 // Binaries resolve from the repo root's node_modules, so nothing extra to install.
 export default [
   {
-    ignores: [
-      ".venv/**",
-      "data/**",
-      "the-library/products/**",
-      "the-library/processed_products/**",
-    ],
+    ignores: [".venv/**", "legacy/data/**", "legacy/the-library/**"],
   },
   js.configs.recommended,
   {
@@ -41,7 +36,7 @@ export default [
   },
   {
     // The only ESM .js in the project.
-    files: ["agent-review/review.js"],
+    files: ["legacy/agent-review/review.js"],
     languageOptions: { sourceType: "module" },
   },
 ];

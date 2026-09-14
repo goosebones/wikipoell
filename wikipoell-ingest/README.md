@@ -1,84 +1,114 @@
 # wikipoell-ingest
 
-Scrapers, importers, and data-quality tooling that feed the Wikipoell archive.
+Scraping and ingest for the Wikipoell archive. The pipeline discovers Carol
+Christian Poell garments on retailer sites, standardises them against the
+archive's vocabulary, and publishes them — routing to a human only when it has
+to.
 
-Everything here is **run by hand** — none of it is on the webapp's request path. It lives in the same repo as the webapp because it shares the same MongoDB, the same R2 bucket, and the same `.env` (at the repo root, one level up).
+**`DESIGN.md` is the specification.** Read it before changing pipeline
+behaviour; this file is just how to run things.
 
-Two source pipelines exist, one per site, plus a Claude-backed review pass that cleans up whatever they produce.
-
-## ccp-room.com — JavaScript
-
-```bash
-npm run ccp-room:scrape              # catalog -> data/ccp-room-garments.json
-npm run ccp-room:import -- --dry-run # that JSON -> R2 + MongoDB (pending)
-npm run ccp-room:backfill -- --dry-run
-```
-
-| Step     | File                                 | Notes                                                                                                                                                                                                                                                      |
-| -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Scrape   | `ccp-room/scrape.js`                 | Writes `data/ccp-room-garments.json`. Image URLs stay pointed at ccp-room.com at this stage.                                                                                                                                                               |
-| Import   | `ccp-room/import.js`                 | Downloads each image, converts to WebP via Sharp (quality 85, matching the webapp's upload pipeline), uploads to R2 under `<imageGroupId>/<uuid>.webp`, inserts a `Garment` with `status: "pending"`. Failures land in `data/import-ccp-room-errors.json`. |
-| Backfill | `ccp-room/backfill-article-codes.js` | Re-parses article codes for documents where `type`/`material` came out null. Matches on `source.url`.                                                                                                                                                      |
-
-Both `import` and `backfill` take `--dry-run`. Use it first — `import` writes to R2 and MongoDB, and neither is easy to undo.
-
-## thelibrary1994.com — Python notebooks
+## Quick start
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-.venv/bin/jupyter lab   # or point your editor at .venv
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+
+.venv/bin/python -m ingest sources                      # what's registered
+.venv/bin/python -m ingest run --dry-run                # everything, writes nothing
+.venv/bin/python -m ingest run ccp-room --dry-run       # one source
+.venv/bin/python -m ingest run ccp-room --limit 20      # live, capped
 ```
 
-Run in order; each reads what the previous one wrote:
+Sources are **positional**. With none given, every registered source runs.
+An unknown name fails before any network request is made.
 
-1. `the-library/1-scrape.ipynb` — Selenium scrape → `the-library/products/`
-2. `the-library/2-process-products.ipynb` — normalises into `the-library/processed_products/`
-3. `the-library/3-upload.ipynb` — uploads to Wikipoell
+| Flag        |                                                                                        |
+| ----------- | -------------------------------------------------------------------------------------- |
+| `--dry-run` | scrape, normalise and route, but write nothing — no garments, no images, no run record |
+| `--limit N` | stop after N listings per source. Use it the first time a new module runs              |
+| `--quiet`   | per-source totals only, no per-listing lines                                           |
+| `--images`  | `auto` (default) / `always` / `never` — when the LLM sees images (Phase 2)             |
+| `--no-llm`  | skip the LLM pass (Phase 2)                                                            |
 
-The notebooks resolve `products/` and `processed_products/` **relative to their own directory**, so run them from `the-library/` and keep those folders as siblings.
+## How it works
 
-`data/library.json` is a Shopify product dump from the same site. Nothing currently reads it — it predates the notebooks and is kept as reference.
-
-## Agent review
-
-```bash
-npm run agent-review -- --deterministic    # no API cost, rules only
-npm run agent-review -- --limit=25
-npm run agent-review -- --auto-apply-corrections
+```
+RawListing → change detect → normalise → route → [LLM] → images → write
+                  │                        │
+            content hash            publish | llm | human
 ```
 
-`agent-review/review.js` reads pending garments that have no proposal yet, sends each to Claude using prior `AgentCorrection` documents as few-shot examples, and writes an `AgentProposal`. An admin then reviews at `/admin/agent` in the webapp; accepting writes back an `AgentCorrection`, which sharpens the next run.
+A **source module** does one thing: turn a site into `RawListing`s. It does no
+classification at all, which is what keeps modules small and replaceable when a
+site changes its markup.
 
-So this script and the webapp are two halves of one loop even though they live in different folders — **`/admin/agent` renders whatever this writes.** Changing the proposal shape here means changing `components/admin/agent-proposal/` there.
+Everything after that is shared:
 
-`--deterministic` skips Claude entirely and applies rule-based fixes only. Prefer it while working on the pipeline itself.
+- `normalize/article_code.py` — parses `LM/2699-IN BIMS-PTC/19` into fields
+- `normalize/title.py` — house-style titles; strips the `/19/st` metadata
+  suffixes ccp-room appends
+- `normalize/category.py` — keyword rules, scoped by the site's own section
+- `normalize/vocabulary.py` — the `Property` collection as a lookup; a value
+  outside it is recorded, never coerced
+- `route.py` — the publish / llm / human decision and its reasons
 
-`--auto-apply-corrections` writes straight to MongoDB for any proposal at confidence ≥ 0.8, with no human review. It is the one flag here that changes published data without a person in the loop.
+Nothing here touches MongoDB. Every read and write goes through the webapp's
+`/api/ingest/*`, so Mongoose stays the single definition of a garment.
 
-## Data
+## Adding a source
 
-| Path                                           | Tracked | What                                                                                                                  |
-| ---------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------- |
-| `data/ccp-room-garments.json`                  | yes     | ccp-room scrape output, the input to `import.js`                                                                      |
-| `data/garments_backup_20260506_072451.json`    | yes     | JSONL garment backup from 2026-05-06 — one JSON object per line, so it is **not** parseable as a single JSON document |
-| `data/library.json`                            | no      | Shopify dump, reference only                                                                                          |
-| `the-library/products/`, `processed_products/` | no      | 313 files each, regenerable from the notebooks                                                                        |
+1. Subclass `Source` in `ingest/sources/<name>.py`, set `name` and `label`,
+   implement `listings()`.
+2. Pick a **site key** — a stable per-site id. It must be unique per listing
+   and survive re-scrapes; see `DESIGN.md` §2 for the two existing choices.
+3. Register it in `ingest/sources/__init__.py`.
+4. `--dry-run --limit 20`, read the output, then widen.
+
+Use `self.get_text(url)` / `self.get_json(url)` rather than httpx directly —
+they carry the rate limiting, retries and Retry-After handling.
+
+## Current status
+
+|                   |                                                                          |
+| ----------------- | ------------------------------------------------------------------------ |
+| `ccp-room`        | ✅ 579 listings from one page request                                    |
+| `the-library`     | Phase 2 — Shopify `/products.json`                                       |
+| LLM pass          | Phase 2 — until then, anything routed to the LLM goes to a human instead |
+| Image upload      | Phase 2                                                                  |
+| The other 7 sites | Phase 4                                                                  |
+
+## Environment
+
+Reads this project's own `.env` — copy `.env.example` and fill it in.
+Shell-exported values take precedence. It does **not** read the webapp's
+`.env` at the repo root; the two are independent.
+
+|                        |                                                   |
+| ---------------------- | ------------------------------------------------- |
+| `WIKIPOELL_API_URL`    | default `http://localhost:3000`                   |
+| `INGEST_API_TOKEN`     | service token for `/api/ingest/*`                 |
+| `ANTHROPIC_API_KEY`    | Phase 2                                           |
+| `INGEST_REQUEST_DELAY` | seconds between requests to one site, default 1.5 |
+| `INGEST_LLM_THRESHOLD` | auto-publish confidence floor, default 0.90       |
+
+`INGEST_API_TOKEN` must match the value in the **webapp's** `.env`, which
+also needs `INGEST_SYSTEM_USER_ID` — the Clerk user pipeline garments are
+attributed to.
+
+Requests go out with httpx's default user agent; no browser string is spoofed.
+All nine sources were verified to respond normally to it.
 
 ## Tooling
 
 ```bash
-npm run lint      # eslint .
-npm run lint:fix
-npm run format    # prettier --write .
-npm run format:check
+.venv/bin/ruff check ingest/     # lint
+.venv/bin/ruff format ingest/    # format
 ```
 
-This project has its own `eslint.config.mjs` and `.prettierignore`, and the webapp's tooling ignores this folder wholesale — the rules here answer to plain Node, not React/Next. Run these **from this directory**; the repo root's `npm run lint` does not reach in here.
+The webapp's eslint/prettier ignore this folder wholesale.
 
-There is no `node_modules` here on purpose: npm puts the repo root's `node_modules/.bin` on `PATH`, so `eslint` and `prettier` resolve from the webapp's install with nothing extra to install. Prettier's own settings are inherited from the root `.prettierrc`.
+## legacy/
 
-Scripts are CommonJS except `agent-review/review.js`, which is ESM; the ESLint config encodes that per-file, so `import` in a `ccp-room/` script is an error.
-
-## Environment
-
-Reads the webapp's `.env` at the repo root via `process.loadEnvFile()`; variables already exported in your shell take precedence. Needs `MONGODB_URL`, the `R2_*` group (for `import.js`), and `ANTHROPIC_API_KEY` (for `agent-review`, unless `--deterministic`).
+The scrapers this replaces: the ccp-room JS scripts, the Library notebooks, and
+`agent-review/review.js`. Kept for reference, not maintained. Their logic has
+been ported into `ingest/normalize/`.
