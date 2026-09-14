@@ -20,7 +20,14 @@ A garment is one MongoDB document identified by `type + gender + model + procedu
 
 Deduplication is **per site only**. The same article code on ccp-room and on The Library is two garments with two sources. There is no cross-site merging. (DECIDED)
 
-Within a site, a listing is identified by a **site key** — a stable string the site itself provides. Per site, this is either the SKU or the canonical URL path, chosen when that site's module is written. For ccp-room and The Library it is the **URL path**, because that is what the 815 existing garments can be backfilled from (all 815 have a unique `source.url`). (PROPOSED)
+Within a site, a listing is identified by a **site key** — a stable string the site itself provides, chosen per site when its module is written. For the two existing sources it is derived from `source.url`, because that is what the existing garments can be backfilled from (all have a unique one) — but the derivation differs, and the Python modules must match it exactly (DECIDED):
+
+| Source        | Site key                            | Example                                     | Why                                                                                    |
+| ------------- | ----------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `ccp-room`    | URL **fragment**                    | `o-d-box-leather-parka-19`                  | Single-page catalog: every URL is `/catalog/#<slug>`, so the path is identical for all |
+| `the-library` | URL **pathname**, no trailing slash | `/products/object-dyed-drip-rubber-sneaker` | Shopify handle                                                                         |
+
+Both are unique across every existing garment (verified: 502 unique fragments, 313 unique paths).
 
 Marketplace sites (Grailed, eBay) are out of scope for now. (DECIDED)
 
@@ -190,7 +197,7 @@ Unique partial index on `{ "ingest.source": 1, "ingest.siteKey": 1 }`. The exist
     error: String,      // set when the whole source threw — the "scraper broke" signal
   }],
   totals: { … same counters summed … },
-  errors: [{ source, siteKey, url, message }],   // per-listing failures, capped at 200
+  failures: [{ source, siteKey, url, message }], // per-listing, capped at 200 (`errors` is reserved by Mongoose)
 }
 ```
 

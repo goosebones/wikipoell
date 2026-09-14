@@ -22,7 +22,7 @@ import SignInPrompt from "@/components/sign-in-prompt";
 
 export default function GarmentCreatePage() {
   const router = useRouter();
-  const { isSignedIn, user } = useUser();
+  const { isSignedIn } = useUser();
 
   const { properties } = useProperties();
 
@@ -95,7 +95,6 @@ export default function GarmentCreatePage() {
       const payload = {
         imageGroupId: garmentImageId,
         ...restGarmentData,
-        ...(user?.id && { uploadedByUserId: user.id }),
         images,
         ...(sourcePayload && { source: sourcePayload }),
       };

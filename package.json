@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "migrate:ingest": "node scripts/migrate-ingest.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.95.1",

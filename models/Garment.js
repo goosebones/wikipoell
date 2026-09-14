@@ -10,6 +10,43 @@ function procedureValidator(value) {
   return false;
 }
 
+/**
+ * Set only on garments created or touched by the ingest pipeline
+ * (wikipoell-ingest). Absent on user submissions.
+ */
+const IngestReviewSchema = new mongoose.Schema(
+  {
+    required: Boolean,
+    reasons: { type: [String], default: undefined },
+    stage: String, // "deterministic" | "llm"
+    fields: mongoose.Schema.Types.Mixed, // { material: { value, confidence, origin }, … }
+    llm: {
+      model: String,
+      confidence: Number,
+      notes: String,
+    },
+  },
+  { _id: false },
+);
+
+const IngestSchema = new mongoose.Schema(
+  {
+    source: String, // "ccp-room", "the-library", …
+    siteKey: String, // stable per-site id; derivation is per source
+    sourceUrl: String,
+    contentHash: String,
+    runId: String, // run that created it
+    lastRunId: String, // run that last touched it
+    firstSeenAt: Date,
+    lastSeenAt: Date,
+    // Set whenever an admin publishes or edits. Once set, the pipeline only
+    // refreshes lastSeenAt/contentHash and appends images — never fields.
+    humanReviewedAt: Date,
+    review: IngestReviewSchema,
+  },
+  { _id: false },
+);
+
 const GarmentSchema = new mongoose.Schema(
   {
     imageGroupId: String,
@@ -51,9 +88,20 @@ const GarmentSchema = new mongoose.Schema(
       label: String,
       url: String,
     },
+    ingest: IngestSchema,
   },
   {
     timestamps: true,
+  },
+);
+
+// One document per listing per site. Partial so user submissions (no ingest
+// subdocument) are unaffected.
+GarmentSchema.index(
+  { "ingest.source": 1, "ingest.siteKey": 1 },
+  {
+    unique: true,
+    partialFilterExpression: { "ingest.siteKey": { $exists: true } },
   },
 );
 
