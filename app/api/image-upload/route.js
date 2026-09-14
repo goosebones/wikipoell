@@ -1,10 +1,6 @@
 import { NextResponse } from "next/server";
-import sharp from "sharp";
-import { uploadToR2 } from "@/lib/r2";
 import { auth } from "@clerk/nextjs/server";
-
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+import { storeGarmentImage, ImageValidationError } from "@/lib/garment-images";
 
 export async function POST(request) {
   const { isAuthenticated } = await auth();
@@ -25,31 +21,16 @@ export async function POST(request) {
       );
     }
 
-    const { type, size } = file;
-    if (!ALLOWED_TYPES.includes(type)) {
-      return NextResponse.json(
-        { error: "Invalid file type. Use JPEG, PNG, GIF, or WebP." },
-        { status: 400 },
-      );
-    }
-    if (size > MAX_SIZE) {
-      return NextResponse.json(
-        { error: "File too large. Max 10MB." },
-        { status: 400 },
-      );
-    }
-
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const webpBuffer = await sharp(buffer).webp({ quality: 85 }).toBuffer();
-
-    const url = await uploadToR2(webpBuffer, "image/webp", {
-      key: `${garmentId}/${imageId}.webp`,
+    const url = await storeGarmentImage(file, {
+      groupId: garmentId,
+      imageId,
     });
 
     return NextResponse.json({ url });
   } catch (err) {
+    if (err instanceof ImageValidationError) {
+      return NextResponse.json({ error: err.message }, { status: err.status });
+    }
     console.error("Upload error:", err);
     return NextResponse.json(
       { error: err.message || "Upload failed" },

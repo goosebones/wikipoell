@@ -59,6 +59,7 @@ app/
     search-suggestions/         homepage typeahead
     webhooks/clerk/             user.created/updated/deleted → MongoDB
     admin/*                     admin-only mutations
+    ingest/*                    service-token API for wikipoell-ingest (see below)
 ```
 
 `proxy.ts` at the repo root is the Next 16 middleware file (renamed from `middleware.ts`); it just wires up `clerkMiddleware()`.
@@ -86,6 +87,9 @@ This is checked in **two independent places**, and both are required — `app/ad
 - **`HomepageBackground`** — rotating homepage imagery.
 - **`AgentProposal`** — one per (garment, run). Holds `before`, `proposal`, and `status: pending | accepted | skipped`. Note the document field is `proposal`, usually destructured as `proposed` in components.
 - **`AgentCorrection`** — records what an admin actually accepted, keyed uniquely by `garmentId`. These become the few-shot examples for the next agent run.
+- **`IngestRun`** — one per pipeline invocation; its `_id` is the `runId` stamped on every garment that run created or touched.
+
+`Garment.ingest` is a subdocument present only on pipeline-originated garments: `source`, `siteKey` (unique per source — partial index), `contentHash`, `runId`/`lastRunId`, `firstSeenAt`/`lastSeenAt`, `humanReviewedAt`, and `review` (why it was routed to a person, with per-field confidence). **Any admin PATCH sets `ingest.humanReviewedAt`**, and from then on the pipeline may only refresh `lastSeenAt` and append images — enforced in `lib/ingest-garments.js`, not trusted from the client.
 
 `Category` and `Property` are defined inline in `lib/categories.js` and `lib/properties.js`, not in `models/`.
 
@@ -145,6 +149,25 @@ npm run agent-review -- --deterministic
 
 The coupling that does matter runs through the database: `agent-review` writes the `AgentProposal` documents that `/admin/agent` renders, so changing the proposal shape means changing `components/admin/agent-proposal/` too.
 
+### Ingest API (`/api/ingest/*`)
+
+The new pipeline (see `wikipoell-ingest/DESIGN.md`) never touches MongoDB directly; it talks to these routes. Auth is a shared bearer token, `INGEST_API_TOKEN` — compared in constant time by `lib/ingest-auth.js`, failing closed (503) if unset. Nothing else accepts it, and these routes accept nothing else. Every route is wrapped by `ingestRoute()` in `lib/ingest-route.js`, which does the token check, `initMongo()`, and maps typed errors (`IngestValidationError` → 400, `IngestConflictError` → 409) to responses.
+
+| Route                              | Purpose                                                                                                  |
+| ---------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `GET /api/ingest/context`          | Properties, categories, 50 most recent `AgentCorrection`s, system user id — one call at run start        |
+| `GET /api/ingest/garments?source=` | Dedup index: `{ id, siteKey, contentHash, status, humanReviewedAt }` per garment of that source          |
+| `POST /api/ingest/garments`        | Create; body `{ publish, fields, images, imageGroupId, source, ingest }`. Server sets status + uploader  |
+| `PATCH /api/ingest/garments/:id`   | Re-scrape update, policy enforced server-side; status only ever moves `pending → published`              |
+| `PATCH /api/ingest/garments/touch` | Batch `lastSeenAt` bump, `{ runId, ids }`                                                                |
+| `POST /api/ingest/runs`            | Open a run → `runId`                                                                                     |
+| `PATCH /api/ingest/runs/:id`       | Progress; a terminal `status` sets `finishedAt`/`durationMs`. `sources`/`totals`/`failures` are replaced |
+| `POST /api/ingest/images`          | Multipart → WebP → R2, via the same `lib/garment-images.js` path user uploads use                        |
+
+`uploadedByUserId` on pipeline garments is always `INGEST_SYSTEM_USER_ID` from env. (The user-facing `POST /api/garment` likewise takes it from the Clerk session now, never the body.)
+
+`scripts/migrate-ingest.mjs` (`npm run migrate:ingest`, `--apply` to execute) is the one-off that backfills `ingest` onto the 469 published garments and deletes the 346 pending ones. It refuses to run if those counts have changed.
+
 The webapp's tooling ignores it wholesale — `tsconfig.json` excludes it, and so do `eslint.config.mjs` and `.prettierignore`. It carries its own `eslint.config.mjs` and `.prettierignore` instead, with its own `lint`/`format` scripts, because its rules answer to plain Node rather than React/Next. **Lint and format it from inside that directory**; the root scripts do not reach in.
 
 ## Environment Variables
@@ -155,6 +178,7 @@ See `.env.example`:
 - `R2_TOKEN_VALUE`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_S3_API_URL`, `R2_PUBLIC_URL`, `R2_BACKGROUND_PUBLIC_URL`
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET`
 - `ANTHROPIC_API_KEY` — only needed by `wikipoell-ingest/agent-review/`
+- `INGEST_API_TOKEN`, `INGEST_SYSTEM_USER_ID` — the `/api/ingest/*` service token and the Clerk user pipeline garments are attributed to
 
 `R2_PUBLIC_URL` and `R2_BACKGROUND_PUBLIC_URL` are read at build time by `next.config.ts` to construct `remotePatterns`, so the build needs them set.
 

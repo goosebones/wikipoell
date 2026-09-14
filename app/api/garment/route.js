@@ -28,8 +28,8 @@ function normalizeProcedure(procedure) {
 }
 
 export async function POST(request) {
-  const { isAuthenticated } = await auth();
-  if (!isAuthenticated) {
+  const { isAuthenticated, userId } = await auth();
+  if (!isAuthenticated || !userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -50,7 +50,6 @@ export async function POST(request) {
       title,
       model,
       images,
-      uploadedByUserId,
       source,
     } = body || {};
 
@@ -111,7 +110,7 @@ export async function POST(request) {
       title: title ?? null,
       model: model ?? null,
       images: imageList,
-      uploadedByUserId: uploadedByUserId ?? null,
+      uploadedByUserId: userId,
       ...(sourceDoc && { source: sourceDoc }),
     });
 

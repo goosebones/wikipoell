@@ -33,6 +33,10 @@ export async function PATCH(request, { params }) {
       );
     }
 
+    // From here on the ingest pipeline only refreshes lastSeenAt and appends
+    // images — it never overwrites what a person decided (DESIGN.md §6).
+    update["ingest.humanReviewedAt"] = new Date();
+
     const garment = await patchGarmentById(id, update);
     if (!garment) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
