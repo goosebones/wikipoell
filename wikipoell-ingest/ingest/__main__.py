@@ -14,6 +14,7 @@ import time
 
 from ingest.client import WikipoellClient
 from ingest.config import Config
+from ingest.llm import LlmReviewer
 from ingest.normalize.vocabulary import Vocabulary
 from ingest.runner import Runner, RunReport, new_run_id, stats_to_json
 from ingest.sources import REGISTRY, resolve
@@ -72,11 +73,32 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     started = time.monotonic()
     with WikipoellClient(config) as client:
-        vocab = Vocabulary.from_context(client.context())
+        context = client.context()
+        vocab = Vocabulary.from_context(context)
+        corrections = context.get("corrections", [])
         print(
             f"vocab   : {sum(len(v) for v in vocab.values.values())} property values, "
             f"{len(vocab.categories)} categories"
         )
+
+        llm = None
+        if args.no_llm:
+            print("llm     : disabled (--no-llm)")
+        elif not config.anthropic_api_key:
+            print("llm     : disabled (ANTHROPIC_API_KEY not set)")
+        else:
+            llm = LlmReviewer(
+                config.anthropic_api_key,
+                vocab,
+                corrections,
+                images_mode=args.images,
+                threshold=config.llm_threshold,
+            )
+            print(
+                f"llm     : {llm.model}, images={args.images}, "
+                f"{len(corrections)} few-shot examples, "
+                f"threshold {config.llm_threshold}"
+            )
 
         if args.dry_run:
             run_id = f"dry-run-{new_run_id()[:8]}"
@@ -99,10 +121,16 @@ def cmd_run(args: argparse.Namespace) -> int:
             limit=args.limit,
             threshold=config.llm_threshold,
             verbose=not args.quiet,
+            llm=llm,
         )
 
-        for source in sources:
-            report.sources.append(runner.run_source(source, report))
+        try:
+            for source in sources:
+                report.sources.append(runner.run_source(source, report))
+        finally:
+            runner.close()
+            if llm is not None:
+                llm.close()
 
         totals = report.totals()
         any_failed = any(s.status == "failed" for s in report.sources)

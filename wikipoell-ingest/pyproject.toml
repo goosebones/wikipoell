@@ -11,11 +11,10 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+# Lint and format. Installed by: pip install -e ".[dev]"
+dev = ["ruff>=0.6"]
 # Only for the legacy notebooks under legacy/. Not used by the pipeline.
 notebooks = ["firecrawl-py", "ipykernel", "PySocks", "selenium"]
-
-[dependency-groups]
-dev = ["ruff>=0.6"]
 
 [tool.ruff]
 line-length = 88

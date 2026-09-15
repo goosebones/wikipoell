@@ -59,21 +59,39 @@ class Config:
     anthropic_api_key: str | None
     request_delay: float
     llm_threshold: float
+    # Trust store for the API connection only; never applies to scraped sites.
+    # Set INGEST_CA_BUNDLE when the webapp is served over HTTPS with a
+    # locally-issued certificate, pointing at the issuing CA. The hostname in
+    # WIKIPOELL_API_URL must match that certificate.
+    api_ca_bundle: str | None
 
     @classmethod
     def load(cls) -> Config:
         load_dotenv()
         api_url = os.environ.get("WIKIPOELL_API_URL", "http://localhost:3000")
-        token = os.environ.get("INGEST_API_TOKEN", "")
+        ca_bundle = os.environ.get("INGEST_CA_BUNDLE") or None
+        if ca_bundle:
+            resolved = Path(ca_bundle).expanduser()
+            if not resolved.is_absolute():
+                resolved = (PROJECT_ROOT / resolved).resolve()
+            if not resolved.exists():
+                raise RuntimeError(f"INGEST_CA_BUNDLE does not exist: {resolved}")
+            ca_bundle = str(resolved)
         return cls(
             api_url=api_url.rstrip("/"),
-            api_token=token,
+            api_token=os.environ.get("INGEST_API_TOKEN", ""),
             anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
             request_delay=float(os.environ.get("INGEST_REQUEST_DELAY", "1.5")),
             llm_threshold=float(
                 os.environ.get("INGEST_LLM_THRESHOLD", LLM_CONFIDENCE_THRESHOLD)
             ),
+            api_ca_bundle=ca_bundle,
         )
+
+    @property
+    def api_verify(self) -> str | bool:
+        """What httpx should verify the API's certificate against."""
+        return self.api_ca_bundle or True
 
     def require_token(self) -> str:
         if not self.api_token:

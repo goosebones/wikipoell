@@ -10,14 +10,36 @@ behaviour; this file is just how to run things.
 
 ## Quick start
 
-```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev]"
+One-time setup, from this directory:
 
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -e ".[dev]"    # deps + ruff, editable
+cp .env.example .env                 # then fill in INGEST_API_TOKEN
+```
+
+The pipeline talks to the webapp's API, so **the webapp has to be running**.
+`WIKIPOELL_API_URL` in `.env` must point at it:
+
+| Webapp command  | Serves                                              | Set `WIKIPOELL_API_URL` to |
+| --------------- | --------------------------------------------------- | -------------------------- |
+| `npm run start` | `http://localhost:3000`                             | `http://localhost:3000`    |
+| `npm run dev`   | `https://localhost` (port 443, locally-issued cert) | needs `INGEST_CA_BUNDLE`   |
+
+`npm run start` needs a production build first (`npm run build`). Use that one.
+
+Then:
+
+```bash
 .venv/bin/python -m ingest sources                      # what's registered
 .venv/bin/python -m ingest run --dry-run                # everything, writes nothing
 .venv/bin/python -m ingest run ccp-room --dry-run       # one source
 .venv/bin/python -m ingest run ccp-room --limit 20      # live, capped
 ```
+
+`pip install -e` puts the package on the path, so `python -m ingest` works from
+any directory once the venv is active. Activate it with
+`source .venv/bin/activate` if you would rather type `python -m ingest`.
 
 Sources are **positional**. With none given, every registered source runs.
 An unknown name fails before any network request is made.
@@ -83,13 +105,14 @@ Reads this project's own `.env` — copy `.env.example` and fill it in.
 Shell-exported values take precedence. It does **not** read the webapp's
 `.env` at the repo root; the two are independent.
 
-|                        |                                                   |
-| ---------------------- | ------------------------------------------------- |
-| `WIKIPOELL_API_URL`    | default `http://localhost:3000`                   |
-| `INGEST_API_TOKEN`     | service token for `/api/ingest/*`                 |
-| `ANTHROPIC_API_KEY`    | Phase 2                                           |
-| `INGEST_REQUEST_DELAY` | seconds between requests to one site, default 1.5 |
-| `INGEST_LLM_THRESHOLD` | auto-publish confidence floor, default 0.90       |
+|                        |                                                                                                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WIKIPOELL_API_URL`    | default `http://localhost:3000`                                                                                                                                              |
+| `INGEST_API_TOKEN`     | service token for `/api/ingest/*`                                                                                                                                            |
+| `ANTHROPIC_API_KEY`    | Phase 2                                                                                                                                                                      |
+| `INGEST_CA_BUNDLE`     | CA for the API's certificate when it is HTTPS with a local cert. Supports `~` and project-relative paths. Applies to the API only — scraped sites use the normal trust store |
+| `INGEST_REQUEST_DELAY` | seconds between requests to one site, default 1.5                                                                                                                            |
+| `INGEST_LLM_THRESHOLD` | auto-publish confidence floor, default 0.90                                                                                                                                  |
 
 `INGEST_API_TOKEN` must match the value in the **webapp's** `.env`, which
 also needs `INGEST_SYSTEM_USER_ID` — the Clerk user pipeline garments are

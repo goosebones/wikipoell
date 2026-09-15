@@ -69,6 +69,10 @@ const GarmentSchema = new mongoose.Schema(
     images: [
       {
         url: { type: String, required: true },
+        // Where the pipeline fetched it from, before the R2 copy. Each upload
+        // gets a fresh UUID URL, so this is the only stable key for "do we
+        // already have this image?" on a re-scrape. Absent on user uploads.
+        sourceUrl: String,
       },
     ],
     status: {

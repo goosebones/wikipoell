@@ -18,7 +18,9 @@ npm run format        # Prettier write
 npm run format:check  # Prettier check
 ```
 
-Dev runs on **https://local.wikipoell.com** (port 443, `--experimental-https`, allowlisted via `allowedDevOrigins` in `next.config.ts`); certs live in `certificates/`.
+Dev runs HTTPS on port 443 (`--experimental-https`); certs live in `certificates/`.
+
+To serve dev under a hostname other than `localhost`, set `DEV_ORIGIN` in `.env` — `next.config.ts` passes it to `allowedDevOrigins`. Local-machine setup (hosts file, certificates) stays out of the repo.
 
 No test suite exists in this project. `npm run build` is the main correctness gate — run it after non-trivial changes.
 

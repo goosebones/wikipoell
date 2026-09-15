@@ -45,9 +45,15 @@ def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
     if listing.gender_hint and "gender" not in draft.fields:
         draft.set("gender", listing.gender_hint, HINT_CONFIDENCE, Origin.HINT)
 
-    category = resolve_category(listing.category_hint, title)
-    if category:
-        draft.set("category", category, TITLE_CONFIDENCE, Origin.TITLE)
+    # A source may hand us either a section name to run keyword rules against
+    # (ccp-room: "leather", "footwear") or an already-resolved category
+    # (the-library maps its Shopify tags directly). Trust the latter.
+    if vocab.knows_category(listing.category_hint):
+        draft.set("category", listing.category_hint, HINT_CONFIDENCE, Origin.HINT)
+    else:
+        category = resolve_category(listing.category_hint, title)
+        if category:
+            draft.set("category", category, TITLE_CONFIDENCE, Origin.TITLE)
 
     for name in VOCAB_FIELDS:
         if name in draft.fields:
