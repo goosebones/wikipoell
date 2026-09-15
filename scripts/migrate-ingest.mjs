@@ -4,16 +4,23 @@
  *   node scripts/migrate-ingest.mjs            # dry run: report only
  *   node scripts/migrate-ingest.mjs --apply    # do it
  *
- * Splits existing garments by status:
+ * Three things, by status:
  *   - published → backfilled with an `ingest` subdocument and marked
  *     human-reviewed, so the pipeline recognises them and never touches
  *     their fields
  *   - pending   → deleted; the pipeline re-discovers those listings fresh
+ *   - agentproposals collection → dropped entirely; the new pipeline
+ *     classifies before a garment lands, so there is no separate proposal
+ *     step. AgentCorrection is KEPT — it records human judgement and feeds
+ *     the LLM pass as few-shot examples.
  *
- * Refuses to apply unless the counts match what was true when this was
- * written (469 published, 346 pending). Override with
- * --expect-published=N --expect-pending=N if you have checked the
- * difference yourself.
+ * Guarded on invariants rather than exact counts, so ordinary review
+ * activity between writing and running this does not trip it:
+ *   - nothing has been migrated already
+ *   - every published garment has a known source.label and a usable
+ *     source.url
+ *   - derived site keys are unique per source
+ * The dry run prints the exact counts; read them before passing --apply.
  *
  * Site keys are derived per source and must match what the Python modules
  * compute:
@@ -27,12 +34,7 @@ import mongoose from "mongoose";
 process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
 
 const APPLY = process.argv.includes("--apply");
-const num = (flag, dflt) => {
-  const a = process.argv.find((x) => x.startsWith(`--${flag}=`));
-  return a ? parseInt(a.split("=")[1], 10) : dflt;
-};
-const EXPECT_PUBLISHED = num("expect-published", 469);
-const EXPECT_PENDING = num("expect-pending", 346);
+const KEEP_PROPOSALS = process.argv.includes("--keep-proposals");
 
 const SOURCES = {
   "CCP-ROOM": {
@@ -83,11 +85,11 @@ async function main() {
     );
   }
 
-  if (published !== EXPECT_PUBLISHED || pending !== EXPECT_PENDING) {
-    fail(
-      `Expected ${EXPECT_PUBLISHED} published / ${EXPECT_PENDING} pending, ` +
-        `found ${published} / ${pending}. Re-check and pass --expect-* to override.`,
-    );
+  if (other.length) {
+    fail(`Unexpected garment statuses present: ${JSON.stringify(other)}`);
+  }
+  if (published === 0) {
+    fail("No published garments found — is this the right database?");
   }
 
   // ---- plan the backfill --------------------------------------------------
@@ -152,6 +154,19 @@ async function main() {
   }
   console.log(`delete plan:   ${pending} pending garments`);
 
+  const P = mongoose.connection.collection("agentproposals");
+  const C = mongoose.connection.collection("agentcorrections");
+  const proposals = await P.countDocuments();
+  const corrections = await C.countDocuments();
+  console.log(
+    KEEP_PROPOSALS
+      ? `proposals:     ${proposals} kept (--keep-proposals)`
+      : `proposals:     ${proposals} AgentProposal docs to delete`,
+  );
+  console.log(
+    `corrections:   ${corrections} AgentCorrection docs KEPT (feed the LLM pass)`,
+  );
+
   if (problems.length) {
     console.log(`\nproblems (${problems.length}):`);
     problems.slice(0, 20).forEach((p) => console.log(`  - ${p}`));
@@ -186,7 +201,12 @@ async function main() {
   console.log(`  backfilled ${bulk.modifiedCount}`);
 
   const del = await G.deleteMany({ status: "pending" });
-  console.log(`  deleted ${del.deletedCount} pending`);
+  console.log(`  deleted ${del.deletedCount} pending garments`);
+
+  if (!KEEP_PROPOSALS) {
+    const delProposals = await P.deleteMany({});
+    console.log(`  deleted ${delProposals.deletedCount} agent proposals`);
+  }
 
   // ---- verify ---------------------------------------------------------------
   const total = await G.countDocuments();
@@ -194,9 +214,21 @@ async function main() {
   const reviewed = await G.countDocuments({
     "ingest.humanReviewedAt": { $exists: true },
   });
+  const proposalsLeft = await P.countDocuments();
+  const correctionsLeft = await C.countDocuments();
   console.log(
     `\nverify: total=${total} keyed=${keyed} humanReviewed=${reviewed} (expected ${published} each)`,
   );
+  console.log(
+    `        proposals=${proposalsLeft} (expected ${KEEP_PROPOSALS ? proposals : 0}), ` +
+      `corrections=${correctionsLeft} (expected ${corrections})`,
+  );
+  if (correctionsLeft !== corrections) {
+    console.error(
+      "✖ AgentCorrection count changed — these should never be touched",
+    );
+    process.exitCode = 1;
+  }
   if (total !== published || keyed !== published || reviewed !== published) {
     console.error(
       "✖ verification mismatch — inspect before running the pipeline",

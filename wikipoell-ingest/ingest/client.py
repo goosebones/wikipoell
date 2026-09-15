@@ -25,6 +25,8 @@ class ExistingGarment:
     content_hash: str | None
     status: str
     human_reviewed: bool
+    #: Source URLs already copied into R2, so we never fetch them twice.
+    image_source_urls: frozenset[str] = frozenset()
 
 
 class WikipoellClient:
@@ -34,6 +36,7 @@ class WikipoellClient:
             base_url=config.api_url,
             headers={"Authorization": f"Bearer {config.require_token()}"},
             timeout=TIMEOUT,
+            verify=config.api_verify,
         )
 
     def close(self) -> None:
@@ -70,6 +73,7 @@ class WikipoellClient:
                 content_hash=row.get("contentHash"),
                 status=row["status"],
                 human_reviewed=bool(row.get("humanReviewedAt")),
+                image_source_urls=frozenset(row.get("imageSourceUrls") or []),
             )
             for row in payload["garments"]
         }

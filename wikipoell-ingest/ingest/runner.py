@@ -12,10 +12,11 @@ import uuid
 from dataclasses import asdict, dataclass, field
 
 from ingest.client import WikipoellClient
+from ingest.images import ImageCopier
 from ingest.models import Decision, Draft, RawListing, Route
 from ingest.normalize.draft import normalize
 from ingest.normalize.vocabulary import Vocabulary
-from ingest.route import decide
+from ingest.route import decide, missing_fields
 from ingest.sources.base import Source
 
 
@@ -31,6 +32,11 @@ class SourceStats:
     published: int = 0
     needsReview: int = 0
     failed: int = 0
+    imagesCopied: int = 0
+    imagesFailed: int = 0
+    llmCalls: int = 0
+    llmFailed: int = 0
+    # Set when the whole source threw — the "scraper broke" signal.
     error: str | None = None
 
 
@@ -49,6 +55,10 @@ class RunReport:
             "published",
             "needsReview",
             "failed",
+            "imagesCopied",
+            "imagesFailed",
+            "llmCalls",
+            "llmFailed",
         )
         return {k: sum(getattr(s, k) for s in self.sources) for k in keys}
 
@@ -64,6 +74,7 @@ class Runner:
         limit: int | None = None,
         threshold: float = 0.90,
         verbose: bool = True,
+        llm=None,
     ) -> None:
         self.client = client
         self.vocab = vocab
@@ -72,6 +83,11 @@ class Runner:
         self.limit = limit
         self.threshold = threshold
         self.verbose = verbose
+        self.llm = llm
+        self.images = ImageCopier(client)
+
+    def close(self) -> None:
+        self.images.close()
 
     # -- one source --------------------------------------------------------
 
@@ -140,11 +156,23 @@ class Runner:
         draft = normalize(listing, self.vocab)
         decision = decide(draft, self.vocab, threshold=self.threshold)
 
+        stage = "deterministic"
         if decision.route is Route.LLM:
-            # Phase 2 wires the LLM in here. Until then, anything that would
-            # have gone to the LLM goes to a person instead — which is the
-            # safe direction to be wrong in.
-            decision = Decision(Route.HUMAN, [*decision.reasons, "llm_not_implemented"])
+            if self.llm is None:
+                # No API key, or --no-llm. A person is the safe fallback.
+                decision = Decision(Route.HUMAN, [*decision.reasons, "llm_skipped"])
+            else:
+                stage = "llm"
+                stats.llmCalls += 1
+                try:
+                    draft = self.llm.review(draft, missing_fields(draft))
+                except Exception as exc:
+                    draft.llm_confidence = 0.0
+                    draft.llm_notes = f"LLM error: {str(exc)[:200]}"
+                    stats.llmFailed += 1
+                decision = decide(
+                    draft, self.vocab, after_llm=True, threshold=self.threshold
+                )
 
         if decision.publish:
             stats.published += 1
@@ -161,15 +189,15 @@ class Runner:
                 stats.created += 1
             return
 
-        self._write(listing, source, draft, decision, known, content_hash, stats)
+        self._write(listing, source, draft, decision, known, content_hash, stats, stage)
 
     def _write(
-        self, listing, source, draft, decision, known, content_hash, stats
+        self, listing, source, draft, decision, known, content_hash, stats, stage
     ) -> None:
         review = {
             "required": not decision.publish,
             "reasons": decision.reasons,
-            "stage": "deterministic",
+            "stage": stage,
             "fields": draft.review_fields(),
         }
         if draft.llm_confidence is not None:
@@ -180,25 +208,40 @@ class Runner:
             }
 
         if known:
+            # Only copy source images this garment does not already have. Each
+            # R2 upload mints a new UUID url, so without this every change to a
+            # listing would duplicate its whole image set.
+            fresh = [u for u in listing.images if u not in known.image_source_urls]
+            image_group_id = str(uuid.uuid4())
+            copied = self._copy_images(listing, image_group_id, stats, urls=fresh)
             self.client.update_garment(
                 known.id,
                 {
                     "runId": self.run_id,
                     "publish": decision.publish,
                     "fields": draft.field_values(),
-                    "images": listing.images,
+                    "images": copied.images,
                     "ingest": {"contentHash": content_hash, "review": review},
                 },
             )
             stats.updated += 1
             return
 
+        image_group_id = str(uuid.uuid4())
+        copied = self._copy_images(listing, image_group_id, stats)
+        if not copied.ok:
+            # The API requires at least one image, and a garment with none is
+            # not worth publishing anyway.
+            raise RuntimeError(
+                f"no images could be copied ({len(copied.failures)} failed)"
+            )
+
         self.client.create_garment(
             {
                 "publish": decision.publish,
                 "fields": draft.field_values(),
-                "images": listing.images,
-                "imageGroupId": str(uuid.uuid4()),
+                "images": copied.images,
+                "imageGroupId": image_group_id,
                 "source": {"label": source.label, "url": listing.url},
                 "ingest": {
                     "source": source.name,
@@ -211,6 +254,18 @@ class Runner:
             }
         )
         stats.created += 1
+
+    def _copy_images(self, listing, image_group_id: str, stats, urls=None):
+        """Download the listing's images into R2. Never hotlink (DESIGN.md §4.5)."""
+        copied = self.images.copy(
+            listing.images if urls is None else urls, image_group_id
+        )
+        stats.imagesCopied += len(copied.images)
+        stats.imagesFailed += len(copied.failures)
+        if copied.failures and self.verbose:
+            for failure in copied.failures[:2]:
+                print(f"       image: {failure}")
+        return copied
 
     # -- output ------------------------------------------------------------
 
@@ -230,6 +285,16 @@ class Runner:
             f"{s.created} created, {s.updated} updated "
             f"({s.published} publish / {s.needsReview} review), {s.failed} failed"
         )
+        if s.llmCalls:
+            print(
+                f"   llm   : {s.llmCalls} calls"
+                + (f", {s.llmFailed} failed" if s.llmFailed else "")
+            )
+        if s.imagesCopied or s.imagesFailed:
+            print(
+                f"   images: {s.imagesCopied} copied to R2"
+                + (f", {s.imagesFailed} failed" if s.imagesFailed else "")
+            )
         if s.error:
             print(f"   error: {s.error}")
 

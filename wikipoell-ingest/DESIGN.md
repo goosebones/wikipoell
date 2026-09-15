@@ -150,6 +150,10 @@ Always copied to R2, never hotlinked. Python downloads each image and POSTs it t
 
 On update, new images are appended; existing images are never removed by the pipeline.
 
+Each image stores the **source URL it was fetched from** alongside its R2 url, and both client and server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match, and a single edit to a listing would append its entire image set again on every run. The run-start index returns each garment's known source urls, so the pipeline skips downloading them at all.
+
+Each image stores the **source URL it was fetched from** alongside its R2 url, and both the client and the server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match and a single edit to a listing would append its entire image set again on every run. The run-start index returns each garment's known source urls so the pipeline skips downloading them at all.
+
 Skipped entirely on `--dry-run`.
 
 ## 5. Data model changes (webapp)

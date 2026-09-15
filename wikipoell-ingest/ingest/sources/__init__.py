@@ -4,11 +4,13 @@ from __future__ import annotations
 
 from ingest.sources.base import Source
 from ingest.sources.ccp_room import CcpRoomSource
+from ingest.sources.the_library import TheLibrarySource
 
 # Name → factory. The CLI resolves positional arguments against this; with no
 # arguments it runs every entry.
 REGISTRY: dict[str, type[Source]] = {
     CcpRoomSource.name: CcpRoomSource,
+    TheLibrarySource.name: TheLibrarySource,
 }
 
 
