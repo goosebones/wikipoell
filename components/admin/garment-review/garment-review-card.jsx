@@ -12,6 +12,7 @@ import GarmentImageStrip from "@/components/admin/shared/garment-image-strip";
 import GarmentFieldGrid from "@/components/admin/shared/garment-field-grid";
 import GarmentSourceLink from "@/components/admin/shared/garment-source-link";
 import UnknownPropertyBanner from "@/components/admin/shared/unknown-property-banner";
+import IngestMeta from "@/components/admin/ingest/ingest-meta";
 import GarmentReviewActions from "@/components/admin/garment-review/garment-review-actions";
 import ImageLightboxModal from "@/components/admin/garment-review/image-lightbox-modal";
 import PropertyModal from "@/components/admin/shared/property-modal";
@@ -142,6 +143,8 @@ export default function GarmentReviewCard({ garment, properties }) {
           </Group>
           <UnknownPropertyBanner unknownFields={unknownFields} />
         </Group>
+
+        <IngestMeta ingest={garment.ingest} />
 
         <GarmentFieldGrid
           fields={fields}
