@@ -111,6 +111,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 trigger=args.trigger,
             )
         print(f"run id  : {run_id}")
+        print(f"images  : {config.image_concurrency} concurrent copies")
 
         report = RunReport(run_id=run_id)
         runner = Runner(
@@ -122,6 +123,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             threshold=config.llm_threshold,
             verbose=not args.quiet,
             llm=llm,
+            image_concurrency=config.image_concurrency,
         )
 
         try:

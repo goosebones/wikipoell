@@ -12,6 +12,7 @@ garments are stored (`<groupId>/<uuid>.webp`).
 from __future__ import annotations
 
 import mimetypes
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 import httpx
@@ -19,6 +20,11 @@ import httpx
 TIMEOUT = 60.0
 MAX_BYTES = 10 * 1024 * 1024  # matches the API's own limit
 ALLOWED = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+# Images within one garment are copied concurrently. Kept modest on purpose:
+# the work is spread across a source CDN and the webapp's Sharp conversion,
+# and a garment rarely has more than ~20 images, so higher values buy little
+# while being noticeably less polite.
+DEFAULT_CONCURRENCY = 6
 
 
 @dataclass
@@ -43,28 +49,67 @@ def _content_type(response: httpx.Response, url: str) -> str | None:
 
 
 class ImageCopier:
-    def __init__(self, client, *, timeout: float = TIMEOUT) -> None:
+    def __init__(
+        self,
+        client,
+        *,
+        timeout: float = TIMEOUT,
+        concurrency: int = DEFAULT_CONCURRENCY,
+    ) -> None:
         self.client = client
-        self._http = httpx.Client(follow_redirects=True, timeout=timeout)
+        self.concurrency = max(1, concurrency)
+        # httpx.Client is thread-safe, and connection pooling across threads is
+        # exactly what makes this worth doing.
+        self._http = httpx.Client(
+            follow_redirects=True,
+            timeout=timeout,
+            limits=httpx.Limits(max_connections=self.concurrency * 2),
+        )
+        self._pool = (
+            ThreadPoolExecutor(max_workers=self.concurrency, thread_name_prefix="img")
+            if self.concurrency > 1
+            else None
+        )
 
     def close(self) -> None:
+        if self._pool is not None:
+            self._pool.shutdown(wait=False, cancel_futures=True)
         self._http.close()
 
     def copy(self, urls: list[str], image_group_id: str) -> ImageResult:
-        """Download each URL and store it in R2. Order is preserved.
+        """Download each URL and store it in R2.
 
-        A single bad image does not lose the garment — it is recorded and the
-        rest are kept. The caller decides what to do with a garment that ended
-        up with no images at all.
+        Copies run concurrently but **order is preserved** — the first image is
+        a garment's cover on the site, so the sequence is not cosmetic.
+
+        A single bad image does not lose the garment: it is recorded as a
+        failure and the rest are kept. The caller decides what to do with a
+        garment that ended up with no images at all.
         """
         result = ImageResult()
-        for url in urls:
-            try:
-                stored = self._copy_one(url, image_group_id)
+        if not urls:
+            return result
+
+        if self._pool is None or len(urls) == 1:
+            outcomes = [self._attempt(url, image_group_id) for url in urls]
+        else:
+            outcomes = list(
+                self._pool.map(lambda u: self._attempt(u, image_group_id), urls)
+            )
+
+        for url, stored, error in outcomes:
+            if error is None:
                 result.images.append({"url": stored, "sourceUrl": url})
-            except Exception as exc:
-                result.failures.append(f"{url}: {str(exc)[:160]}")
+            else:
+                result.failures.append(f"{url}: {error}")
         return result
+
+    def _attempt(self, url: str, image_group_id: str):
+        """(url, stored_url, error) — never raises, so one bad image is not fatal."""
+        try:
+            return url, self._copy_one(url, image_group_id), None
+        except Exception as exc:
+            return url, None, str(exc)[:160]
 
     def _copy_one(self, url: str, image_group_id: str) -> str:
         response = self._http.get(url)

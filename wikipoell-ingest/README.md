@@ -105,14 +105,15 @@ Reads this project's own `.env` — copy `.env.example` and fill it in.
 Shell-exported values take precedence. It does **not** read the webapp's
 `.env` at the repo root; the two are independent.
 
-|                        |                                                                                                                                                                              |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `WIKIPOELL_API_URL`    | default `http://localhost:3000`                                                                                                                                              |
-| `INGEST_API_TOKEN`     | service token for `/api/ingest/*`                                                                                                                                            |
-| `ANTHROPIC_API_KEY`    | Phase 2                                                                                                                                                                      |
-| `INGEST_CA_BUNDLE`     | CA for the API's certificate when it is HTTPS with a local cert. Supports `~` and project-relative paths. Applies to the API only — scraped sites use the normal trust store |
-| `INGEST_REQUEST_DELAY` | seconds between requests to one site, default 1.5                                                                                                                            |
-| `INGEST_LLM_THRESHOLD` | auto-publish confidence floor, default 0.90                                                                                                                                  |
+|                            |                                                                                                                                                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `WIKIPOELL_API_URL`        | default `http://localhost:3000`                                                                                                                                                                       |
+| `INGEST_API_TOKEN`         | service token for `/api/ingest/*`                                                                                                                                                                     |
+| `ANTHROPIC_API_KEY`        | Phase 2                                                                                                                                                                                               |
+| `INGEST_CA_BUNDLE`         | CA for the API's certificate when it is HTTPS with a local cert. Supports `~` and project-relative paths. Applies to the API only — scraped sites use the normal trust store                          |
+| `INGEST_IMAGE_CONCURRENCY` | images copied in parallel within one garment, default 6. Measured here: serial 1.19 s/image, 6 → 0.43, 10 → 0.36, 16 → no further gain — the webapp's WebP conversion is the ceiling, not the network |
+| `INGEST_REQUEST_DELAY`     | seconds between requests to one site, default 1.5                                                                                                                                                     |
+| `INGEST_LLM_THRESHOLD`     | auto-publish confidence floor, default 0.90                                                                                                                                                           |
 
 `INGEST_API_TOKEN` must match the value in the **webapp's** `.env`, which
 also needs `INGEST_SYSTEM_USER_ID` — the Clerk user pipeline garments are
