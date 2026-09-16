@@ -59,6 +59,8 @@ class Config:
     anthropic_api_key: str | None
     request_delay: float
     llm_threshold: float
+    #: Images copied in parallel within one garment.
+    image_concurrency: int
     # Trust store for the API connection only; never applies to scraped sites.
     # Set INGEST_CA_BUNDLE when the webapp is served over HTTPS with a
     # locally-issued certificate, pointing at the issuing CA. The hostname in
@@ -82,6 +84,7 @@ class Config:
             api_token=os.environ.get("INGEST_API_TOKEN", ""),
             anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
             request_delay=float(os.environ.get("INGEST_REQUEST_DELAY", "1.5")),
+            image_concurrency=int(os.environ.get("INGEST_IMAGE_CONCURRENCY", "6")),
             llm_threshold=float(
                 os.environ.get("INGEST_LLM_THRESHOLD", LLM_CONFIDENCE_THRESHOLD)
             ),

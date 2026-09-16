@@ -154,6 +154,8 @@ Each image stores the **source URL it was fetched from** alongside its R2 url, a
 
 Each image stores the **source URL it was fetched from** alongside its R2 url, and both the client and the server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match and a single edit to a listing would append its entire image set again on every run. The run-start index returns each garment's known source urls so the pipeline skips downloading them at all.
 
+A garment's images are copied concurrently (`INGEST_IMAGE_CONCURRENCY`, default 6) while preserving order — the first image is the cover on the site, so the sequence is not cosmetic. Measured at ~2.8x over serial; it plateaus around 10 because the webapp's Sharp conversion, not the network, is the limit.
+
 Skipped entirely on `--dry-run`.
 
 ## 5. Data model changes (webapp)

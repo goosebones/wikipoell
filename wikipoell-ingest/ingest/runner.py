@@ -75,6 +75,7 @@ class Runner:
         threshold: float = 0.90,
         verbose: bool = True,
         llm=None,
+        image_concurrency: int = 6,
     ) -> None:
         self.client = client
         self.vocab = vocab
@@ -84,7 +85,7 @@ class Runner:
         self.threshold = threshold
         self.verbose = verbose
         self.llm = llm
-        self.images = ImageCopier(client)
+        self.images = ImageCopier(client, concurrency=image_concurrency)
 
     def close(self) -> None:
         self.images.close()
