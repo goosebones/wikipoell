@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { initMongo } from "@/lib/mongodb";
+import Garment from "@/models/Garment";
+import { recordAgentCorrection } from "@/lib/agent-corrections";
 import {
   buildGarmentUpdate,
   patchGarmentById,
@@ -33,6 +35,13 @@ export async function PATCH(request, { params }) {
       );
     }
 
+    // Snapshot before the edit so the change can be recorded as a training
+    // example for the LLM pass.
+    const previous = await Garment.findById(id).lean();
+    if (!previous) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    }
+
     // From here on the ingest pipeline only refreshes lastSeenAt and appends
     // images — it never overwrites what a person decided (DESIGN.md §6).
     update["ingest.humanReviewedAt"] = new Date();
@@ -41,6 +50,9 @@ export async function PATCH(request, { params }) {
     if (!garment) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
+
+    // The feedback loop: what a human corrected becomes a few-shot example.
+    await recordAgentCorrection({ before: previous, after: garment });
 
     return NextResponse.json({ garment });
   } catch (err) {

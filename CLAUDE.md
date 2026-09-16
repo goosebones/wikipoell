@@ -51,8 +51,8 @@ app/
   category/[...slug]/           nested category browsing + filtering
   user/[...slug]/               public user profiles
   admin/                        admin-only, gated by app/admin/layout.jsx
-    page.jsx                    garment review queue
-    agent/page.jsx              agent proposal review queue
+    page.jsx                    review queue (user + pipeline submissions)
+    runs/page.jsx               ingest run history + unpublish
     properties/page.jsx         property management
   api/
     garment/, garment/[id]/     create / patch (owner-scoped)
@@ -87,8 +87,7 @@ This is checked in **two independent places**, and both are required — `app/ad
 - **`Garment`** — `status: pending | published | rejected` drives the review queue. `procedure` is `Mixed`: legacy documents store a string, newer ones a `string[]`; use `normalizeProcedure()` from `lib/patch-garment.js` rather than assuming either. `source` is `{ type: "me" | "external", label, url }`.
 - **`User`** — synced from Clerk webhooks.
 - **`HomepageBackground`** — rotating homepage imagery.
-- **`AgentProposal`** — one per (garment, run). Holds `before`, `proposal`, and `status: pending | accepted | skipped`. Note the document field is `proposal`, usually destructured as `proposed` in components.
-- **`AgentCorrection`** — records what an admin actually accepted, keyed uniquely by `garmentId`. These become the few-shot examples for the next agent run.
+- **`AgentCorrection`** — records what an admin actually changed on a pipeline garment, keyed uniquely by `garmentId`. Written by `lib/agent-corrections.js` from the admin PATCH, and consumed as few-shot examples by the pipeline's LLM pass. This is the loop that makes classification improve over time.
 - **`IngestRun`** — one per pipeline invocation; its `_id` is the `runId` stamped on every garment that run created or touched.
 
 `Garment.ingest` is a subdocument present only on pipeline-originated garments: `source`, `siteKey` (unique per source — partial index), `contentHash`, `runId`/`lastRunId`, `firstSeenAt`/`lastSeenAt`, `humanReviewedAt`, and `review` (why it was routed to a person, with per-field confidence). **Any admin PATCH sets `ingest.humanReviewedAt`**, and from then on the pipeline may only refresh `lastSeenAt` and append images — enforced in `lib/ingest-garments.js`, not trusted from the client.
@@ -107,13 +106,15 @@ Garment codes are rendered from these fields by `getGarmentCode()` as two lines:
 
 Categories are hierarchical via a `parent` reference and dot-delimited ids (`footwear.boots`). `app/category/[...slug]/` is a catch-all handling nested browsing and filtering; category matching is a `^` prefix regex, so `footwear` also returns `footwear.boots`.
 
-### Agent review pipeline
+### Review queue
 
-1. `wikipoell-ingest/agent-review/review.js` loads pending garments that have no existing proposal, sends each to Claude with prior `AgentCorrection` rows as few-shot examples, and writes an `AgentProposal`.
-2. An admin reviews at `/admin/agent`, edits inline, and accepts or skips.
-3. Accepting patches the garment via `/api/admin/garment/[id]`, then posts to `/api/admin/agent-feedback`, which upserts an `AgentCorrection` — feeding the next run.
+`/admin` is the single queue for everything pending, from users and from the pipeline alike. Pipeline garments additionally render `ingest.review`: why they were held back, each field's confidence and where it was read from, the source listing, and the LLM's notes (`components/admin/ingest/`).
 
-`/admin/agent` filters and paginates server-side via `lib/agent-proposals.js`; the cards call `router.refresh()` after acting rather than holding local state.
+The filter bar ranks the queue's blockers by how many garments share each one, so a single missing property value that accounts for dozens of garments can be fixed once rather than hunted down individually. Filters are server-side via `getAdminQueue({ reason, source })`.
+
+Publishing or editing sets `ingest.humanReviewedAt` **and** writes an `AgentCorrection` — the pipeline then leaves that garment's fields alone forever, and the correction becomes a training example.
+
+`/admin/runs` lists run history with per-source counters and errors, and carries the **unpublish-by-run** button: every garment stamps the `runId` that created it, so a bad run moves back to `pending` in one action. Nothing is deleted.
 
 ### lib/
 
@@ -122,10 +123,12 @@ Categories are hierarchical via a `parent` reference and dot-delimited ids (`foo
 | `mongodb.js`                                   | Module-level cached connection (`initMongo()`), avoids reconnecting per invocation    |
 | `garments.js`                                  | Garment queries incl. `getAdminQueue()` and `getSimilarGarments()` (weighted scoring) |
 | `garment-utils.js`                             | **Pure** helpers — safe to import from client components, must never import Mongoose  |
-| `agent-proposals.js`                           | Agent proposal queue + status counts                                                  |
 | `properties.js` / `categories.js`              | Schemas and cached fetchers                                                           |
 | `patch-garment.js`                             | Shared garment PATCH logic, with separate owner/admin field allowlists                |
 | `admin-garment-properties.js`                  | Admin review field metadata and unknown-value detection                               |
+| `ingest-review.js`                             | Renders `ingest.review` reasons/confidence for the admin queue                        |
+| `ingest-runs-admin.js`                         | Run history and unpublish-by-run                                                      |
+| `agent-corrections.js`                         | Records admin edits as few-shot examples                                              |
 | `r2.js`, `users.js`, `homepage-backgrounds.js` | R2 upload, Clerk user lookups, homepage imagery                                       |
 
 `garment-utils.js` exists specifically so client components can compute garment codes without pulling server-only code into the bundle — keep it dependency-free.

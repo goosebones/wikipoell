@@ -9,6 +9,8 @@ export default function AdminPagination({
   status,
   title,
   id,
+  reason,
+  source,
   basePath = "/admin",
 }) {
   const router = useRouter();
@@ -16,6 +18,8 @@ export default function AdminPagination({
     const params = new URLSearchParams({ status, page: String(p) });
     if (title) params.set("title", title);
     if (id) params.set("id", id);
+    if (reason) params.set("reason", reason);
+    if (source) params.set("source", source);
     router.push(`${basePath}?${params.toString()}`);
   };
 

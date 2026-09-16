@@ -1,10 +1,15 @@
-import { getAdminQueue } from "@/lib/garments";
+import {
+  getAdminQueue,
+  getReviewReasonCounts,
+  getQueueSources,
+} from "@/lib/garments";
 import { getProperties } from "@/lib/properties";
 import { getCategories } from "@/lib/categories";
 import { Container, Title, Text, Group, Badge } from "@mantine/core";
 import GarmentReviewCard from "@/components/admin/garment-review/garment-review-card";
 import AdminPagination from "@/components/admin/admin-pagination";
 import AdminFilters from "@/components/admin/admin-filters";
+import ReasonFilterBar from "@/components/admin/ingest/reason-filter-bar";
 
 const PAGE_SIZE = 50;
 
@@ -14,18 +19,25 @@ export default async function AdminPage({ searchParams }) {
   const statusFilter = resolved.status ?? "pending";
   const titleFilter = resolved.title ?? "";
   const idFilter = resolved.id ?? "";
+  const reasonFilter = resolved.reason ?? "";
+  const sourceFilter = resolved.source ?? "";
 
-  const [{ garments, total }, properties, categories] = await Promise.all([
-    getAdminQueue({
-      status: statusFilter,
-      page,
-      limit: PAGE_SIZE,
-      title: titleFilter,
-      id: idFilter,
-    }),
-    getProperties(),
-    getCategories(),
-  ]);
+  const [{ garments, total }, properties, categories, reasons, sources] =
+    await Promise.all([
+      getAdminQueue({
+        status: statusFilter,
+        page,
+        limit: PAGE_SIZE,
+        title: titleFilter,
+        id: idFilter,
+        reason: reasonFilter,
+        source: sourceFilter,
+      }),
+      getProperties(),
+      getCategories(),
+      getReviewReasonCounts({ status: statusFilter }),
+      getQueueSources({ status: statusFilter }),
+    ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
@@ -50,6 +62,13 @@ export default async function AdminPage({ searchParams }) {
       <AdminFilters
         title={titleFilter}
         id={idFilter}
+      />
+
+      <ReasonFilterBar
+        reasons={reasons}
+        sources={sources}
+        reason={reasonFilter}
+        source={sourceFilter}
       />
 
       <Group
@@ -97,6 +116,8 @@ export default async function AdminPage({ searchParams }) {
           status={statusFilter}
           title={titleFilter}
           id={idFilter}
+          reason={reasonFilter}
+          source={sourceFilter}
         />
       )}
     </Container>

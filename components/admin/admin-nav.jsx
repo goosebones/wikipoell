@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { NavLink, Stack } from "@mantine/core";
-import { Bot, ClipboardList, Tags } from "lucide-react";
+import { ClipboardList, History, Tags } from "lucide-react";
 
 const NAV_ITEMS = [
   {
@@ -13,10 +13,10 @@ const NAV_ITEMS = [
     isActive: (pathname) => pathname === "/admin",
   },
   {
-    href: "/admin/agent",
-    label: "Agent review",
-    icon: Bot,
-    isActive: (pathname) => pathname.startsWith("/admin/agent"),
+    href: "/admin/runs",
+    label: "Ingest runs",
+    icon: History,
+    isActive: (pathname) => pathname.startsWith("/admin/runs"),
   },
   {
     href: "/admin/properties",
