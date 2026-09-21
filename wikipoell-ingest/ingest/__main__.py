@@ -84,15 +84,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         llm = None
         if args.no_llm:
             print("llm     : disabled (--no-llm)")
-        elif not config.anthropic_api_key:
-            print("llm     : disabled (ANTHROPIC_API_KEY not set)")
+        elif not config.openrouter_api_key:
+            print("llm     : disabled (OPENROUTER_API_KEY not set)")
         else:
             llm = LlmReviewer(
-                config.anthropic_api_key,
+                config.openrouter_api_key,
                 vocab,
                 corrections,
                 images_mode=args.images,
                 threshold=config.llm_threshold,
+                model=config.llm_model,
             )
             print(
                 f"llm     : {llm.model}, images={args.images}, "

@@ -16,6 +16,10 @@ ENV_FILE = PROJECT_ROOT / ".env"
 # Confidence at or above which an LLM-completed draft may auto-publish.
 LLM_CONFIDENCE_THRESHOLD = 0.90
 
+# Served through OpenRouter, so swapping models is a config change rather than
+# a code change. Must accept images: the `--images auto` retry attaches them.
+DEFAULT_LLM_MODEL = "openai/gpt-5.6-luna"
+
 # Fields that must be present for a garment to auto-publish. `procedure` and
 # `process` are excluded deliberately: on the 313 human-verified Library
 # garments, procedure is null on 56% and process on 31%.
@@ -56,7 +60,8 @@ def load_dotenv(path: Path = ENV_FILE) -> None:
 class Config:
     api_url: str
     api_token: str
-    anthropic_api_key: str | None
+    openrouter_api_key: str | None
+    llm_model: str
     request_delay: float
     llm_threshold: float
     #: Images copied in parallel within one garment.
@@ -82,7 +87,8 @@ class Config:
         return cls(
             api_url=api_url.rstrip("/"),
             api_token=os.environ.get("INGEST_API_TOKEN", ""),
-            anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
+            openrouter_api_key=os.environ.get("OPENROUTER_API_KEY"),
+            llm_model=os.environ.get("INGEST_LLM_MODEL", DEFAULT_LLM_MODEL),
             request_delay=float(os.environ.get("INGEST_REQUEST_DELAY", "1.5")),
             image_concurrency=int(os.environ.get("INGEST_IMAGE_CONCURRENCY", "6")),
             llm_threshold=float(

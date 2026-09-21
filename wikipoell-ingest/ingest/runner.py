@@ -159,7 +159,13 @@ class Runner:
 
         stage = "deterministic"
         if decision.route is Route.LLM:
-            if self.llm is None:
+            if known is not None and known.human_reviewed:
+                # The server discards field changes on a human-reviewed
+                # garment, so an LLM call here buys nothing but latency.
+                decision = Decision(
+                    Route.HUMAN, [*decision.reasons, "llm_skipped_human_reviewed"]
+                )
+            elif self.llm is None:
                 # No API key, or --no-llm. A person is the safe fallback.
                 decision = Decision(Route.HUMAN, [*decision.reasons, "llm_skipped"])
             else:
@@ -212,7 +218,15 @@ class Runner:
             # Only copy source images this garment does not already have. Each
             # R2 upload mints a new UUID url, so without this every change to a
             # listing would duplicate its whole image set.
-            fresh = [u for u in listing.images if u not in known.image_source_urls]
+            #
+            # If any of its images predate the pipeline they carry no source
+            # url, nothing can be matched, and copying would duplicate
+            # everything — so copy nothing. The server enforces this too.
+            fresh = (
+                [u for u in listing.images if u not in known.image_source_urls]
+                if known.images_matchable
+                else []
+            )
             image_group_id = str(uuid.uuid4())
             copied = self._copy_images(listing, image_group_id, stats, urls=fresh)
             self.client.update_garment(

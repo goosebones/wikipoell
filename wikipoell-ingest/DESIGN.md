@@ -132,9 +132,11 @@ This comes from the 313 human-verified Library garments: `procedure` is null on 
 
 The threshold is a config value, not a constant. 0.90 is the starting point (DECIDED); the existing `--auto-apply-corrections` used 0.8.
 
+The LLM is **skipped entirely for human-reviewed garments** — the server discards their field changes, so a call there buys nothing but latency and cost.
+
 ### 4.4 LLM pass (DECIDED)
 
-Claude, via the Python SDK. Text-only by default. Few-shot examples come from `AgentCorrection` documents (what humans actually changed), fetched once per run.
+Reached through **OpenRouter**'s OpenAI-compatible chat-completions endpoint, so the model is a config value (`INGEST_LLM_MODEL`) rather than a code change. Default `openai/gpt-5.6-luna`; any model that accepts images will do, since the `--images auto` retry attaches them. Text-only by default. Few-shot examples come from `AgentCorrection` documents (what humans actually changed), fetched once per run.
 
 Images mode is a run option, `--images auto | always | never`:
 
@@ -150,9 +152,9 @@ Always copied to R2, never hotlinked. Python downloads each image and POSTs it t
 
 On update, new images are appended; existing images are never removed by the pipeline.
 
-Each image stores the **source URL it was fetched from** alongside its R2 url, and both client and server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match, and a single edit to a listing would append its entire image set again on every run. The run-start index returns each garment's known source urls, so the pipeline skips downloading them at all.
+Each image stores the **source URL it was fetched from** alongside its R2 url, and both client and server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match, and a single edit to a listing would append its whole image set again. The run-start index returns each garment's known source urls so the pipeline skips downloading them at all.
 
-Each image stores the **source URL it was fetched from** alongside its R2 url, and both the client and the server deduplicate on that. This is load-bearing rather than cosmetic: every upload mints a fresh R2 UUID, so comparing final urls would never match and a single edit to a listing would append its entire image set again on every run. The run-start index returns each garment's known source urls so the pipeline skips downloading them at all.
+Images that **predate the pipeline carry no source url**, so nothing can be matched against them — and on such a garment the pipeline appends nothing at all. This is not a nicety. The first full run re-copied all 2,863 images of the 471 migrated garments for exactly this reason, doubling every one of them, and accounted for most of a six-hour runtime. A garment that already has pictures loses less by missing a new one than by doubling the ones it has. Enforced in `updateIngestGarment` as well as the runner.
 
 A garment's images are copied concurrently (`INGEST_IMAGE_CONCURRENCY`, default 6) while preserving order — the first image is the cover on the site, so the sequence is not cosmetic. Measured at ~2.8x over serial; it plateaus around 10 because the webapp's Sharp conversion, not the network, is the limit.
 
@@ -302,7 +304,7 @@ wikipoell-ingest/
 └── legacy/                   today's ccp-room/, the-library/, agent-review/, data/ — kept, not maintained
 ```
 
-Dependencies: `httpx`, `selectolax` (fast HTML parsing; BeautifulSoup if you'd rather), `pydantic`, `anthropic`. No Selenium, no Pillow — image conversion stays in the webapp.
+Dependencies: `httpx`, `selectolax` (fast HTML parsing), `pydantic`. No Selenium, no Pillow — image conversion stays in the webapp, and the LLM is reached over plain HTTP rather than a vendor SDK.
 
 `--dry-run` executes the full pipeline including routing and (unless `--no-llm`) the LLM, prints per-listing decisions, and writes nothing — no run record, no images, no garments.
 
@@ -316,7 +318,7 @@ Sources are positional (DECIDED): `python -m ingest run ccp-room the-library` ru
 - A source whose module throws is marked failed with the error and the run continues. A source that returns **zero listings** when it previously returned some is also flagged — that is the "HTML changed, scraper silently broken" case, and it is the one that would otherwise go unnoticed.
 - Run output goes to stdout in a form a scheduler log can keep, and to the `IngestRun` document for the admin page.
 - No scraper test suite. If a module breaks, the run reports it.
-- Scheduler is external and unspecified — cron, GitHub Actions, anything. Secrets live in a `.env` file (DECIDED): `wikipoell-ingest/.env`, this project's own, holding `WIKIPOELL_API_URL`, `INGEST_API_TOKEN`, and `ANTHROPIC_API_KEY`, with shell-exported values taking precedence. It is deliberately separate from the webapp's `.env`, which needs `INGEST_API_TOKEN` (matching) and `INGEST_SYSTEM_USER_ID`.
+- Scheduler is external and unspecified — cron, GitHub Actions, anything. Secrets live in a `.env` file (DECIDED): `wikipoell-ingest/.env`, this project's own, holding `WIKIPOELL_API_URL`, `INGEST_API_TOKEN`, and `OPENROUTER_API_KEY`, with shell-exported values taking precedence. It is deliberately separate from the webapp's `.env`, which needs `INGEST_API_TOKEN` (matching) and `INGEST_SYSTEM_USER_ID`.
 
 ## 11. Build order (PROPOSED)
 

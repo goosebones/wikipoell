@@ -20,6 +20,10 @@ const IngestReviewSchema = new mongoose.Schema(
     reasons: { type: [String], default: undefined },
     stage: String, // "deterministic" | "llm"
     fields: mongoose.Schema.Types.Mixed, // { material: { value, confidence, origin }, … }
+    // What a re-evaluation resolved, kept so the audit trail survives being
+    // published. `reasons` is emptied at the same time.
+    clearedReasons: { type: [String], default: undefined },
+    clearedAt: Date,
     llm: {
       model: String,
       confidence: Number,
