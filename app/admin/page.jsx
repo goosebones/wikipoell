@@ -10,6 +10,7 @@ import GarmentReviewCard from "@/components/admin/garment-review/garment-review-
 import AdminPagination from "@/components/admin/admin-pagination";
 import AdminFilters from "@/components/admin/admin-filters";
 import ReasonFilterBar from "@/components/admin/ingest/reason-filter-bar";
+import ReevaluateButton from "@/components/admin/ingest/reevaluate-button";
 
 const PAGE_SIZE = 50;
 
@@ -57,6 +58,7 @@ export default async function AdminPage({ searchParams }) {
         >
           {total} {statusFilter}
         </Badge>
+        {statusFilter === "pending" && <ReevaluateButton />}
       </Group>
 
       <AdminFilters

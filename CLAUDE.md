@@ -32,7 +32,7 @@ No test suite exists in this project. `npm run build` is the main correctness ga
 - **Auth**: Clerk (`@clerk/nextjs`)
 - **Storage**: Cloudflare R2 (via `@aws-sdk/client-s3`)
 - **Image processing**: Sharp (converts uploads to WebP before R2 storage)
-- **Agent**: `@anthropic-ai/sdk` (used only by `wikipoell-ingest/`, never at request time)
+- **LLM**: reached by `wikipoell-ingest/` over OpenRouter, never at request time. (`@anthropic-ai/sdk` remains only for the frozen script in `wikipoell-ingest/legacy/`.)
 
 ## Code Style
 
@@ -114,6 +114,8 @@ The filter bar ranks the queue's blockers by how many garments share each one, s
 
 Publishing or editing sets `ingest.humanReviewedAt` **and** writes an `AgentCorrection` — the pipeline then leaves that garment's fields alone forever, and the correction becomes a training example.
 
+**Re-check queue** on `/admin` re-tests the blockers recorded on pending garments against the _current_ vocabulary and publishes anything nothing blocks any more (`lib/ingest-reevaluate.js`). Most of the queue is held up by property values that do not exist yet, so adding one can clear dozens at once. It previews first and requires confirmation, never runs the LLM or re-scrapes, skips garments you have edited, and stamps its work with an `IngestRun` so it is revertible like any other run. Reasons it resolves are preserved as `ingest.review.clearedReasons`.
+
 `/admin/runs` lists run history with per-source counters and errors, and carries the **unpublish-by-run** button: every garment stamps the `runId` that created it, so a bad run moves back to `pending` in one action. Nothing is deleted.
 
 ### lib/
@@ -182,7 +184,7 @@ See `.env.example`:
 - `MONGODB_URL`
 - `R2_TOKEN_VALUE`, `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`, `R2_S3_API_URL`, `R2_PUBLIC_URL`, `R2_BACKGROUND_PUBLIC_URL`
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `CLERK_WEBHOOK_SIGNING_SECRET`
-- `ANTHROPIC_API_KEY` — only needed by `wikipoell-ingest/agent-review/`
+- `ANTHROPIC_API_KEY` — only for the frozen `wikipoell-ingest/legacy/agent-review/` script. The live pipeline reads `OPENROUTER_API_KEY` from its own `.env`.
 - `INGEST_API_TOKEN`, `INGEST_SYSTEM_USER_ID` — the `/api/ingest/*` service token and the Clerk user pipeline garments are attributed to
 
 `R2_PUBLIC_URL` and `R2_BACKGROUND_PUBLIC_URL` are read at build time by `next.config.ts` to construct `remotePatterns`, so the build needs them set.

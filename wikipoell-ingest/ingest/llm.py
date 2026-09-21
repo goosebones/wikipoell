@@ -1,9 +1,12 @@
-"""The Claude pass: fill in what deterministic rules could not.
+"""The LLM pass: fill in what deterministic rules could not.
 
-Only listings the router sends here are processed, so most garments never
-cost an API call. The prompt is ported from `legacy/agent-review/review.js`,
-including its use of past human corrections as few-shot examples — the whole
-point of keeping the AgentCorrection collection.
+Runs through OpenRouter's OpenAI-compatible chat-completions endpoint, so the
+model is a config value rather than a code change. Only listings the router
+sends here are processed, so most garments never cost a call.
+
+The prompt is ported from `legacy/agent-review/review.js`, including its use
+of past human corrections as few-shot examples — the whole point of keeping
+the AgentCorrection collection.
 
 Text-only by default; images are attached when the text alone was not enough
 (`--images auto`) or always (`--images always`).
@@ -21,8 +24,10 @@ import httpx
 from ingest.models import Draft, Origin
 from ingest.normalize.vocabulary import VOCAB_FIELDS, Vocabulary
 
-MODEL = "claude-sonnet-5"
+API_URL = "https://openrouter.ai/api/v1/chat/completions"
+MODEL = "openai/gpt-5.6-luna"
 MAX_TOKENS = 1024
+REQUEST_TIMEOUT = 120.0
 MAX_EXAMPLES = 25
 MAX_IMAGES = 2
 IMAGE_TIMEOUT = 30.0
@@ -96,18 +101,28 @@ class LlmReviewer:
         threshold: float = 0.90,
         model: str = MODEL,
     ) -> None:
-        from anthropic import Anthropic
-
-        self.client = Anthropic(api_key=api_key)
         self.vocab = vocab
         self.system = build_system_prompt(vocab, corrections)
         self.images_mode = images_mode
         self.threshold = threshold
         self.model = model
         self.calls = 0
+        self._api = httpx.Client(
+            base_url="https://openrouter.ai/api/v1",
+            headers={
+                "Authorization": f"Bearer {api_key}",
+                # OpenRouter attributes usage to these; both are optional.
+                "HTTP-Referer": "https://wikipoell.com",
+                "X-Title": "wikipoell-ingest",
+            },
+            timeout=REQUEST_TIMEOUT,
+        )
+        # Separate client for pulling listing images: different host, different
+        # timeout, and it must not carry the API credentials.
         self._http = httpx.Client(follow_redirects=True, timeout=IMAGE_TIMEOUT)
 
     def close(self) -> None:
+        self._api.close()
         self._http.close()
 
     # -- prompt pieces -----------------------------------------------------
@@ -143,14 +158,11 @@ class LlmReviewer:
                     "image/webp",
                 }:
                     continue
+                encoded = base64.b64encode(response.content).decode()
                 blocks.append(
                     {
-                        "type": "image",
-                        "source": {
-                            "type": "base64",
-                            "media_type": media_type,
-                            "data": base64.b64encode(response.content).decode(),
-                        },
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{media_type};base64,{encoded}"},
                     }
                 )
             except Exception:
@@ -160,14 +172,45 @@ class LlmReviewer:
     # -- the call ----------------------------------------------------------
 
     def _ask(self, content: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """One completion. Returns the parsed object, or None if unusable.
+
+        Never raises: a listing that the model cannot classify should fall
+        through to a human, not abort the source.
+        """
         self.calls += 1
-        message = self.client.messages.create(
-            model=self.model,
-            max_tokens=MAX_TOKENS,
-            system=self.system,
-            messages=[{"role": "user", "content": content}],
-        )
-        text = "".join(b.text for b in message.content if b.type == "text")
+        try:
+            response = self._api.post(
+                "/chat/completions",
+                json={
+                    "model": self.model,
+                    "max_tokens": MAX_TOKENS,
+                    # The model supports JSON mode, so the response does not
+                    # need coaxing out of prose — but _JSON_BLOCK still guards
+                    # against a provider that ignores the hint.
+                    "response_format": {"type": "json_object"},
+                    "messages": [
+                        {"role": "system", "content": self.system},
+                        {"role": "user", "content": content},
+                    ],
+                },
+            )
+        except httpx.HTTPError as exc:
+            raise RuntimeError(f"OpenRouter request failed: {exc}") from exc
+
+        if response.status_code >= 400:
+            raise RuntimeError(
+                f"OpenRouter {response.status_code}: {response.text[:200]}"
+            )
+
+        payload = response.json()
+        if payload.get("error"):
+            raise RuntimeError(f"OpenRouter: {str(payload['error'])[:200]}")
+
+        choices = payload.get("choices") or []
+        if not choices:
+            return None
+        text = (choices[0].get("message") or {}).get("content") or ""
+
         match = _JSON_BLOCK.search(text)
         if not match:
             return None

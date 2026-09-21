@@ -27,6 +27,18 @@ class ExistingGarment:
     human_reviewed: bool
     #: Source URLs already copied into R2, so we never fetch them twice.
     image_source_urls: frozenset[str] = frozenset()
+    #: Total images on the garment, including any predating the pipeline.
+    image_count: int = 0
+
+    @property
+    def images_matchable(self) -> bool:
+        """Whether every image on the garment can be traced to a source URL.
+
+        False for anything the old JS importer created: those images have no
+        sourceUrl, so a source image cannot be checked against them and
+        copying would duplicate the whole set.
+        """
+        return self.image_count == len(self.image_source_urls)
 
 
 class WikipoellClient:
@@ -74,6 +86,7 @@ class WikipoellClient:
                 status=row["status"],
                 human_reviewed=bool(row.get("humanReviewedAt")),
                 image_source_urls=frozenset(row.get("imageSourceUrls") or []),
+                image_count=int(row.get("imageCount") or 0),
             )
             for row in payload["garments"]
         }
