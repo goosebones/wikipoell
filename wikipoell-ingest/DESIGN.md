@@ -33,17 +33,17 @@ Marketplace sites (Grailed, eBay) are out of scope for now. (DECIDED)
 
 ## 3. Sources
 
-| Module        | Site                                            | Platform                | Fetch strategy                                                                    |
-| ------------- | ----------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------- |
-| `ccp_room`    | ccp-room.com/catalog                            | custom, server-rendered | HTML, port of existing scraper                                                    |
-| `the_library` | thelibrary1994.com                              | Shopify                 | `/products.json` — no HTML parsing, no Selenium                                   |
-| `closetcase`  | closetcase.co/collections/ccp                   | Shopify                 | `/products.json`, shares a `ShopifySource` base                                   |
-| `darklands`   | darklands.berlin/tiefgarage/… (men's + women's) | custom, server-rendered | HTML                                                                              |
-| `bilzerian`   | alanbilzerian.com/carol-christian-poell         | BigCommerce             | HTML (Storefront API as a fallback)                                               |
-| `ink`         | ink-clothing.com (men's + women's)              | custom, server-rendered | HTML                                                                              |
-| `shelter2`    | shelter2.com                                    | Japanese hosted cart    | HTML; titles are Japanese, article codes are not — codes carry most of the signal |
-| `lazzari`     | lazzariweb.it                                   | PrestaShop              | HTML; largest catalog of the group                                                |
-| `thirdshed`   | thethirdshed.com/collection                     | WordPress / WooCommerce | HTML, or the public `/wp-json/wc/store/products` API                              |
+| Module        | Site                                            | Platform                | Fetch strategy                                                                                                                      |
+| ------------- | ----------------------------------------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `ccp_room`    | ccp-room.com/catalog                            | custom, server-rendered | HTML, port of existing scraper                                                                                                      |
+| `the_library` | thelibrary1994.com                              | Shopify                 | `/products.json` — no HTML parsing, no Selenium                                                                                     |
+| `closetcase`  | closetcase.co/collections/ccp                   | Shopify                 | `/products.json`, shares a `ShopifySource` base                                                                                     |
+| `darklands`   | darklands.berlin/tiefgarage/… (men's + women's) | custom, server-rendered | HTML                                                                                                                                |
+| `bilzerian`   | alanbilzerian.com/carol-christian-poell         | BigCommerce             | HTML (Storefront API as a fallback)                                                                                                 |
+| `ink`         | ink-clothing.com (men's + women's)              | custom, server-rendered | HTML                                                                                                                                |
+| `shelter2`    | shelter2.com                                    | Japanese hosted cart    | HTML; titles are Japanese, article codes are not — codes carry most of the signal                                                   |
+| `lazzari`     | lazzariweb.it                                   | PrestaShop              | HTML; largest catalog of the group                                                                                                  |
+| `thirdshed`   | thethirdshed.com/collection                     | WordPress / WooCommerce | Store API. Every product is CCP and the brand name never appears — listings are identified by their name parsing as an article code |
 
 All nine respond 200 to a plain request and render products server-side. No headless browser in the design. Sites with two entry URLs (darklands, ink) are one module with two start points, so gender comes from the entry point rather than being inferred.
 

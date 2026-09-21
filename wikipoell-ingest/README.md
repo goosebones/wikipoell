@@ -89,15 +89,48 @@ Nothing here touches MongoDB. Every read and write goes through the webapp's
 Use `self.get_text(url)` / `self.get_json(url)` rather than httpx directly —
 they carry the rate limiting, retries and Retry-After handling.
 
-## Current status
+## Sources
 
-|                   |                                                                          |
-| ----------------- | ------------------------------------------------------------------------ |
-| `ccp-room`        | ✅ 579 listings from one page request                                    |
-| `the-library`     | Phase 2 — Shopify `/products.json`                                       |
-| LLM pass          | Phase 2 — until then, anything routed to the LLM goes to a human instead |
-| Image upload      | Phase 2                                                                  |
-| The other 7 sites | Phase 4                                                                  |
+All nine are live. Where a source publishes article codes, most listings
+classify deterministically; where it does not, they reach the review queue by
+design rather than by guesswork.
+
+| Source        | Platform         | How it reads                                                                |
+| ------------- | ---------------- | --------------------------------------------------------------------------- |
+| `ccp-room`    | custom, one page | 579 listings from a single request — the whole catalog is in `data-*` attrs |
+| `the-library` | Shopify          | `/products.json`; code is split across MODEL/MATERIAL/COLOUR labels         |
+| `closetcase`  | Shopify          | `/products.json`; the product **title is the article code**                 |
+| `thirdshed`   | WooCommerce      | Store API; names are article codes, brand never appears                     |
+| `lazzari`     | PrestaShop       | Listing pages only — the card's `img alt` carries the full code             |
+| `darklands`   | custom           | Detail pages; gender from the men's/women's entry page                      |
+| `ink`         | custom           | Detail pages; `h1` is the code, gender from the entry page                  |
+| `shelter2`    | JP hosted cart   | Detail pages; Japanese titles, but the codes are not                        |
+| `bilzerian`   | BigCommerce      | Detail pages; **publishes no article code**, so everything is reviewed      |
+
+Four of them need one request per product, because the content hash is built
+from detail-page data and there is nothing to compare without fetching it.
+`ink` is the slow one (~500 products per gender); the rest are small.
+
+`lazzari`, `closetcase`, `thirdshed`, `the-library` and `ccp-room` need only
+a handful of requests each.
+
+## Article codes
+
+Retailers space codes out in ways CCP does not, so `clean_article_code()`
+normalises before parsing — purely whitespace-level, no token is
+reinterpreted. That lifted parse rates measurably: closetcase 65→110 of 141,
+thirdshed 306→317 of 335, the-library 144→149, with ccp-room unchanged at 566
+of 579 because it writes them canonically.
+
+`ink` needs one extra step of its own: its " / " separates the model group
+from the material group, where every other site uses it between material and
+colour, so the module turns it into a space before handing it over.
+
+## Images
+
+Every image is copied to R2, never hotlinked, and deduplicated on its
+**source URL**. Copies within a garment run concurrently
+(`INGEST_IMAGE_CONCURRENCY`, default 6) while preserving order.
 
 ## Environment
 

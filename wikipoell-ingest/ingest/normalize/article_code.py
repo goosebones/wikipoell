@@ -22,7 +22,32 @@ FULL = re.compile(
     r"^([A-Z])([MF])/{1,2}([0-9]+)([A-Z=]*)(?:-([A-Z/=]+))?"
     r"\s+([A-Z=]+)(?:-([A-Z]+))?/(.+?)\s*$"
 )
-SHORT = re.compile(r"^([A-Z])([MF])/{1,2}([0-9]+[A-Z]*)\s*$")
+# Short form: no material/process/colour. The optional `-PROC` tail covers
+# retailer listings like `PM/26710D-IN`, which are otherwise complete.
+SHORT = re.compile(r"^([A-Z])([MF])/{1,2}([0-9]+[A-Z]*)(?:-([A-Z/=]+))?\s*$")
+
+# Retailers space these codes out in ways CCP does not. Normalising first
+# lifted parse rates substantially where the product *title* is the code:
+# closetcase 65->110 of 141, thirdshed 306->314 of 335, the-library 144->149,
+# with no change at all to ccp-room, which writes them canonically.
+_SLASH_AFTER = re.compile(r"/\s+")
+_SLASH_BEFORE = re.compile(r"\s+/")
+# `AM/2755SP-IN CORS 19` — colour separated from material by a space.
+_SPACED_COLOUR = re.compile(r"(\s[A-Z=]+(?:-[A-Z]+)?)\s+([0-9]+[A-Z*]*)$")
+# `AM2795-IN …` — ink-clothing drops the slash after type+gender entirely.
+_MISSING_SLASH = re.compile(r"^([A-Z])([MF])(?=[0-9])")
+
+
+def clean_article_code(raw: str) -> str:
+    """Normalise a retailer's spacing before parsing.
+
+    Handles `LM/ 2776-IN …`, `… CORSS / 01` and `… CORS 19`. Purely
+    whitespace-level: no token is added, removed or reinterpreted.
+    """
+    text = _MISSING_SLASH.sub(r"\1\2/", raw.strip())
+    text = _SLASH_AFTER.sub("/", text)
+    text = _SLASH_BEFORE.sub("/", text)
+    return _SPACED_COLOUR.sub(r"\1/\2", text)
 
 
 @dataclass(frozen=True)
@@ -44,7 +69,7 @@ def parse_article_code(article: str | None) -> ParsedCode | None:
     """
     if not article or not article.strip():
         return None
-    text = article.strip()
+    text = clean_article_code(article)
 
     if m := FULL.match(text):
         type_, gender, model, attached, dashed, material, process, color = m.groups()
@@ -60,7 +85,12 @@ def parse_article_code(article: str | None) -> ParsedCode | None:
         )
 
     if m := SHORT.match(text):
-        type_, gender, model = m.groups()
-        return ParsedCode(type=type_, gender=gender, model=model)
+        type_, gender, model, procedure = m.groups()
+        return ParsedCode(
+            type=type_,
+            gender=gender,
+            model=model,
+            procedure=[procedure] if procedure else None,
+        )
 
     return None
