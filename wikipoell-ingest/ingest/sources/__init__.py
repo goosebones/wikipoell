@@ -3,14 +3,28 @@
 from __future__ import annotations
 
 from ingest.sources.base import Source
+from ingest.sources.bilzerian import BilzerianSource
 from ingest.sources.ccp_room import CcpRoomSource
+from ingest.sources.closetcase import ClosetcaseSource
+from ingest.sources.darklands import DarklandsSource
+from ingest.sources.ink import InkSource
+from ingest.sources.lazzari import LazzariSource
+from ingest.sources.shelter2 import Shelter2Source
 from ingest.sources.the_library import TheLibrarySource
+from ingest.sources.thirdshed import ThirdShedSource
 
 # Name → factory. The CLI resolves positional arguments against this; with no
 # arguments it runs every entry.
 REGISTRY: dict[str, type[Source]] = {
     CcpRoomSource.name: CcpRoomSource,
     TheLibrarySource.name: TheLibrarySource,
+    ClosetcaseSource.name: ClosetcaseSource,
+    ThirdShedSource.name: ThirdShedSource,
+    DarklandsSource.name: DarklandsSource,
+    BilzerianSource.name: BilzerianSource,
+    InkSource.name: InkSource,
+    LazzariSource.name: LazzariSource,
+    Shelter2Source.name: Shelter2Source,
 }
 
 

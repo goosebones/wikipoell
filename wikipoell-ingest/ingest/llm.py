@@ -49,8 +49,12 @@ def _example_block(corrections: list[dict[str, Any]]) -> str:
 
 
 def build_system_prompt(vocab: Vocabulary, corrections: list[dict[str, Any]]) -> str:
+    def describe(key: str, value: str) -> str:
+        text = vocab.descriptions.get((key, value))
+        return f"{value} ({text})" if text else value
+
     prop_lines = "\n".join(
-        f"{key}: {', '.join(sorted(vocab.values[key]))}"
+        f"{key}: " + ", ".join(describe(key, v) for v in sorted(vocab.values[key]))
         for key in VOCAB_FIELDS
         if vocab.values.get(key)
     )
@@ -68,7 +72,9 @@ RULES:
    (e.g. "outerwear.coats", not "outerwear").
 3. type, gender, model, material, process, color: choose from the valid lists.
    These usually come from the article code and are usually right — change
-   only when clearly wrong.
+   only when clearly wrong. The parenthesised text after each value explains
+   what it means; the `type` letter in particular narrows the category a
+   great deal (e.g. C is a shirt, P is pants, M is a metal accessory).
 4. procedure: an array of valid values, same rule.
 5. Use ONLY values from the lists below. If the correct value is not in a
    list, return null for that field rather than inventing one — a human will

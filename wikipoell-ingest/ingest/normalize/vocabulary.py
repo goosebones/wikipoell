@@ -18,19 +18,27 @@ VOCAB_FIELDS = ("type", "gender", "procedure", "material", "process", "color")
 class Vocabulary:
     values: dict[str, set[str]] = field(default_factory=dict)
     categories: set[str] = field(default_factory=set)
+    #: (garmentKey, garmentValue) -> human description, e.g.
+    #: ("type", "A") -> "A - Shoes, bags, ties, belts, scarves, etc."
+    #: Codes are opaque without these, which matters most on sources whose
+    #: only signal is the article code.
+    descriptions: dict[tuple[str, str], str] = field(default_factory=dict)
 
     @classmethod
     def from_context(cls, context: dict[str, Any]) -> Vocabulary:
         values: dict[str, set[str]] = {}
+        descriptions: dict[tuple[str, str], str] = {}
         for prop in context.get("properties", []):
             key = prop.get("garmentKey")
             value = prop.get("garmentValue")
             if key and value is not None:
                 values.setdefault(key, set()).add(str(value))
+                if prop.get("description"):
+                    descriptions[(key, str(value))] = prop["description"]
         categories = {
             str(c["_id"]) for c in context.get("categories", []) if c.get("_id")
         }
-        return cls(values=values, categories=categories)
+        return cls(values=values, categories=categories, descriptions=descriptions)
 
     def canonicalize(self, garment_key: str, value: Any) -> Any:
         """Map a site's spelling onto the vocabulary's, where that is unambiguous.
