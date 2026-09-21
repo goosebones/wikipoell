@@ -53,11 +53,16 @@ class CcpRoomSource(Source):
         if not site_key:
             return None
 
+        # data-img is NOT display order. The site's gallery is built with
+        #     dataset.img.split(",").forEach(e =>
+        #         wrapper.insertAdjacentHTML("afterbegin", …))
+        # — iterating forwards while *prepending*, so a visitor sees the list
+        # back to front. Reverse it so the archive matches the site.
         images = [
             f"{BASE_URL}{path.strip()}"
             for path in (attrs.get("data-img") or "").split(",")
             if path.strip()
-        ]
+        ][::-1]
 
         return RawListing(
             site_key=site_key,
