@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from ingest.sources.base import Source
-from ingest.sources.bilzerian import BilzerianSource
 from ingest.sources.ccp_room import CcpRoomSource
 from ingest.sources.closetcase import ClosetcaseSource
 from ingest.sources.darklands import DarklandsSource
@@ -21,7 +20,6 @@ REGISTRY: dict[str, type[Source]] = {
     ClosetcaseSource.name: ClosetcaseSource,
     ThirdShedSource.name: ThirdShedSource,
     DarklandsSource.name: DarklandsSource,
-    BilzerianSource.name: BilzerianSource,
     InkSource.name: InkSource,
     LazzariSource.name: LazzariSource,
     Shelter2Source.name: Shelter2Source,

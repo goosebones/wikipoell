@@ -35,11 +35,10 @@ _ABBREVIATIONS: list[tuple[re.Pattern[str], str]] = [
 
 # The brand name in a title is noise — every garment in the archive is CCP.
 # Retailers put it in as an SEO prefix (lazzari does on all 65 of its
-# listings) or as a label ("CAROL CHRSTIAN POELL \"L\" BELT" — bilzerian's own
-# typo included, hence `chr\w*`). Stripped anywhere in the string, not just at
+# listings) or as a label. Stripped anywhere in the string, not just at
 # the front.
 _BRAND = re.compile(
-    r"\b(?:carol\s+chr\w*\s+poell|c\.?\s?c\.?\s?p\.?)\b",
+    r"\b(?:carol\s+\s+poell|c\.?\s?c\.?\s?p\.?)\b",
     re.I,
 )
 

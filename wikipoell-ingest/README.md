@@ -105,7 +105,6 @@ design rather than by guesswork.
 | `darklands`   | custom           | Detail pages; gender from the men's/women's entry page                      |
 | `ink`         | custom           | Detail pages; `h1` is the code, gender from the entry page                  |
 | `shelter2`    | JP hosted cart   | Detail pages; Japanese titles, but the codes are not                        |
-| `bilzerian`   | BigCommerce      | Detail pages; **publishes no article code**, so everything is reviewed      |
 
 Four of them need one request per product, because the content hash is built
 from detail-page data and there is nothing to compare without fetching it.
