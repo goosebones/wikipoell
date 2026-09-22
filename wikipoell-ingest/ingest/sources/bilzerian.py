@@ -18,7 +18,6 @@ from ingest.sources.darklands import guess_category
 from ingest.sources.html_catalog import HtmlCatalogSource
 
 BASE_URL = "https://www.alanbilzerian.com"
-_BRAND_PREFIX = re.compile(r"^\s*carol\s+chr\w*\s+poell\s*", re.I)
 
 
 class BilzerianSource(HtmlCatalogSource):
@@ -42,7 +41,8 @@ class BilzerianSource(HtmlCatalogSource):
         self, url: str, tree: HTMLParser, hints: dict[str, Any]
     ) -> RawListing | None:
         h1 = tree.css_first("h1")
-        title = _BRAND_PREFIX.sub("", (h1.text() or "").strip()) if h1 else ""
+        # The brand prefix is stripped centrally by format_title().
+        title = (h1.text() or "").strip() if h1 else ""
         if not title:
             return None
 

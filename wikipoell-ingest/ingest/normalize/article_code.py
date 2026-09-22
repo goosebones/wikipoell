@@ -26,6 +26,15 @@ FULL = re.compile(
 # retailer listings like `PM/26710D-IN`, which are otherwise complete.
 SHORT = re.compile(r"^([A-Z])([MF])/{1,2}([0-9]+[A-Z]*)(?:-([A-Z/=]+))?\s*$")
 
+# Material but no colour — `MM/2144 SILVER`, `AM/2685C CORS`. Jewellery mostly:
+# silver pieces carry no colour code, which is also why routing exempts
+# `accessories.jewelry` from requiring one. Worth 14 listings across
+# closetcase, thirdshed and lazzari, and nothing to the two canonical sources.
+MEDIUM = re.compile(
+    r"^([A-Z])([MF])/{1,2}([0-9]+[A-Z=]*)(?:-([A-Z/=]+))?"
+    r"\s+([A-Z=]+)(?:-([A-Z]+))?\s*$"
+)
+
 # Retailers space these codes out in ways CCP does not. Normalising first
 # lifted parse rates substantially where the product *title* is the code:
 # closetcase 65->110 of 141, thirdshed 306->314 of 335, the-library 144->149,
@@ -82,6 +91,17 @@ def parse_article_code(article: str | None) -> ParsedCode | None:
             material=material,
             process=process or None,
             color=color,
+        )
+
+    if m := MEDIUM.match(text):
+        type_, gender, model, procedure, material, process = m.groups()
+        return ParsedCode(
+            type=type_,
+            gender=gender,
+            model=model,
+            procedure=[procedure] if procedure else None,
+            material=material,
+            process=process or None,
         )
 
     if m := SHORT.match(text):

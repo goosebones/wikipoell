@@ -56,7 +56,13 @@ def decide(
         code = draft.listing.article_code or ""
         human.append(f"code_unparseable:{code}")
 
-    if not is_well_formed(draft.get("title")):
+    # A title that is only an article code, or still carries raw punctuation,
+    # is something the model is good at rewriting — so it routes like a
+    # missing field rather than straight to a person. Sources such as
+    # closetcase and thirdshed name every product with its code, and sending
+    # all of those to a human for want of a sentence would waste the queue.
+    bad_title = not is_well_formed(draft.get("title"))
+    if bad_title:
         human.append("title_unformatted")
 
     missing = missing_fields(draft)
@@ -70,9 +76,10 @@ def decide(
         human.extend(f"missing:{name}" for name in missing)
         return Decision(Route.HUMAN if human else Route.PUBLISH, human)
 
-    if missing:
-        # The LLM can fill gaps; it runs even alongside unknown-vocab reasons
-        # so the human gets a complete draft. Reasons are carried forward.
+    if missing or bad_title:
+        # The LLM can fill gaps and rewrite titles; it runs even alongside
+        # unknown-vocab reasons so the human gets a complete draft. Reasons
+        # are carried forward.
         return Decision(Route.LLM, [f"missing:{name}" for name in missing] + human)
 
     return Decision(Route.HUMAN if human else Route.PUBLISH, human)
