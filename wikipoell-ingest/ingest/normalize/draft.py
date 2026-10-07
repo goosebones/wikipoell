@@ -7,6 +7,8 @@ certain; one inferred from a title is not.
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ingest.models import Draft, Origin, RawListing
 from ingest.normalize.article_code import parse_article_code
 from ingest.normalize.category import resolve_category
@@ -21,11 +23,35 @@ TITLE_CONFIDENCE = 0.6
 def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
     draft = Draft(listing=listing)
 
-    title = format_title(listing.title)
+    title = listing.title if listing.title_is_final else format_title(listing.title)
     if title:
         draft.set("title", title, CODE_CONFIDENCE, Origin.TITLE)
 
     parsed = parse_article_code(listing.article_code)
+    if parsed and parsed.ambiguous:
+        # `AM/2603-IN 6` vs `PF/0916-ASA/8`: identical shape, and only the
+        # vocabulary says whether the dashed token is a procedure or a
+        # material. A material means the code attaches it with a dash — a form
+        # we do not read yet, so treat the whole code as unparseable rather
+        # than file a material under `procedure`.
+        if any(vocab.knows("material", token) for token in parsed.ambiguous):
+            parsed = None
+        else:
+            procedures = [*(parsed.procedure or []), *parsed.ambiguous]
+            parsed = replace(parsed, procedure=procedures, ambiguous=None)
+
+    if parsed and parsed.material and parsed.process:
+        # `CON-EDGE`, `X-NIGHT`: the hyphen usually separates material from
+        # process, but some material names contain one — or a space, which
+        # retailers write as a hyphen. Only the vocabulary can tell `CON-EDGE`
+        # (one material) from `CORS-PTC` (material + process), so if the two
+        # halves spell a material when rejoined, that is what they are.
+        for joiner in (" ", "-"):
+            joined = f"{parsed.material}{joiner}{parsed.process}"
+            if vocab.knows("material", joined):
+                parsed = replace(parsed, material=joined, process=None)
+                break
+
     if parsed:
         draft.set("type", parsed.type, CODE_CONFIDENCE, Origin.CODE)
         draft.set("gender", parsed.gender, CODE_CONFIDENCE, Origin.CODE)

@@ -48,9 +48,34 @@ An unknown name fails before any network request is made.
 | ----------- | -------------------------------------------------------------------------------------- |
 | `--dry-run` | scrape, normalise and route, but write nothing — no garments, no images, no run record |
 | `--limit N` | stop after N listings per source. Use it the first time a new module runs              |
+| `--force`   | reprocess listings the site has not changed. Sources must be named                     |
 | `--quiet`   | per-source totals only, no per-listing lines                                           |
 | `--images`  | `auto` (default) / `always` / `never` — when the LLM sees images (Phase 2)             |
 | `--no-llm`  | skip the LLM pass (Phase 2)                                                            |
+
+### Applying a fix to garments already stored
+
+A normal run skips any listing whose content hash is unchanged, so fixing a
+parser or adding a property value does not by itself reach garments already in
+the database — the sites did not change, our reading of them did. `--force`
+skips that check:
+
+```bash
+.venv/bin/python -m ingest run closetcase --force --dry-run   # see what moves
+.venv/bin/python -m ingest run closetcase --force             # apply it
+```
+
+Two things it deliberately does not do:
+
+- **It will not run without named sources.** Forcing all nine is hours of
+  scraping and roughly one LLM call per garment, which is rarely the intent.
+- **It still skips human-reviewed garments.** The server discards field changes
+  on those, so forcing them would cost an LLM call and a PATCH to change
+  nothing. They stay in the `unchanged` count.
+
+For a vocabulary addition specifically, prefer the admin **Re-check queue**
+button: it re-tests recorded blockers against the current vocabulary with no
+scraping and no LLM at all. `--force` is for when the _parsing_ changed.
 
 ## How it works
 
@@ -125,6 +150,18 @@ of 579 because it writes them canonically.
 from the material group, where every other site uses it between material and
 colour, so the module turns it into a space before handing it over.
 
+### Titles a site does not have
+
+Most sources carry both a code and a descriptive name. `ink` carries only the
+code, in its `h1` — there is no sentence to scrape and none to be inferred.
+A source can say so by setting `title_is_final` on the listing it returns:
+the title is then published exactly as written, skipping both `format_title()`
+and the `title_unformatted` flag that would otherwise send it to the LLM to
+have a name invented for it. Only `ink` sets it today.
+
+`scripts/dump_ink_titles.py` plus the webapp's `scripts/retitle-ink.mjs`
+applied this to the garments stored before the rule existed.
+
 ## Images
 
 Every image is copied to R2, never hotlinked, and deduplicated on its
@@ -155,12 +192,6 @@ attributed to.
 Requests go out with httpx's default user agent; no browser string is spoofed.
 All nine sources were verified to respond normally to it.
 
-## Tooling
-
-```bash
-.venv/bin/ruff check ingest/     # lint
-.venv/bin/ruff format ingest/    # format
-```
 
 The webapp's eslint/prettier ignore this folder wholesale.
 

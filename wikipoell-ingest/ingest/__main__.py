@@ -39,6 +39,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     run.add_argument("--limit", type=int, help="max listings per source")
     run.add_argument(
+        "--force",
+        action="store_true",
+        help="reprocess listings the site has not changed, to apply a parser "
+        "or vocabulary fix. Requires naming sources. Human-reviewed "
+        "garments are still skipped",
+    )
+    run.add_argument(
         "--images",
         choices=("auto", "always", "never"),
         default="auto",
@@ -60,6 +67,14 @@ def cmd_sources() -> int:
 
 def cmd_run(args: argparse.Namespace) -> int:
     config = Config.load()
+    if args.force and not args.sources:
+        print(
+            "--force without a source would reprocess every listing of every "
+            "source, which is hours of scraping and roughly one LLM call per "
+            "garment. Name the sources you mean, e.g. `run closetcase --force`.",
+            file=sys.stderr,
+        )
+        return 2
     sources = resolve(args.sources)  # raises on unknown names, before any I/O
     names = [s.name for s in sources]
 
@@ -70,6 +85,8 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     if args.limit:
         print(f"limit   : {args.limit} per source")
+    if args.force:
+        print("force   : reprocessing unchanged listings (reviewed ones skipped)")
 
     started = time.monotonic()
     with WikipoellClient(config) as client:
@@ -121,6 +138,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             run_id=run_id,
             dry_run=args.dry_run,
             limit=args.limit,
+            force=args.force,
             threshold=config.llm_threshold,
             verbose=not args.quiet,
             llm=llm,

@@ -72,6 +72,7 @@ class Runner:
         run_id: str,
         dry_run: bool = False,
         limit: int | None = None,
+        force: bool = False,
         threshold: float = 0.90,
         verbose: bool = True,
         llm=None,
@@ -82,6 +83,7 @@ class Runner:
         self.run_id = run_id
         self.dry_run = dry_run
         self.limit = limit
+        self.force = force
         self.threshold = threshold
         self.verbose = verbose
         self.llm = llm
@@ -149,7 +151,13 @@ class Runner:
         known = existing.get(listing.site_key)
         content_hash = listing.content_hash()
 
-        if known and known.content_hash == content_hash:
+        # `--force` re-runs the current parser and vocabulary over listings the
+        # site has not changed — how a fix to either reaches garments already
+        # stored. Human-reviewed garments are still skipped: the server drops
+        # field changes on those, so forcing them costs an LLM call and a PATCH
+        # and changes nothing.
+        unchanged = known is not None and known.content_hash == content_hash
+        if unchanged and (not self.force or known.human_reviewed):
             stats.unchanged += 1
             unchanged_ids.append(known.id)
             return

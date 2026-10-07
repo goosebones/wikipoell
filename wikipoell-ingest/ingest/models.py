@@ -45,6 +45,10 @@ class RawListing:
     gender_hint: str | None = None
     category_hint: str | None = None
     color_hint: str | None = None
+    # True when the site's title is the only name the product has and should
+    # be published exactly as written — see `ink`, whose h1 is the article
+    # code. Suppresses both reformatting and the `title_unformatted` flag.
+    title_is_final: bool = False
     raw: dict[str, Any] = field(default_factory=dict)
 
     def content_hash(self) -> str:

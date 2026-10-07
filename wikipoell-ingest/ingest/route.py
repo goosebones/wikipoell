@@ -61,7 +61,9 @@ def decide(
     # missing field rather than straight to a person. Sources such as
     # closetcase and thirdshed name every product with its code, and sending
     # all of those to a human for want of a sentence would waste the queue.
-    bad_title = not is_well_formed(draft.get("title"))
+    bad_title = not draft.listing.title_is_final and not is_well_formed(
+        draft.get("title")
+    )
     if bad_title:
         human.append("title_unformatted")
 
