@@ -1,0 +1,237 @@
+[
+  {
+    "_id": "tops",
+    "parent": null,
+    "name": "Tops"
+  },
+  {
+    "_id": "tops.longSleeveTshirts",
+    "parent": "tops",
+    "name": "Long Sleeve T-Shirts"
+  },
+  {
+    "_id": "tops.shortSleeveTshirts",
+    "parent": "tops",
+    "name": "Short Sleeve T-Shirts"
+  },
+  {
+    "_id": "tops.polos",
+    "parent": "tops",
+    "name": "Polos"
+  },
+  {
+    "_id": "tops.shirts",
+    "parent": "tops",
+    "name": "Shirts"
+  },
+  {
+    "_id": "tops.blouses",
+    "parent": "tops",
+    "name": "Blouses"
+  },
+  {
+    "_id": "tops.sweatersAndKnitwear",
+    "parent": "tops",
+    "name": "Sweaters and Knitwear"
+  },
+  {
+    "_id": "tops.hoodiesAndSweatshirts",
+    "parent": "tops",
+    "name": "Hoodies and Sweatshirts"
+  },
+  {
+    "_id": "tops.tankTopsAndSleeveless",
+    "parent": "tops",
+    "name": "Tank Tops and Sleeveless"
+  },
+  {
+    "_id": "tops.dresses",
+    "parent": "tops",
+    "name": "Dresses"
+  },
+  {
+    "_id": "bottoms",
+    "parent": null,
+    "name": "Bottoms"
+  },
+  {
+    "_id": "bottoms.denim",
+    "parent": "bottoms",
+    "name": "Denim"
+  },
+  {
+    "_id": "bottoms.trousers",
+    "parent": "bottoms",
+    "name": "Trousers"
+  },
+  {
+    "_id": "bottoms.shorts",
+    "parent": "bottoms",
+    "name": "Shorts"
+  },
+  {
+    "_id": "bottoms.sweatpants",
+    "parent": "bottoms",
+    "name": "Sweatpants"
+  },
+  {
+    "_id": "bottoms.skirts",
+    "parent": "bottoms",
+    "name": "Skirts"
+  },
+  {
+    "_id": "outerwear",
+    "parent": null,
+    "name": "Outerwear"
+  },
+  {
+    "_id": "outerwear.bombers",
+    "parent": "outerwear",
+    "name": "Bombers"
+  },
+  {
+    "_id": "outerwear.denimJackets",
+    "parent": "outerwear",
+    "name": "Denim Jackets"
+  },
+  {
+    "_id": "outerwear.coats",
+    "parent": "outerwear",
+    "name": "Coats"
+  },
+  {
+    "_id": "outerwear.leatherJackets",
+    "parent": "outerwear",
+    "name": "Leather Jackets"
+  },
+  {
+    "_id": "outerwear.jackets",
+    "parent": "outerwear",
+    "name": "Jackets"
+  },
+  {
+    "_id": "outerwear.parkas",
+    "parent": "outerwear",
+    "name": "Parkas"
+  },
+  {
+    "_id": "outerwear.vests",
+    "parent": "outerwear",
+    "name": "Vests"
+  },
+  {
+    "_id": "footwear",
+    "parent": null,
+    "name": "Footwear"
+  },
+  {
+    "_id": "footwear.boots",
+    "parent": "footwear",
+    "name": "Boots"
+  },
+  {
+    "_id": "footwear.sneakers",
+    "parent": "footwear",
+    "name": "Sneakers"
+  },
+  {
+    "_id": "footwear.shoes",
+    "parent": "footwear",
+    "name": "Shoes"
+  },
+  {
+    "_id": "footwear.heels",
+    "parent": "footwear",
+    "name": "Heels"
+  },
+  {
+    "_id": "footwear.flats",
+    "parent": "footwear",
+    "name": "Flats"
+  },
+  {
+    "_id": "accessories",
+    "parent": null,
+    "name": "Accessories"
+  },
+  {
+    "_id": "accessories.belts",
+    "parent": "accessories",
+    "name": "Belts"
+  },
+  {
+    "_id": "accessories.glasses",
+    "parent": "accessories",
+    "name": "Glasses"
+  },
+  {
+    "_id": "accessories.gloves",
+    "parent": "accessories",
+    "name": "Gloves"
+  },
+  {
+    "_id": "accessories.hats",
+    "parent": "accessories",
+    "name": "Hats"
+  },
+  {
+    "_id": "accessories.scarves",
+    "parent": "accessories",
+    "name": "Scarves"
+  },
+  {
+    "_id": "accessories.ties",
+    "parent": "accessories",
+    "name": "Ties"
+  },
+  {
+    "_id": "accessories.jewelry",
+    "parent": "accessories",
+    "name": "Jewelry"
+  },
+  {
+    "_id": "accessories.jewelry.earrings",
+    "parent": "accessories.jewelry",
+    "name": "Earrings"
+  },
+  {
+    "_id": "accessories.jewelry.necklaces",
+    "parent": "accessories.jewelry",
+    "name": "Necklaces"
+  },
+  {
+    "_id": "accessories.jewelry.bracelets",
+    "parent": "accessories.jewelry",
+    "name": "Bracelets"
+  },
+  {
+    "_id": "accessories.jewelry.rings",
+    "parent": "accessories.jewelry",
+    "name": "Rings"
+  },
+  {
+    "_id": "outerwear.blazers",
+    "parent": "outerwear",
+    "name": "Blazers"
+  },
+  {
+    "_id": "accessories.bags",
+    "parent": "accessories",
+    "name": "Bags"
+  },
+  {
+    "_id": "accessories.socks",
+    "parent": "accessories",
+    "name": "Socks"
+  },
+  {
+    "_id": "accessories.largeObjects",
+    "parent": "accessories",
+    "name": "Large Objects"
+  },
+  {
+    "_id": "accessories.smallObjects",
+    "parent": "accessories",
+    "name": "Small Objects"
+  }
+]

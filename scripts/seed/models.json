@@ -1,0 +1,1472 @@
+[
+  {
+    "_id": "092",
+    "label": "Unlined Half-Sleeve Elongated Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "452",
+    "label": "Multi-Dimensional Purse",
+    "suggestedCategory": "accessories.bags"
+  },
+  {
+    "_id": "0498",
+    "label": "Teeth Earrings",
+    "suggestedCategory": "accessories.jewelry.earrings"
+  },
+  {
+    "_id": "0499",
+    "label": "Gums & Teeth Earrings",
+    "suggestedCategory": "accessories.jewelry.earrings"
+  },
+  {
+    "_id": "0804",
+    "label": "Long Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "0811",
+    "label": "Raincoat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0812",
+    "label": "Drip Rubbered Multi-Dimensional L Bag",
+    "suggestedCategory": "accessories.bags"
+  },
+  {
+    "_id": "0813",
+    "label": "Unlined Meltlock Gloved Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "0816",
+    "label": "Back Raglan High Neck Lined Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0829",
+    "label": "Lined High Neck Gloved Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "0864",
+    "label": "Standing Collar Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "0870",
+    "label": "Lined Triangle Cut Leather Oxford",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "0872",
+    "label": "No Seam Diagonal Zip Lift Boots",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0874",
+    "label": "Drip Rubber Sneaker",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "0877",
+    "label": "Triangle Cut Geta Oxford",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "0878",
+    "label": "No Seam Diagonal Zip Geta Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0879",
+    "label": "No Seam Drip-Rubber Sneaker",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "0899",
+    "label": "High Neck Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "0900",
+    "label": "Goodyear Derby",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "0901",
+    "label": "Diagonal Zip Goodyear \"Tornado\" Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0904",
+    "label": "One-Piece Prosthetic Ankle Drip Rubber Work Boots",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0905",
+    "label": "Paper Dart \"Rubber Band\" Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0906",
+    "label": "Paper Dart Combat Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0907",
+    "label": "Long Diagonal Zip Goodyear \"Tornado\" Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0914",
+    "label": "Overlock Lined Breadstick Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "0916",
+    "label": "Low Crotch Dead End Fly Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "0921",
+    "label": "Unlined One-Piece Dead End 1 Button Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "0922",
+    "label": "Unlined One Button Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "0924",
+    "label": "Unlined Half-Sleeve Prosthetic Elbow Elongated Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "0928",
+    "label": "Overlock Dead End Denim Jacket",
+    "suggestedCategory": "outerwear.denimJackets"
+  },
+  {
+    "_id": "0929",
+    "label": "Long Dead End Skirt",
+    "suggestedCategory": "bottoms.skirts"
+  },
+  {
+    "_id": "0931",
+    "label": "Long-Sleeve Button-Down Collar Long Dress",
+    "suggestedCategory": "tops.dresses"
+  },
+  {
+    "_id": "0937",
+    "label": "Seamless Long-Sleeve High Neck Dress",
+    "suggestedCategory": "tops.dresses"
+  },
+  {
+    "_id": "0946",
+    "label": "Compass Earrings",
+    "suggestedCategory": "accessories.jewelry.earrings"
+  },
+  {
+    "_id": "0950",
+    "label": "Unlined Overlock High Neck One Piece Dead End Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0951",
+    "label": "Unlined Visible Overlock Dead End Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "0957",
+    "label": "Paper Dart Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "0966",
+    "label": "Self-Edge Metre Wrap Long Skirt",
+    "suggestedCategory": "bottoms.skirts"
+  },
+  {
+    "_id": "0973",
+    "label": "Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "0974",
+    "label": "Metre Scarf",
+    "suggestedCategory": "accessories.scarves"
+  },
+  {
+    "_id": "0980",
+    "label": "Reversible Seamless Long Sleeve XT-Dress",
+    "suggestedCategory": "tops.dresses"
+  },
+  {
+    "_id": "0981",
+    "label": "Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "0982",
+    "label": "Double Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "0983",
+    "label": "Iced Paper Dart Low Top",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "0986",
+    "label": "Lined-Unlined Chain Seam Back Raglan Caban",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0987",
+    "label": "Lined-Unlined Chainseam Back Raglan Trench",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0989",
+    "label": "Iced Paper Dart Ankle Top",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "0990",
+    "label": "Unlined Visible Overlock One Piece Dead End Caban",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "0991",
+    "label": "Lined Diagonal Zip Knee High Goodyear Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0992",
+    "label": "U-Sole Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "0993",
+    "label": "U-Sole Prosthetic Diagonal Zip Lined Goodyear Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0994",
+    "label": "U-Jack Prosthetic Sneaker",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "0995",
+    "label": "The White Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "0996",
+    "label": "One-Piece Prosthetic Diagonal Zip Knee High Boots",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "0997",
+    "label": "Lined Pinch Seam 2 Zip Fencing Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "0998",
+    "label": "Lined Scarstiched Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "1060",
+    "label": "Leather Condom",
+    "suggestedCategory": "accessories.smallObjects"
+  },
+  {
+    "_id": "1480",
+    "label": "Silver Pendant With Eight Reserve Teeth & Gums",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "1582",
+    "label": "Silver Watch",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "1584",
+    "label": "Silver Push Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "1760",
+    "label": "Silver Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "1809",
+    "label": "Silver Horse Nail Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "1913",
+    "label": "Nail Chain Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "1914",
+    "label": "Portable Razor Blade Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "1969",
+    "label": "Silver Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2067",
+    "label": "Badge Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2068",
+    "label": "Closing Badge Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2070",
+    "label": "Memory Chamber Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2071",
+    "label": "Memory Chamber Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2072",
+    "label": "Badge Catch Pearl Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2081",
+    "label": "Carpet",
+    "suggestedCategory": "accessories.largeObjects"
+  },
+  {
+    "_id": "2082",
+    "label": "Hair Tie",
+    "suggestedCategory": "accessories.ties"
+  },
+  {
+    "_id": "2124",
+    "label": "Silver Nail Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2144",
+    "label": "Silver Eye Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2145",
+    "label": "Silver Spiral Nail Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2146",
+    "label": "Identity Safety Pin Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2147",
+    "label": "Bottle Opener Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2148",
+    "label": "Keyhole Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2149",
+    "label": "Silver Eye Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2198",
+    "label": "Lined Overlock Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2200",
+    "label": "Box Leather Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2203",
+    "label": "Box Leather Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2210",
+    "label": "Silver Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2211",
+    "label": "Silver Shoe Horn",
+    "suggestedCategory": "accessories.smallObjects"
+  },
+  {
+    "_id": "2223",
+    "label": "Silver Comb Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2250",
+    "label": "Flat Half-Circle 4 Pocket Jeans",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2265",
+    "label": "Silver Hook Drip Rubber Key Leather Case",
+    "suggestedCategory": "accessories.bags"
+  },
+  {
+    "_id": "2267",
+    "label": "Fencing Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2269",
+    "label": "Silver Clasp Knife Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2271",
+    "label": "Weight Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2274",
+    "label": "Double Length Lined Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2300",
+    "label": "Disparate Leather Gloves",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2316",
+    "label": "Elbow Joint Taped Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2317",
+    "label": "Elbow Joint Taped Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2337",
+    "label": "Silver Bic Pen Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2339",
+    "label": "Silver Pulley Hook Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2340",
+    "label": "Raglan High Neck Lined Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2373",
+    "label": "Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2385",
+    "label": "Jacketchute-Lined 2 Button Taped Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2388",
+    "label": "1 Button Taped Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2393",
+    "label": "Long Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2399",
+    "label": "Paper Dart Bipolar Sealed Overlock Bomber Jacket",
+    "suggestedCategory": "outerwear.bombers"
+  },
+  {
+    "_id": "2400",
+    "label": "Paper Dart Bipolar Sealed Overlock Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2403",
+    "label": "Silver Change Purse Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2406",
+    "label": "Silver Clip Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2408",
+    "label": "Pantograph Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2409",
+    "label": "Silver Pantograph Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2414",
+    "label": "Overlock Lined Breadstick Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2451",
+    "label": "Rubbered Multi-Dimensional Bag",
+    "suggestedCategory": "accessories.bags"
+  },
+  {
+    "_id": "2452",
+    "label": "Leather Coin Purse",
+    "suggestedCategory": "accessories.smallObjects"
+  },
+  {
+    "_id": "2457",
+    "label": "Disparate Fingercuff Gloves",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2459",
+    "label": "Drip Rubbered Leather Gloves",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2460",
+    "label": "Classic Lined Glove Block",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2466",
+    "label": "Self-Edge Tailored Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2472",
+    "label": "Unlined Meltlocked 1 Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2488",
+    "label": "Double Buttonstand Long Sleeve Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2489",
+    "label": "Classic Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2491",
+    "label": "Chainseam Hooded Gloved Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2492",
+    "label": "Disparate Finger Cuffs",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2493",
+    "label": "Chain-Link Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2494",
+    "label": "Trapeze Knife Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2497",
+    "label": "Silver Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2498",
+    "label": "Scarstitch Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2502",
+    "label": "Self-Edge Tailored Scarf Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2506",
+    "label": "Chainseam Middle Splits Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2507",
+    "label": "Unlined Low Splits Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2517",
+    "label": "Reversible Seamless Long-Sleeve XT-Shirt",
+    "suggestedCategory": "tops.longSleeveTshirts"
+  },
+  {
+    "_id": "2524",
+    "label": "No-Seam Drip Rubber Sneaker",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2527",
+    "label": "Unconstructed Drip Rubbered Oxford",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2529",
+    "label": "Noseam Drip-Rubber Low Top Sneakers",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2530",
+    "label": "Derby Block",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2531",
+    "label": "Unlined Classic Boot Block",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2533",
+    "label": "Silver Ring Rubber Block",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2536",
+    "label": "Silver Security Number Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2540",
+    "label": "Leather Dart Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2544",
+    "label": "Rubber Block Silver Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2551",
+    "label": "Semi-Armhole Long Bomber",
+    "suggestedCategory": "outerwear.bombers"
+  },
+  {
+    "_id": "2552",
+    "label": "Glove Sleeve Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2560",
+    "label": "Self-Edge Metre Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2561",
+    "label": "Self-Edge Metre Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2562",
+    "label": "Self-Edge Metre Double-Breasted Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2563",
+    "label": "Self Edge Tailored Crossfront Blouson",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2564",
+    "label": "Self-Edge Tailored Cross Front-Crotched Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2565",
+    "label": "Self-Edge Tailored Crossfront Trench Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2566",
+    "label": "Self-Edge Metre Scarf",
+    "suggestedCategory": "accessories.scarves"
+  },
+  {
+    "_id": "2568",
+    "label": "Overlock Dead End Denim Jacket",
+    "suggestedCategory": "outerwear.denimJackets"
+  },
+  {
+    "_id": "2570",
+    "label": "Self-Edge Tailored Standing Collar Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2571",
+    "label": "Self-Edge Tailored Low Crotch Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2573",
+    "label": "Self-Edge Tailored Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2575",
+    "label": "Self-Edge Tailored Classic Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2576",
+    "label": "Lined Unlined 1 Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2579",
+    "label": "Self Edge Trouser",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2583",
+    "label": "Self-Edge Metre Apron",
+    "suggestedCategory": "bottoms.skirts"
+  },
+  {
+    "_id": "2584",
+    "label": "Self-Edge Tailored Standing Collar 2-Button Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2585",
+    "label": "Self-Edge Tailored Standing Collar 1-Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2586",
+    "label": "Self-Edge Tailored High Neck Long Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2587",
+    "label": "Lined-Unlined Elongated 2 Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2596",
+    "label": "Prosthetic Fingers",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2597",
+    "label": "Handled Paper Dart Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2598",
+    "label": "Paper Dart \"Rubber Band\" Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2599",
+    "label": "High Neck Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2600",
+    "label": "Lined Goodyear Derby",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2601",
+    "label": "Lined Diagonal Zip Goodyear \"Tornado\" Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2603",
+    "label": "L Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2605",
+    "label": "U Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2608",
+    "label": "Cordovan Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2609",
+    "label": "Paper Dart Combat Boots",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2610",
+    "label": "Classic Back Raglan Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2612",
+    "label": "Stirred Dead End Button Stayed Back Raglan Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2616",
+    "label": "Short Sleeve Prosthetic Elbow 1 Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2617",
+    "label": "Prosthetic Elbow Elongated 2 Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2618",
+    "label": "Meltlock Prosthetic Elbow 1 Button Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2619",
+    "label": "Reversible Seamless Short-Sleeve XT-Shirt",
+    "suggestedCategory": "tops.shortSleeveTshirts"
+  },
+  {
+    "_id": "2620",
+    "label": "Unlined Overlock Standing Collar Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2621",
+    "label": "Visible Meltlock Unlined Back Raglan One-Piece Dead End 1 Button Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2622",
+    "label": "Visible Meltlock One PIece Dead End 1 Button Jacket",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2623",
+    "label": "Tonneau Paper Dart Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2624",
+    "label": "Bipolar Paper Dart Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2625",
+    "label": "Overlock One Piece Dead End Jeans",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2627",
+    "label": "Overlock Dead End Short Apron Jeans",
+    "suggestedCategory": "bottoms.shorts"
+  },
+  {
+    "_id": "2629",
+    "label": "Seamless Long Sleeve Round Neck Sweater",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2630",
+    "label": "Reversible Turtle Neck Knit Sweater",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2636",
+    "label": "Four-Pocket Pony Leather Pants",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2638",
+    "label": "Lined Unlined 2 Button Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2640",
+    "label": "Arthostic Elbow Lined Unlined Leather Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2647",
+    "label": "Melted Silver Bracelet",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2648",
+    "label": "Melted Charm Necklace",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2649",
+    "label": "Silver Stamp Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2650",
+    "label": "Silver Compass Chain",
+    "suggestedCategory": "accessories.jewelry.necklaces"
+  },
+  {
+    "_id": "2651",
+    "label": "Compass Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2652",
+    "label": "Silver Bipolar Key Chain",
+    "suggestedCategory": "accessories.smallObjects"
+  },
+  {
+    "_id": "2653",
+    "label": "Melted Silver Ring",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2654",
+    "label": "Silver Hand Protector",
+    "suggestedCategory": "accessories.jewelry.bracelets"
+  },
+  {
+    "_id": "2655",
+    "label": "Unlined Visible Overlock Dead End Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2656",
+    "label": "Meltlock Button Down Collar Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2658",
+    "label": "Unlined Overlock High Neck Dead End Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2660",
+    "label": "Unlined Visible Overlock One-Piece Dead End Caban",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2661",
+    "label": "Visible Meltlock One-Piece Dead End Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2662",
+    "label": "Low Crotch Dead End Fly Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2664",
+    "label": "Dead End Apron Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2667",
+    "label": "Unlined Overlock Loop Zip Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2668",
+    "label": "In Between Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2669",
+    "label": "Visible Meltlock Long-Johns",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2670",
+    "label": "Visible Meltlock Low Crotch Short-Johns",
+    "suggestedCategory": "bottoms.shorts"
+  },
+  {
+    "_id": "2671",
+    "label": "Visible Meltlock Front Zip Trouser",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2680",
+    "label": "One-Piece Folded Oxfords",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2683",
+    "label": "Iced Paper Dart Low Top",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2684",
+    "label": "One-Piece Prosthetic Ankle Work Boots",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2685",
+    "label": "One-Piece Prosthetic Ankle Dripped Sneakers",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2686",
+    "label": "One-Piece Laceable Dripped Sneakers",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2687",
+    "label": "One Piece Prosthetic Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2689",
+    "label": "Iced Paper Dart Handled Ankle Top",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2690",
+    "label": "Unlined Contrast Meltchain One Button Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2691",
+    "label": "Unlined Suit Trousers Contrast Meltchain",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2692",
+    "label": "U-Sole Prosthetic Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2693",
+    "label": "U-Sole Prosthetic Diagonal Zip Lined Goodyear Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2694",
+    "label": "U-Jack Prosthetic Sneaker",
+    "suggestedCategory": "footwear.sneakers"
+  },
+  {
+    "_id": "2695",
+    "label": "The White Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2697",
+    "label": "Box Turtle Heavy Knit",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2698",
+    "label": "Lined-Unlined Chain Seam Back Raglan Caban",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2699",
+    "label": "Lined-Unlined Chainseam Back Raglan Trench",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2700",
+    "label": "Lined Pinch Seam 2 Zip Fencing Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "2701",
+    "label": "Stirred Unlined Chain Seam 1 Button Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2702",
+    "label": "Stirred Unsleeved Unlined Chain Seam 1 Button Jacket",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2704",
+    "label": "Leather Shirt",
+    "suggestedCategory": "tops.shirts"
+  },
+  {
+    "_id": "2705",
+    "label": "Stirred Chain Seam Long Crotch Ankle Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2706",
+    "label": "Stirred Chain Seam Long Crotch Knee Trousers",
+    "suggestedCategory": "bottoms.shorts"
+  },
+  {
+    "_id": "2714",
+    "label": "Laser Cut Leather Tank Top",
+    "suggestedCategory": "tops.tankTopsAndSleeveless"
+  },
+  {
+    "_id": "2715",
+    "label": "Xposed Knit Tunnel",
+    "suggestedCategory": "accessories.scarves"
+  },
+  {
+    "_id": "2716",
+    "label": "Xposed Knit Path",
+    "suggestedCategory": "accessories.scarves"
+  },
+  {
+    "_id": "2717",
+    "label": "Xposed Crew Neck Knit",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2718",
+    "label": "Xposed Tunnel Neck Knit",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2720",
+    "label": "Xposed Sleeve Knit",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2721",
+    "label": "Xposed Vest Knit",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2722",
+    "label": "Xposed Ankle Sock Knit",
+    "suggestedCategory": "accessories.socks"
+  },
+  {
+    "_id": "2726",
+    "label": "Xposed Knit Finger Warmer",
+    "suggestedCategory": "accessories.jewelry.rings"
+  },
+  {
+    "_id": "2728",
+    "label": "Slant Tank",
+    "suggestedCategory": "tops.tankTopsAndSleeveless"
+  },
+  {
+    "_id": "2729",
+    "label": "Reverse Long Sleeve Tube Neck Slant Shirt",
+    "suggestedCategory": "tops.longSleeveTshirts"
+  },
+  {
+    "_id": "2730",
+    "label": "Reverse Long Sleeve Crew Neck Slant Shirt",
+    "suggestedCategory": "tops.longSleeveTshirts"
+  },
+  {
+    "_id": "2731",
+    "label": "Reverse Short Sleeve Crew Neck Slant Shirt",
+    "suggestedCategory": "tops.shortSleeveTshirts"
+  },
+  {
+    "_id": "2732",
+    "label": "Halter Bison",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2733",
+    "label": "Xposed Outcast Parka",
+    "suggestedCategory": "outerwear.parkas"
+  },
+  {
+    "_id": "2734",
+    "label": "Xposed Cloister Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2735",
+    "label": "Xposed Vest Bag",
+    "suggestedCategory": "outerwear.vests"
+  },
+  {
+    "_id": "2736",
+    "label": "Xposed Halter Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2738",
+    "label": "9 Finger Sifter Hands",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2739",
+    "label": "A-Dactyl Sifter Hands Fingerless Gloves",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2740",
+    "label": "9 Finger Sifter Arms",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2741",
+    "label": "Sifter Vest",
+    "suggestedCategory": "tops.tankTopsAndSleeveless"
+  },
+  {
+    "_id": "2742",
+    "label": "Sifter Tank",
+    "suggestedCategory": "tops.tankTopsAndSleeveless"
+  },
+  {
+    "_id": "2744",
+    "label": "Xposed Bipolar Belt",
+    "suggestedCategory": "accessories.belts"
+  },
+  {
+    "_id": "2746",
+    "label": "Xposed 9 Finger Hands",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "2752",
+    "label": "X-Reverse Jail Crop",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2753",
+    "label": "X-Reverse Jail Coat",
+    "suggestedCategory": "outerwear.coats"
+  },
+  {
+    "_id": "2755",
+    "label": "Goodyear Prosthetic Spur-Biter Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2756",
+    "label": "Goodyear Spur-Biter Fork Front Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2757",
+    "label": "Goodyear Spur-Biter Crimp Front Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2758",
+    "label": "Goodyear Orthopedic Gaiter Front Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2759",
+    "label": "Goodyear Prosthetic Spur-Biter Drip Tank Combat Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2762",
+    "label": "Crop Gloop Denim",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2763",
+    "label": "Ankle Gloop Denim",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2764",
+    "label": "Gloop Denim Jacket",
+    "suggestedCategory": "outerwear.denimJackets"
+  },
+  {
+    "_id": "2766",
+    "label": "Swat-Skew Crop Gloop Denim",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2767",
+    "label": "Skew Ankle Gloop Denim",
+    "suggestedCategory": "bottoms.denim"
+  },
+  {
+    "_id": "2768",
+    "label": "Swat-Skew Gloop Denim Jacket",
+    "suggestedCategory": "outerwear.denimJackets"
+  },
+  {
+    "_id": "2770",
+    "label": "Self-Edged Tailored Jacket",
+    "suggestedCategory": "outerwear.blazers"
+  },
+  {
+    "_id": "2771",
+    "label": "Self-Edged Long Crotch Ankle Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2772",
+    "label": "Self Edged Long Crotch Crop Trousers",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2775",
+    "label": "Reverse Hoosie",
+    "suggestedCategory": "tops.hoodiesAndSweatshirts"
+  },
+  {
+    "_id": "2776",
+    "label": "Pantyhorse",
+    "suggestedCategory": "bottoms.trousers"
+  },
+  {
+    "_id": "2782",
+    "label": "Reverse High Neck Drag Down X-Jumper",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2783",
+    "label": "Reverse Crew Neck Drag Down X-Jumper",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "2785",
+    "label": "X-Hot Feet",
+    "suggestedCategory": "accessories.socks"
+  },
+  {
+    "_id": "2790",
+    "label": "Goodyear Gravity Drip Cockle Derby",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2791",
+    "label": "Goodyear Cockle Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "2792",
+    "label": "Goodyear Cockle Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2793",
+    "label": "Goodyear Slant Cockle Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2794",
+    "label": "Stained Goodyear Gravity Drip Cockle Combat Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2795",
+    "label": "Xposed Gravity Staggers",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "2801",
+    "label": "Stirred Unlined Chain Seam 1 Button Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2802",
+    "label": "Stirred Unsleeved Unlined Chain Seam 1 Button Long Jacket",
+    "suggestedCategory": "outerwear.jackets"
+  },
+  {
+    "_id": "2963",
+    "label": "U-Boot Prosthetic",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "4785",
+    "label": "Spine Elbow & Hand Leather Jacket",
+    "suggestedCategory": "outerwear.leatherJackets"
+  },
+  {
+    "_id": "10717",
+    "label": "Xposed Knit Crew Neck",
+    "suggestedCategory": "tops.sweatersAndKnitwear"
+  },
+  {
+    "_id": "10725",
+    "label": "Xposed Knit Boa",
+    "suggestedCategory": "accessories.scarves"
+  },
+  {
+    "_id": "10738",
+    "label": "Womens Stained 9 Finger Sifter Hands",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "10739",
+    "label": "Xposed 9 Finger Hands",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "10741",
+    "label": "Womens Sifter Vest",
+    "suggestedCategory": "tops.tankTopsAndSleeveless"
+  },
+  {
+    "_id": "10748",
+    "label": "Xposed A-Dactyl Opera Arms",
+    "suggestedCategory": "accessories.gloves"
+  },
+  {
+    "_id": "10755",
+    "label": "Goodyear Prosthetic Spur-Biter Officer",
+    "suggestedCategory": "footwear.shoes"
+  },
+  {
+    "_id": "10757",
+    "label": "Goodyear Orthopedic Spur-Biter Crimp Front Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "10759",
+    "label": "Goodyear Prosthetic Spur-Biter Drip Tank Combat",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "10760",
+    "label": "Goodyear Prosthetic Spur-Biter Fork Front Ankle Boot",
+    "suggestedCategory": "footwear.boots"
+  },
+  {
+    "_id": "10761",
+    "label": "Goodyear Prosthetic Spur-Biter Gaiter Front Knee Boot",
+    "suggestedCategory": "footwear.boots"
+  }
+]

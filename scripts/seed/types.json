@@ -1,0 +1,67 @@
+[
+  {
+    "_id": "a",
+    "code": "A",
+    "label": "Shoes, bags, ties, belts, scarves, etc. (Accessory)"
+  },
+  {
+    "_id": "c",
+    "code": "C",
+    "label": "Shirts (Camicia)"
+  },
+  {
+    "_id": "d",
+    "code": "D",
+    "label": "Dresses"
+  },
+  {
+    "_id": "g",
+    "code": "G",
+    "label": "Blazers (Giacca)"
+  },
+  {
+    "_id": "j",
+    "code": "J",
+    "label": "Denim (Jeans)"
+  },
+  {
+    "_id": "k",
+    "code": "K",
+    "label": "Knitwear"
+  },
+  {
+    "_id": "l",
+    "code": "L",
+    "label": "Leather garments"
+  },
+  {
+    "_id": "m",
+    "code": "M",
+    "label": "Metal accessories"
+  },
+  {
+    "_id": "o",
+    "code": "O",
+    "label": "Outerwear"
+  },
+  {
+    "_id": "p",
+    "code": "P",
+    "label": "Pants"
+  },
+  {
+    "_id": "s",
+    "code": "S",
+    "label": "Skirts"
+  },
+  {
+    "_id": "t",
+    "code": "T",
+    "label": "T-shirts"
+  },
+  {
+    "_id": "v",
+    "code": "V",
+    "label": "Larger products (Volume)"
+  }
+]

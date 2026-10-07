@@ -1,0 +1,374 @@
+[
+  {
+    "_id": "beige",
+    "label": "Beige",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "beige.04",
+    "label": "Beige (Fabric)",
+    "code": "04",
+    "parent": "beige"
+  },
+  {
+    "_id": "beige.20",
+    "label": "Sand / Khaki",
+    "code": "20",
+    "parent": "beige"
+  },
+  {
+    "_id": "black",
+    "label": "Black",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "black.010",
+    "label": "Black (Leather)",
+    "code": "010",
+    "parent": "black"
+  },
+  {
+    "_id": "black.010.010b",
+    "label": "Black (Leather)",
+    "code": "010B",
+    "parent": "black.010"
+  },
+  {
+    "_id": "black.010.010t",
+    "label": "Black (Leather)",
+    "code": "010T",
+    "parent": "black.010"
+  },
+  {
+    "_id": "black.10",
+    "label": "Black (Fabric)",
+    "code": "10",
+    "parent": "black"
+  },
+  {
+    "_id": "black.10.10b",
+    "label": "Black",
+    "code": "10B",
+    "parent": "black.10"
+  },
+  {
+    "_id": "black.101",
+    "label": "Black Denim",
+    "code": "101",
+    "parent": "black"
+  },
+  {
+    "_id": "black.1010",
+    "label": "Black",
+    "code": "1010",
+    "parent": "black"
+  },
+  {
+    "_id": "black.103",
+    "label": "Black (Area Rug)",
+    "code": "103",
+    "parent": "black"
+  },
+  {
+    "_id": "blond",
+    "label": "Blond",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "blond.blond",
+    "label": "Blond",
+    "code": "BLOND",
+    "parent": "blond"
+  },
+  {
+    "_id": "blond.dark-blond",
+    "label": "Dark Blond",
+    "code": "DARK BLOND",
+    "parent": "blond"
+  },
+  {
+    "_id": "blue",
+    "label": "Blue",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "blue.16",
+    "label": "Electric Blue / Purple",
+    "code": "16",
+    "parent": "blue"
+  },
+  {
+    "_id": "blue.29",
+    "label": "Deep Dark Blue / Dark Grey",
+    "code": "29",
+    "parent": "blue"
+  },
+  {
+    "_id": "blue.29-star2",
+    "label": "Blue-Green (Veg Tanned White)",
+    "code": "29**",
+    "parent": "blue"
+  },
+  {
+    "_id": "brown",
+    "label": "Brown",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "brown.14",
+    "label": "Brown",
+    "code": "14",
+    "parent": "brown"
+  },
+  {
+    "_id": "brown.19-star",
+    "label": "Rust (Slow Veg Tanned)",
+    "code": "19*",
+    "parent": "brown"
+  },
+  {
+    "_id": "brown.dark-brown",
+    "label": "Dark Brown",
+    "code": "DARK BROWN",
+    "parent": "brown"
+  },
+  {
+    "_id": "brown.gold-brown",
+    "label": "Gold Brown",
+    "code": null,
+    "parent": "brown"
+  },
+  {
+    "_id": "green",
+    "label": "Green",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "green.05",
+    "label": "Sage Green",
+    "code": "05",
+    "parent": "green"
+  },
+  {
+    "_id": "green.06",
+    "label": "Light Green",
+    "code": "06",
+    "parent": "green"
+  },
+  {
+    "_id": "green.12",
+    "label": "Dark Green",
+    "code": "12",
+    "parent": "green"
+  },
+  {
+    "_id": "green.12-star",
+    "label": "Dark Green (Slow Veg Tanned)",
+    "code": "12*",
+    "parent": "green"
+  },
+  {
+    "_id": "green.48",
+    "label": "Green",
+    "code": "48",
+    "parent": "green"
+  },
+  {
+    "_id": "grey",
+    "label": "Grey",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "grey.019",
+    "label": "Grey (Leather)",
+    "code": "019",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.033",
+    "label": "Light Grey (Leather)",
+    "code": "033",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.036",
+    "label": "Warm Grey (Leather)",
+    "code": "036",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.07",
+    "label": "Grey (Fabric)",
+    "code": "07",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.08",
+    "label": "Steel Grey",
+    "code": "08",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.09",
+    "label": "Dark Grey (Fabric)",
+    "code": "09",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.11",
+    "label": "Medium Grey (Fabric)",
+    "code": "11",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.19",
+    "label": "Medium-Dark Grey",
+    "code": "19",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.1919",
+    "label": "Darker Medium-Dark Grey",
+    "code": "1919",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.3",
+    "label": "Grey (Reflective)",
+    "code": "3",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.33",
+    "label": "Light Grey",
+    "code": "33",
+    "parent": "grey"
+  },
+  {
+    "_id": "grey.36",
+    "label": "Medium Grey",
+    "code": "36",
+    "parent": "grey"
+  },
+  {
+    "_id": "orange",
+    "label": "Orange",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "orange.14-org",
+    "label": "Orange",
+    "code": "14 ORG",
+    "parent": "orange"
+  },
+  {
+    "_id": "orange.14a",
+    "label": "Orange",
+    "code": "14A",
+    "parent": "orange"
+  },
+  {
+    "_id": "red",
+    "label": "Red",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "red.13",
+    "label": "Bright Red",
+    "code": "13",
+    "parent": "red"
+  },
+  {
+    "_id": "red.15",
+    "label": "Dark Violet Red",
+    "code": "15",
+    "parent": "red"
+  },
+  {
+    "_id": "red.brownish-red",
+    "label": "Brownish Red",
+    "code": "BROWNISH RED",
+    "parent": "red"
+  },
+  {
+    "_id": "silver",
+    "label": "Silver",
+    "code": "SILVER",
+    "parent": null
+  },
+  {
+    "_id": "white",
+    "label": "White",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "white.01",
+    "label": "Bright White",
+    "code": "01",
+    "parent": "white"
+  },
+  {
+    "_id": "white.01.01b",
+    "label": "Bright White",
+    "code": "01B",
+    "parent": "white.01"
+  },
+  {
+    "_id": "white.01.01t",
+    "label": "Bright White",
+    "code": "01T",
+    "parent": "white.01"
+  },
+  {
+    "_id": "white.02",
+    "label": "Bright White (Fabric)",
+    "code": "02",
+    "parent": "white"
+  },
+  {
+    "_id": "white.03",
+    "label": "Off White, Bone, Light Grey",
+    "code": "03",
+    "parent": "white"
+  },
+  {
+    "_id": "white.03.03-st",
+    "label": "Stained Off White",
+    "code": "03-ST",
+    "parent": "white.03"
+  },
+  {
+    "_id": "white.110",
+    "label": "White",
+    "code": "110",
+    "parent": "white"
+  },
+  {
+    "_id": "yellow",
+    "label": "Yellow",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "yellow.035",
+    "label": "Yellow (Leather)",
+    "code": "035",
+    "parent": "yellow"
+  },
+  {
+    "_id": "yellow.35",
+    "label": "Yellow",
+    "code": "35",
+    "parent": "yellow"
+  }
+]

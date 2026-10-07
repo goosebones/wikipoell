@@ -1,0 +1,52 @@
+[
+  {
+    "_id": "btw",
+    "code": "BTW",
+    "label": null
+  },
+  {
+    "_id": "bw",
+    "code": "BW",
+    "label": null
+  },
+  {
+    "_id": "edge",
+    "code": "EDGE",
+    "label": "Edged"
+  },
+  {
+    "_id": "pcc",
+    "code": "PCC",
+    "label": "Object Tanned (Pronto per Concia in Capo)"
+  },
+  {
+    "_id": "pta",
+    "code": "PTA",
+    "label": "Garment Dyed"
+  },
+  {
+    "_id": "ptb",
+    "code": "PTB",
+    "label": "Garment Dyed"
+  },
+  {
+    "_id": "ptc",
+    "code": "PTC",
+    "label": "Object Dyed (Pronto per Tintura in Capo)"
+  },
+  {
+    "_id": "rtc",
+    "code": "RTC",
+    "label": "Garment Dyed"
+  },
+  {
+    "_id": "se",
+    "code": "SE",
+    "label": "Self-Edge"
+  },
+  {
+    "_id": "sed",
+    "code": "SED",
+    "label": "Self-Edge Dyed (Self-Edge with garment dye)"
+  }
+]

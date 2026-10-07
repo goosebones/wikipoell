@@ -1,0 +1,142 @@
+[
+  {
+    "_id": "b",
+    "code": "B",
+    "label": null
+  },
+  {
+    "_id": "c",
+    "code": "C",
+    "label": "High Neck"
+  },
+  {
+    "_id": "g",
+    "code": "G",
+    "label": "Gloved"
+  },
+  {
+    "_id": "gop",
+    "code": "GOP",
+    "label": "Glove Prosthetic (Exposed)"
+  },
+  {
+    "_id": "gp",
+    "code": "GP",
+    "label": "Glove Prosthetic (Internal)"
+  },
+  {
+    "_id": "in",
+    "code": "IN",
+    "label": "IN-BETWEEN"
+  },
+  {
+    "_id": "in-st",
+    "code": "IN/ST",
+    "label": "Stained"
+  },
+  {
+    "_id": "l",
+    "code": "L",
+    "label": "Lined"
+  },
+  {
+    "_id": "lr",
+    "code": "LR",
+    "label": null
+  },
+  {
+    "_id": "lv",
+    "code": "LV",
+    "label": "Long Version"
+  },
+  {
+    "_id": "n",
+    "code": "N",
+    "label": null
+  },
+  {
+    "_id": "od",
+    "code": "OD",
+    "label": "Object Dyed"
+  },
+  {
+    "_id": "ood",
+    "code": "OOD",
+    "label": null
+  },
+  {
+    "_id": "oox",
+    "code": "OOX",
+    "label": null
+  },
+  {
+    "_id": "op",
+    "code": "OP",
+    "label": "Prosthetic (Exposed)"
+  },
+  {
+    "_id": "p",
+    "code": "P",
+    "label": "Prosthetic (Footwear)"
+  },
+  {
+    "_id": "pc",
+    "code": "PC",
+    "label": "Prosthetic, Rubber Drip"
+  },
+  {
+    "_id": "pod",
+    "code": "POD",
+    "label": "Prosthetic (Internal)"
+  },
+  {
+    "_id": "pr",
+    "code": "PR",
+    "label": "Prosthetic, Rubber Drip"
+  },
+  {
+    "_id": "r",
+    "code": "R",
+    "label": "Rubber Drip"
+  },
+  {
+    "_id": "se",
+    "code": "SE",
+    "label": "Self Edge"
+  },
+  {
+    "_id": "sed",
+    "code": "SED",
+    "label": "Self Edge"
+  },
+  {
+    "_id": "sod",
+    "code": "SOD",
+    "label": "Prosthetic (Exposed)"
+  },
+  {
+    "_id": "sp",
+    "code": "SP",
+    "label": "Prosthetic (Elbow & Glove)"
+  },
+  {
+    "_id": "sv",
+    "code": "SV",
+    "label": "Short Version"
+  },
+  {
+    "_id": "t",
+    "code": "T",
+    "label": "Tank Sole"
+  },
+  {
+    "_id": "tr",
+    "code": "TR",
+    "label": null
+  },
+  {
+    "_id": "v",
+    "code": "V",
+    "label": null
+  }
+]

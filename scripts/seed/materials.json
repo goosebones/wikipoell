@@ -1,0 +1,1460 @@
+[
+  {
+    "_id": "fabric",
+    "label": "Fabric",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "fabric.cotton",
+    "label": "Cotton",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.cotton.afil",
+    "label": "100% Cotton",
+    "code": "AFIL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.alt",
+    "label": "100% Cotton",
+    "code": "ALT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.asa",
+    "label": "100% Cotton",
+    "code": "ASA",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.auch",
+    "label": "100% Cotton",
+    "code": "AUCH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.babe",
+    "label": "100% Cotton",
+    "code": "BABE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.between",
+    "label": "100% Cotton",
+    "code": "BETWEEN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.brows",
+    "label": "100% Cotton (Distressed, Aged)",
+    "code": "BROWS",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.bub",
+    "label": "100% Cotton",
+    "code": "BUB",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.bush",
+    "label": "100% Cotton",
+    "code": "BUSH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.clean",
+    "label": "100% Cotton",
+    "code": "CLEAN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.co",
+    "label": "100% Cotton",
+    "code": "CO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.co2",
+    "label": "100% Cotton",
+    "code": "CO2",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.cofifty",
+    "label": "100% Cotton",
+    "code": "COFIFTY",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.comp",
+    "label": "100% Cotton",
+    "code": "COMP",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.con",
+    "label": "Self Edge Cotton",
+    "code": "CON",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.con-edge",
+    "label": "100% Cotton, Self Edge (Thick)",
+    "code": "CON EDGE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.corawo",
+    "label": "54% Cotton 24% Ramie 22% Wool",
+    "code": "CORAWO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.cord",
+    "label": "100% Cotton",
+    "code": "CORD",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.cosixty",
+    "label": "100% Cotton",
+    "code": "COSIXTY",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.deline",
+    "label": "100% Cotton (Covered in Relief Lines)",
+    "code": "DELINE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.doco",
+    "label": "100% Cotton",
+    "code": "DOCO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.drag",
+    "label": "100% Cotton",
+    "code": "DRAG",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.eater",
+    "label": "100% Cotton",
+    "code": "EATER",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.elefant",
+    "label": "50% Cotton 50% Wool",
+    "code": "ELEFANT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.evom",
+    "label": "100% Cotton",
+    "code": "EVOM",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.fade",
+    "label": "100% Cotton",
+    "code": "FADE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.flammen",
+    "label": "100% Cotton",
+    "code": "FLAMMEN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.fog",
+    "label": "100% Cotton",
+    "code": "FOG",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.fta",
+    "label": "60% Cotton 40% Ramie",
+    "code": "FTA",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.garo",
+    "label": "100% Cotton",
+    "code": "GARO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.hardy",
+    "label": "100% Cotton",
+    "code": "HARDY",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.herr",
+    "label": "98% Cotton 2% Polyester",
+    "code": "HERR",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.hoh",
+    "label": "100% Cotton",
+    "code": "HOH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.in-between",
+    "label": "Cotton",
+    "code": "IN-BETWEEN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.in-order",
+    "label": "100% Cotton",
+    "code": "IN-ORDER",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.inch",
+    "label": "100% Cotton",
+    "code": "INCH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.infoc",
+    "label": "100% Cotton",
+    "code": "INFOC",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.jail",
+    "label": "100% Cotton",
+    "code": "JAIL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.jers",
+    "label": "100% Cotton (Fleece)",
+    "code": "JERS",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.kit",
+    "label": "100% Cotton",
+    "code": "KIT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.koat",
+    "label": "100% Cotton",
+    "code": "KOAT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.laco",
+    "label": "58% Cotton, 42% Wool",
+    "code": "LACO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.laico",
+    "label": "58% Cotton 42% Wool",
+    "code": "LAICO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.law",
+    "label": "100% Cotton",
+    "code": "LAW",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.line",
+    "label": "100% Cotton",
+    "code": "LINE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.links",
+    "label": "55% Cotton 45% Ramie",
+    "code": "LINKS",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.made",
+    "label": "100% Cotton",
+    "code": "MADE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.moche",
+    "label": "100% Cotton (Interlaced-Weave)",
+    "code": "MOCHE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.mod",
+    "label": "100% Cotton",
+    "code": "MOD",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.move",
+    "label": "100% Cotton",
+    "code": "MOVE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.mts",
+    "label": "100% Cotton",
+    "code": "MTS",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.neu",
+    "label": "97% Cotton 3% Polyester",
+    "code": "NEU",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.non",
+    "label": "100% Cotton (Paper-Like)",
+    "code": "NON",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.norm",
+    "label": "100% Cotton",
+    "code": "NORM",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.nosixty",
+    "label": "100% Cotton",
+    "code": "NOSIXTY",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.nubel",
+    "label": "100% Cotton",
+    "code": "NUBEL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.nycot",
+    "label": "79% Cotton 21% Nylon",
+    "code": "NYCOT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.on",
+    "label": "100% Cotton",
+    "code": "ON",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.on-edge",
+    "label": "100% Cotton (Self Edge)",
+    "code": "ON EDGE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.order",
+    "label": "100% Cotton",
+    "code": "ORDER",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.org",
+    "label": "100% Cotton",
+    "code": "ORG",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.pearl",
+    "label": "100% Cotton",
+    "code": "PEARL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.pedge",
+    "label": "100% Cotton",
+    "code": "PEDGE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.plural",
+    "label": "30% Cotton 15% Polyester 30% Wool 25% Ramie",
+    "code": "PLURAL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.punch",
+    "label": "86% Cotton 14% Cellophane",
+    "code": "PUNCH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.ra",
+    "label": "100% Cotton",
+    "code": "RA",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rado",
+    "label": "50% Cotton 50% Polyester",
+    "code": "RADO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rafin",
+    "label": "100% Cotton",
+    "code": "RAFIN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rak",
+    "label": "100% Cotton",
+    "code": "RAK",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rasen",
+    "label": "100% Cotton",
+    "code": "RASEN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rauch",
+    "label": "100% Cotton",
+    "code": "RAUCH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rechts",
+    "label": "55% Cotton 45% Ramie",
+    "code": "RECHTS",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.ricth",
+    "label": "100% cotton",
+    "code": "RICTH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.right",
+    "label": "100% Cotton",
+    "code": "RIGHT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.rist",
+    "label": "50% Cotton 50% Ramie",
+    "code": "RIST",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.roh",
+    "label": "100% Cotton",
+    "code": "ROH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.ruk",
+    "label": "100% Cotton",
+    "code": "RUK",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.seicht",
+    "label": "100% Cotton",
+    "code": "SEICHT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.sfinge",
+    "label": "100% Cotton",
+    "code": "SFINGE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.shame",
+    "label": "100% Cotton (Distressed)",
+    "code": "SHAME",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.sheet",
+    "label": "100% Cotton",
+    "code": "SHEET",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.sit",
+    "label": "100% Cotton",
+    "code": "SIT",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.snif",
+    "label": "100% Cotton",
+    "code": "SNIF",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.space",
+    "label": "100% Cotton",
+    "code": "SPACE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.subel",
+    "label": "100% Cotton",
+    "code": "SUBEL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.tan",
+    "label": "100% Cotton",
+    "code": "TAN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.tar",
+    "label": "40% Cotton 40% Polyurethane 20% Viscose",
+    "code": "TAR",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.thwh",
+    "label": "100% Cotton",
+    "code": "THWH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.thwhsh",
+    "label": "100% Cotton",
+    "code": "THWHSH",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.tone",
+    "label": "100% Cotton",
+    "code": "TONE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.trac",
+    "label": "60% Cotton + ?%",
+    "code": "TRAC",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.tubo",
+    "label": "100% Cotton",
+    "code": "TUBO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.tween",
+    "label": "100% Cotton",
+    "code": "TWEEN",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.twill",
+    "label": "100% Cotton",
+    "code": "TWILL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.weave",
+    "label": "100% Cotton",
+    "code": "WEAVE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.well",
+    "label": "100% Cotton",
+    "code": "WELL",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.werk",
+    "label": "100% Cotton",
+    "code": "WERK",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.wipeco",
+    "label": "100% Cotton",
+    "code": "WIPECO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.yard",
+    "label": "100% Cotton (Small Checks)",
+    "code": "YARD",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.yo",
+    "label": "100% Cotton",
+    "code": "YO",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.cotton.zeile",
+    "label": "67% Cotton 33% Linen",
+    "code": "ZEILE",
+    "parent": "fabric.cotton"
+  },
+  {
+    "_id": "fabric.mohair",
+    "label": "Mohair",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.mohair.kico",
+    "label": "60% Mohair 40% Cotton",
+    "code": "KICO",
+    "parent": "fabric.mohair"
+  },
+  {
+    "_id": "fabric.ramie",
+    "label": "Ramie",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.ramie.aca",
+    "label": "55% Ramie 45% Wool",
+    "code": "ACA",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.dope",
+    "label": "60% Ramie 40% Wool",
+    "code": "DOPE",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.lies",
+    "label": "50% Ramie 50% Polyester",
+    "code": "LIES",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.morp",
+    "label": "60% Ramie 40% Cotton",
+    "code": "MORP",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.morph",
+    "label": "60% Ramie 40% Cotton",
+    "code": "MORPH",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.not",
+    "label": "100% Ramie",
+    "code": "NOT",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.ramen",
+    "label": "100% Ramie",
+    "code": "RAMEN",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.rar",
+    "label": "100% Ramie",
+    "code": "RAR",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.raskin",
+    "label": "100% Ramie",
+    "code": "RASKIN",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.ror",
+    "label": "55% Ramie 45% Wool",
+    "code": "ROR",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.ramie.splinter",
+    "label": "50% Ramie 50% Cotton",
+    "code": "SPLINTER",
+    "parent": "fabric.ramie"
+  },
+  {
+    "_id": "fabric.silk",
+    "label": "Silk",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.silk.hundret",
+    "label": "100% Silk",
+    "code": "HUNDRET",
+    "parent": "fabric.silk"
+  },
+  {
+    "_id": "fabric.silk.loom",
+    "label": "100% Silk",
+    "code": "LOOM",
+    "parent": "fabric.silk"
+  },
+  {
+    "_id": "fabric.synthetic",
+    "label": "Synthetic",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.synthetic.bruch",
+    "label": "66% Polyester 34% Cotton",
+    "code": "BRUCH",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.denver",
+    "label": "89% Nylon 11% Lycra (Looks Like Braids)",
+    "code": "DENVER",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.fred",
+    "label": "55% Polyester 45% Wool",
+    "code": "FRED",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.gummi",
+    "label": "Polypropylene & Gom",
+    "code": "GUMMI",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.hour",
+    "label": "100% PVC",
+    "code": "HOUR",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.kite",
+    "label": "100% Polyester",
+    "code": "KITE",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.kolo",
+    "label": "55% Polyester 45% Wool",
+    "code": "KOLO",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.leic",
+    "label": "78% Polyester 22% Virgin Wool",
+    "code": "LEIC",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.nas",
+    "label": "100% Polyamide",
+    "code": "NAS",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.pol",
+    "label": "100% Polyester",
+    "code": "POL",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.reflective",
+    "label": "Reflective",
+    "code": null,
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.x-night",
+    "label": "58% POLYESTER 24% GLASS 18% COTTON",
+    "code": "X-NIGHT",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.x-nit",
+    "label": "38% Glass, 25% Cotton, 30% Polyester, 7% Polyamide",
+    "code": "X=NIT",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.xitch",
+    "label": "Reflective",
+    "code": "XITCH",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.xlight",
+    "label": "60% Polyamide 40% Cotton",
+    "code": "XLIGHT",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.xnight",
+    "label": "58% Polyester 24% Glass 18% Cotton",
+    "code": "XNIGHT",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.reflective.xnit",
+    "label": "58% Polyester, 24% Glass, 18% Cotton",
+    "code": "XNIT",
+    "parent": "fabric.synthetic.reflective"
+  },
+  {
+    "_id": "fabric.synthetic.seersucker",
+    "label": "97% Nylon 3% Rubber",
+    "code": "SEERSUCKER",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.sorg",
+    "label": "55% Polyester 45% Wool",
+    "code": "SORG",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.synthetic.stri",
+    "label": "100% Polyester",
+    "code": "STRI",
+    "parent": "fabric.synthetic"
+  },
+  {
+    "_id": "fabric.wool",
+    "label": "Wool",
+    "code": null,
+    "parent": "fabric"
+  },
+  {
+    "_id": "fabric.wool.anyx10",
+    "label": "51% Wool 49% Cotton",
+    "code": "ANYX10",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.crimill",
+    "label": "60% Wool 40% PVA (Crystallized)",
+    "code": "CRIMILL",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.crisuit",
+    "label": "70% Wool 30% PVA (Crystallized)",
+    "code": "CRISUIT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.cw",
+    "label": "52% Fleece Wool 48% Cotton",
+    "code": "CW",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.dict",
+    "label": "68% Wool 32% Cotton",
+    "code": "DICT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.fol",
+    "label": "100% Wool",
+    "code": "FOL",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.gicht",
+    "label": "57% Virgin Wool 43% Ramie",
+    "code": "GICHT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.him",
+    "label": "90% Fleece 10% Polyester",
+    "code": "HIM",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.knot",
+    "label": "94% Wool 4% Polyethylene 2% Polyamide",
+    "code": "KNOT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.lone",
+    "label": "100% Pure New Wool",
+    "code": "LONE",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.nast",
+    "label": "50% Wool 50% Rubber",
+    "code": "NAST",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.nicht",
+    "label": "88% Wool 12% Mohair",
+    "code": "NICHT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.pentasir",
+    "label": "100% Virgin Wool",
+    "code": "PENTASIR",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.pett",
+    "label": "50% Fleece Wool 50% Ramie",
+    "code": "PETT",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.quinquasir",
+    "label": "100% Virgin Wool",
+    "code": "QUINQUASIR",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.stein",
+    "label": "100% Wool",
+    "code": "STEIN",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.surface",
+    "label": "80% Wool 20% Ramie",
+    "code": "SURFACE",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.teer",
+    "label": "100% Wool",
+    "code": "TEER",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.tir",
+    "label": "100% Wool",
+    "code": "TIR",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.toy",
+    "label": "70% Fleece Wool 15% Silk 10% Polyester 5% Nylon",
+    "code": "TOY",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.tw",
+    "label": "85% Virgin Wool 15% Polyamide",
+    "code": "TW",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.war",
+    "label": "39% Wool 31% Polyurethane 18% Viscose 12% Ramie",
+    "code": "WAR",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.wface",
+    "label": "75% Wool 25% Ramie",
+    "code": "WFACE",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.wim",
+    "label": "100% Wool",
+    "code": "WIM",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.wocell",
+    "label": "93% Fleece Wool 7% Cellophane",
+    "code": "WOCELL",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.woscar",
+    "label": "79% Wool 21% Ramie",
+    "code": "WOSCAR",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "fabric.wool.wow",
+    "label": "100% Wool",
+    "code": "WOW",
+    "parent": "fabric.wool"
+  },
+  {
+    "_id": "leather",
+    "label": "Leather",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "leather.belv",
+    "label": "Leather (Belts)",
+    "code": "BELV",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.bison",
+    "label": "Bison",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.bison.bias",
+    "label": "Bison",
+    "code": "BIAS",
+    "parent": "leather.bison"
+  },
+  {
+    "_id": "leather.bison.bims",
+    "label": "Bison",
+    "code": "BIMS",
+    "parent": "leather.bison"
+  },
+  {
+    "_id": "leather.bison.bius",
+    "label": "Thick Bison",
+    "code": "BIUS",
+    "parent": "leather.bison"
+  },
+  {
+    "_id": "leather.bison.buus",
+    "label": "Laser Cut Bison",
+    "code": "BUUS",
+    "parent": "leather.bison"
+  },
+  {
+    "_id": "leather.bison.pabis",
+    "label": "Paper Dart (Bison with Tyvek)",
+    "code": "PABIS",
+    "parent": "leather.bison"
+  },
+  {
+    "_id": "leather.calf",
+    "label": "Calf",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.calf.calb",
+    "label": "Calf",
+    "code": "CALB",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.calf.chew",
+    "label": "Calf",
+    "code": "CHEW",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.calf.juicy",
+    "label": "Calf",
+    "code": "JUICY",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.calf.kalb",
+    "label": "Calf",
+    "code": "KALB",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.calf.pacal",
+    "label": "Calf + Polythene (Paper-leather)",
+    "code": "PACAL",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.calf.vit",
+    "label": "Calf",
+    "code": "VIT",
+    "parent": "leather.calf"
+  },
+  {
+    "_id": "leather.coated",
+    "label": "Coated Leather",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.coated.xburn",
+    "label": "Polyurethane coated leather",
+    "code": "XBURN",
+    "parent": "leather.coated"
+  },
+  {
+    "_id": "leather.coated.xderma",
+    "label": "Polyurethane coated leather",
+    "code": "XDERMA",
+    "parent": "leather.coated"
+  },
+  {
+    "_id": "leather.coated.xherpes",
+    "label": "Polyurethane coated leather",
+    "code": "XHERPES",
+    "parent": "leather.coated"
+  },
+  {
+    "_id": "leather.coated.xzema",
+    "label": "Polyurethane coated leather",
+    "code": "XZEMA",
+    "parent": "leather.coated"
+  },
+  {
+    "_id": "leather.conca",
+    "label": "Leather (weave)",
+    "code": "CONCA",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.cow",
+    "label": "Cow",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.cow.belb",
+    "label": "Cow Leather",
+    "code": "BELB",
+    "parent": "leather.cow"
+  },
+  {
+    "_id": "leather.cow.belpib",
+    "label": "Cow",
+    "code": "BELPIB",
+    "parent": "leather.cow"
+  },
+  {
+    "_id": "leather.cow.cowo",
+    "label": "73% Wool 27% Cotton",
+    "code": "COWO",
+    "parent": "leather.cow"
+  },
+  {
+    "_id": "leather.deer",
+    "label": "Deer",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.deer.elee",
+    "label": "Deer",
+    "code": "ELEE",
+    "parent": "leather.deer"
+  },
+  {
+    "_id": "leather.deer.eleer",
+    "label": "Deer (With Lycra)",
+    "code": "ELEER",
+    "parent": "leather.deer"
+  },
+  {
+    "_id": "leather.deer.leer",
+    "label": "Deer",
+    "code": "LEER",
+    "parent": "leather.deer"
+  },
+  {
+    "_id": "leather.donkey",
+    "label": "Donkey",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.donkey.dolpib",
+    "label": "Donkey",
+    "code": "DOLPIB",
+    "parent": "leather.donkey"
+  },
+  {
+    "_id": "leather.fors",
+    "label": "Leather",
+    "code": "FORS",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.frost",
+    "label": "Leather (cracked)",
+    "code": "FROST",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.garoo",
+    "label": "Leather",
+    "code": "GAROO",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.haar",
+    "label": "Human Hair & Leather",
+    "code": "HAAR",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.horse",
+    "label": "Horse",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.horse.coil",
+    "label": "Horse",
+    "code": "COIL",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.corpib",
+    "label": "Horse",
+    "code": "CORPIB",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.cors",
+    "label": "Horse",
+    "code": "CORS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.corss",
+    "label": "Thicker Horse",
+    "code": "CORSS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.corv",
+    "label": "Horse",
+    "code": "CORV",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.cuba",
+    "label": "Horse",
+    "code": "CUBA",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.cubbs",
+    "label": "Thicker Horse",
+    "code": "CUBBS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.cubs",
+    "label": "Horse",
+    "code": "CUBS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.cul",
+    "label": "Horse",
+    "code": "CUL",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.curss",
+    "label": "Thick Laser Cut Horse",
+    "code": "CURSS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.hoil",
+    "label": "Horse",
+    "code": "HOIL",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.lsbc",
+    "label": "Horse Cordovan",
+    "code": "LSBC",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.luc",
+    "label": "Horse",
+    "code": "LUC",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.pony",
+    "label": "Pony Hide",
+    "code": "PONY",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.sbuc",
+    "label": "Horse (Reverse CUBS)",
+    "code": "SBUC",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.sworse",
+    "label": "100% Horse Leather",
+    "code": "SWORSE",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.xhorsasis",
+    "label": "100% Horse Leather",
+    "code": "XHORSASIS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.horse.xwarts",
+    "label": "Horse Leather (Reflective)",
+    "code": "XWARTS",
+    "parent": "leather.horse"
+  },
+  {
+    "_id": "leather.kangaroo",
+    "label": "Kangaroo",
+    "code": null,
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.kangaroo.capib",
+    "label": "Kangaroo",
+    "code": "CAPIB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.groil",
+    "label": "Kangaroo",
+    "code": "GROIL",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.hip",
+    "label": "Kangaroo",
+    "code": "HIP",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.kanpib",
+    "label": "Kangaroo",
+    "code": "KANPIB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.kanpob",
+    "label": "Kangaroo",
+    "code": "KANPOB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.rolpib",
+    "label": "Kangaroo",
+    "code": "ROLPIB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.rolpub",
+    "label": "Kangaroo",
+    "code": "ROLPUB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.rompib",
+    "label": "Kangaroo",
+    "code": "ROMPIB",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.rools",
+    "label": "Kangaroo",
+    "code": "ROOLS",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.rooms",
+    "label": "Kangaroo",
+    "code": "ROOMS",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.ruuls",
+    "label": "Laser Cut Kangaroo",
+    "code": "RUULS",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.kangaroo.ruums",
+    "label": "Kangaroo",
+    "code": "RUUMS",
+    "parent": "leather.kangaroo"
+  },
+  {
+    "_id": "leather.pabel",
+    "label": "80% Leather 20% Polyurethane",
+    "code": "PABEL",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.paber",
+    "label": "70% Leather 30% PE",
+    "code": "PABER",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.streak",
+    "label": "Leather",
+    "code": "STREAK",
+    "parent": "leather"
+  },
+  {
+    "_id": "leather.wild",
+    "label": "Leather (deeply cracked - matted)",
+    "code": "WILD",
+    "parent": "leather"
+  },
+  {
+    "_id": "metal",
+    "label": "Metal",
+    "code": null,
+    "parent": null
+  },
+  {
+    "_id": "metal.silver",
+    "label": "SILVER",
+    "code": "SILVER",
+    "parent": "metal"
+  },
+  {
+    "_id": "rubber",
+    "label": "Rubber",
+    "code": null,
+    "parent": null
+  }
+]

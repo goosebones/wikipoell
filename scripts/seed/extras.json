@@ -1,0 +1,67 @@
+[
+  {
+    "_id": "prosthetic",
+    "label": "Prosthetic",
+    "parent": null
+  },
+  {
+    "_id": "prosthetic.elbow",
+    "label": "Elbow",
+    "parent": "prosthetic"
+  },
+  {
+    "_id": "prosthetic.knuckle",
+    "label": "Knuckle",
+    "parent": "prosthetic"
+  },
+  {
+    "_id": "prosthetic.ankle",
+    "label": "Ankle",
+    "parent": "prosthetic"
+  },
+  {
+    "_id": "prosthetic.toe",
+    "label": "Toe",
+    "parent": "prosthetic"
+  },
+  {
+    "_id": "rubber-drip",
+    "label": "Rubber Drip",
+    "parent": null
+  },
+  {
+    "_id": "spur-biter",
+    "label": "Spur Biter",
+    "parent": null
+  },
+  {
+    "_id": "tank-sole",
+    "label": "Tank Sole",
+    "parent": null
+  },
+  {
+    "_id": "buckle",
+    "label": "Buckle",
+    "parent": null
+  },
+  {
+    "_id": "self-edge",
+    "label": "Self Edge",
+    "parent": null
+  },
+  {
+    "_id": "reflective",
+    "label": "Reflective",
+    "parent": null
+  },
+  {
+    "_id": "stained",
+    "label": "Stained",
+    "parent": null
+  },
+  {
+    "_id": "gloved",
+    "label": "Gloved",
+    "parent": null
+  }
+]
