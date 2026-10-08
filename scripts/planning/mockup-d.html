@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D · Editorial</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>body{font-family:Inter,system-ui,sans-serif}.serif{font-family:'Cormorant Garamond',serif}</style>
+</head>
+<body class="bg-[#efe9df] text-[#2a2520] antialiased">
+<header class="px-6 md:px-12 pt-6 flex items-baseline gap-10 text-[12px] uppercase tracking-[.18em]">
+  <a href="#" class="serif normal-case tracking-normal text-3xl italic">Wikipoell</a>
+  <nav id="nav" class="hidden md:flex gap-7 text-[#8a7f72]"></nav>
+  <div class="flex-1"></div>
+  <a href="#" class="text-[#8a7f72] hover:text-black">Search</a>
+  <a href="#" class="text-[#8a7f72] hover:text-black">Contribute</a>
+</header>
+
+<section id="hero" class="px-6 md:px-12 pt-14 pb-20 grid md:grid-cols-12 gap-8 items-end"></section>
+
+<section class="px-6 md:px-12 border-t border-[#d8cfc2] pt-8 pb-4 flex flex-wrap items-baseline gap-x-6 gap-y-2">
+  <h2 class="serif text-4xl mr-4">The archive</h2>
+  <div id="cats" class="flex flex-wrap gap-x-5 gap-y-1 text-[12px] uppercase tracking-[.15em] text-[#8a7f72]"></div>
+</section>
+
+<main id="grid" class="px-6 md:px-12 pb-24 columns-2 md:columns-3 xl:columns-4 gap-6"></main>
+
+<div id="detail" class="hidden fixed inset-0 z-30 bg-[#efe9df] overflow-y-auto">
+  <div class="px-6 md:px-12 py-6">
+    <button id="close" class="text-[12px] uppercase tracking-[.18em] text-[#8a7f72] hover:text-black">← Return</button>
+    <div class="grid md:grid-cols-12 gap-10 mt-8">
+      <div class="md:col-span-5 md:sticky md:top-8 self-start">
+        <p id="d-cat" class="text-[11px] uppercase tracking-[.2em] text-[#8a7f72]"></p>
+        <h2 id="d-title" class="serif text-6xl leading-[0.95] mt-4"></h2>
+        <p id="d-code" class="mt-6 text-[13px] tracking-wide text-[#5c5248] leading-6"></p>
+        <dl id="d-attrs" class="mt-10 text-[14px] space-y-3"></dl>
+        <a id="d-source" target="_blank" class="inline-block mt-10 serif italic text-xl border-b border-[#2a2520]"></a>
+      </div>
+      <div id="d-images" class="md:col-span-7 space-y-6"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let D;
+const attr = (k, v) => v && v.length ? `<div class="grid grid-cols-[110px_1fr] gap-4"><dt class="text-[11px] uppercase tracking-[.18em] text-[#8a7f72] pt-0.5">${k}</dt><dd>${[].concat(v).join(" · ")}</dd></div>` : "";
+function open(g) {
+  $("#d-cat").textContent = g.category.join(" — ");
+  $("#d-title").textContent = g.title;
+  $("#d-code").innerHTML = g.code.join("<br>");
+  $("#d-attrs").innerHTML = attr("Model", g.model) + attr("Material", g.material) + attr("Colour", g.color) + attr("Gender", g.gender) + attr("Procedure", g.procedure.join(", ")) + attr("Process", g.process.join(", "));
+  $("#d-source").textContent = `Seen at ${g.source}`; $("#d-source").href = g.url;
+  $("#d-images").innerHTML = g.images.map((u) => `<img src="${u}" class="w-full">`).join("");
+  $("#detail").classList.remove("hidden"); $("#detail").scrollTop = 0;
+}
+fetch("/data").then((r) => r.json()).then((d) => {
+  D = d;
+  const h = d.garments[0];
+  $("#hero").innerHTML = `
+    <div class="md:col-span-5">
+      <p class="text-[11px] uppercase tracking-[.2em] text-[#8a7f72]">An archive of Carol Christian Poell · ${d.counts.garments.toLocaleString()} pieces</p>
+      <h1 class="serif text-6xl md:text-7xl leading-[0.92] mt-5">Garments that were dyed after they were made.</h1>
+      <p class="mt-6 max-w-sm text-[14px] leading-6 text-[#5c5248]">Browse by model, material and colour — or search a code you found on a label.</p>
+    </div>
+    <a href="#" data-i="0" class="md:col-span-4 md:col-start-7 block"><img src="${h.images[0]}" class="w-full aspect-[4/5] object-cover"></a>
+    <a href="#" data-i="0" class="md:col-span-2 block text-[13px] leading-5"><span class="serif italic text-2xl block mb-2">${h.title}</span><span class="text-[#8a7f72]">${h.code.join("<br>")}</span></a>`;
+  $("#nav").innerHTML = d.categories.slice(0, 5).map((c) => `<a href="#" class="hover:text-black">${c.label}</a>`).join("");
+  $("#cats").innerHTML = ["All", ...d.categories.map((c) => c.label)].map((c, i) => `<a href="#" class="${i === 0 ? "text-black" : "hover:text-black"}">${c}</a>`).join("");
+  $("#grid").innerHTML = d.garments.slice(1).map((g, i) => `
+    <a href="#" data-i="${i + 1}" class="group block break-inside-avoid mb-8">
+      <img src="${g.images[0]}" loading="lazy" class="w-full ${i % 3 === 0 ? "aspect-[3/4]" : i % 3 === 1 ? "aspect-square" : "aspect-[4/5]"} object-cover">
+      <p class="serif text-xl mt-3 leading-tight group-hover:italic">${g.title}</p>
+      <p class="text-[11px] uppercase tracking-[.15em] text-[#8a7f72] mt-1">${g.model} · ${g.material.at(-1)?.split(" – ")[0] ?? ""} · ${g.color.at(-1)?.split(" – ")[0] ?? ""}</p>
+    </a>`).join("");
+  document.body.onclick = (e) => { const a = e.target.closest("a[data-i]"); if (a) { e.preventDefault(); open(D.garments[a.dataset.i]); } };
+  $("#close").onclick = (e) => { e.stopPropagation(); $("#detail").classList.add("hidden"); };
+});
+</script>
+</body>
+</html>

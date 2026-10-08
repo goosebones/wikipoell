@@ -10,6 +10,8 @@ const eslintConfig = [
       "certificates/**",
       // Separate project, not webapp source — see wikipoell-ingest/README.md
       "wikipoell-ingest/**",
+      // The new app, with its own config — see web/
+      "web/**",
     ],
   },
   ...coreWebVitals,

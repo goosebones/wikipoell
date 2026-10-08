@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A · Gallery</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>body{font-family:Inter,system-ui,sans-serif}.mono{font-family:'JetBrains Mono',monospace}</style>
+</head>
+<body class="bg-white text-neutral-900 antialiased">
+<header class="sticky top-0 z-20 bg-white/90 backdrop-blur border-b border-neutral-100">
+  <div class="max-w-[1400px] mx-auto px-6 h-14 flex items-center gap-8">
+    <a href="#" class="font-semibold tracking-tight text-[15px]">wikipoell</a>
+    <nav id="nav" class="hidden md:flex gap-6 text-[13px] text-neutral-500"></nav>
+    <div class="flex-1"></div>
+    <input placeholder="Search models, codes…" class="w-72 text-[13px] bg-neutral-100 rounded-full px-4 py-1.5 outline-none focus:bg-neutral-200">
+    <a href="#" class="text-[13px] text-neutral-500 hover:text-black">Upload</a>
+    <div class="w-7 h-7 rounded-full bg-neutral-200"></div>
+  </div>
+</header>
+
+<section class="max-w-[1400px] mx-auto px-6 pt-16 pb-10">
+  <p class="mono text-[11px] uppercase tracking-[.2em] text-neutral-400">Carol Christian Poell archive</p>
+  <h1 class="text-5xl font-semibold tracking-tight mt-3 max-w-2xl leading-[1.05]">Every garment, documented.</h1>
+  <p id="counts" class="mono text-[12px] text-neutral-500 mt-4"></p>
+</section>
+
+<main class="max-w-[1400px] mx-auto px-6 pb-24 flex gap-10">
+  <aside class="hidden lg:block w-48 shrink-0 text-[13px] sticky top-20 self-start space-y-7" id="filters"></aside>
+  <div class="flex-1">
+    <div class="flex items-center justify-between mb-5 text-[12px] text-neutral-500">
+      <span id="shown"></span><span class="mono">Sort: newest ↓</span>
+    </div>
+    <div id="grid" class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-5 gap-y-10"></div>
+  </div>
+</main>
+
+<div id="detail" class="hidden fixed inset-0 z-30 bg-white overflow-y-auto">
+  <div class="max-w-[1400px] mx-auto px-6 py-6">
+    <button id="close" class="text-[13px] text-neutral-500 hover:text-black">← Back to archive</button>
+    <div class="grid lg:grid-cols-[1fr_380px] gap-12 mt-6">
+      <div id="d-images" class="grid grid-cols-2 gap-3"></div>
+      <div class="lg:sticky lg:top-6 self-start">
+        <p id="d-cat" class="text-[12px] text-neutral-400"></p>
+        <h2 id="d-title" class="text-3xl font-semibold tracking-tight mt-2"></h2>
+        <div id="d-code" class="mono text-[13px] text-neutral-600 mt-3 leading-6"></div>
+        <dl id="d-attrs" class="mt-8 text-[13px] divide-y divide-neutral-100 border-y border-neutral-100"></dl>
+        <a id="d-source" target="_blank" class="inline-block mt-6 text-[13px] underline underline-offset-4"></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let D, active = {};
+const attr = (k, v) => v && v.length ? `<div class="flex py-2.5 gap-4"><dt class="w-24 text-neutral-400 shrink-0">${k}</dt><dd>${[].concat(v).join(" › ")}</dd></div>` : "";
+function filterGroup(title, key, items) {
+  return `<div><p class="mono text-[10px] uppercase tracking-[.2em] text-neutral-400 mb-2">${title}</p>${items.slice(0, 9).map((i) =>
+    `<label class="flex items-center gap-2 py-0.5 cursor-pointer text-neutral-600 hover:text-black"><input type="checkbox" data-k="${key}" value="${i.label}" class="accent-black"> <span class="flex-1">${i.label}</span><span class="mono text-[11px] text-neutral-300">${i.n}</span></label>`).join("")}</div>`;
+}
+function render() {
+  const list = D.garments.filter((g) => Object.entries(active).every(([k, vals]) => !vals.size || vals.has(g[k][0])));
+  $("#shown").textContent = `${list.length} garments in this sample`;
+  $("#grid").innerHTML = list.map((g, i) => `
+    <a href="#" data-i="${D.garments.indexOf(g)}" class="group block">
+      <div class="aspect-[3/4] bg-neutral-100 overflow-hidden"><img src="${g.images[0]}" loading="lazy" class="w-full h-full object-cover transition duration-500 group-hover:scale-[1.03]"></div>
+      <p class="text-[13px] mt-3 font-medium leading-snug">${g.title}</p>
+      <p class="mono text-[11px] text-neutral-400 mt-1">${g.code[0]} ${g.code[1]}</p>
+    </a>`).join("");
+}
+function open(g) {
+  $("#d-images").innerHTML = g.images.map((u, i) => `<img src="${u}" class="w-full bg-neutral-100 ${i === 0 ? "col-span-2" : ""}">`).join("");
+  $("#d-cat").textContent = g.category.join(" / ");
+  $("#d-title").textContent = g.title;
+  $("#d-code").innerHTML = g.code.join("<br>");
+  $("#d-attrs").innerHTML = attr("Model", g.model) + attr("Material", g.material) + attr("Color", g.color) + attr("Type", g.type) + attr("Gender", g.gender) + attr("Procedure", g.procedure.join(", ")) + attr("Process", g.process.join(", "));
+  $("#d-source").textContent = `View on ${g.source} ↗`; $("#d-source").href = g.url;
+  $("#detail").classList.remove("hidden"); $("#detail").scrollTop = 0;
+}
+fetch("/data").then((r) => r.json()).then((d) => {
+  D = d;
+  $("#counts").textContent = `${d.counts.garments.toLocaleString()} garments · ${d.counts.models} models`;
+  $("#nav").innerHTML = d.categories.map((c) => `<a href="#" class="hover:text-black">${c.label}</a>`).join("");
+  $("#filters").innerHTML = filterGroup("Category", "category", d.categories) + filterGroup("Color", "color", d.colorFamilies) + filterGroup("Material", "material", d.materialGroups);
+  $("#filters").oninput = (e) => { const k = e.target.dataset.k; active[k] ??= new Set(); e.target.checked ? active[k].add(e.target.value) : active[k].delete(e.target.value); render(); };
+  $("#grid").onclick = (e) => { const a = e.target.closest("a[data-i]"); if (a) { e.preventDefault(); open(D.garments[a.dataset.i]); } };
+  $("#close").onclick = () => $("#detail").classList.add("hidden");
+  render();
+});
+</script>
+</body>
+</html>

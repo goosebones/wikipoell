@@ -1,0 +1,3 @@
+/* Global styles: loads Tailwind. Design tokens (fonts, colors) are added in
+   milestone 1.2. */
+@import "tailwindcss";

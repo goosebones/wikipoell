@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>B · Archive</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>body{font-family:'IBM Plex Mono',monospace}</style>
+</head>
+<body class="bg-[#0b0b0b] text-[#d6d3cd] antialiased text-[12px]">
+<header class="border-b border-[#222]">
+  <div class="px-5 h-11 flex items-center gap-6 uppercase tracking-[.15em] text-[11px]">
+    <a href="#" class="text-white font-semibold">WIKIPOELL/</a>
+    <nav id="nav" class="hidden md:flex gap-5 text-[#777]"></nav>
+    <div class="flex-1"></div>
+    <span class="text-[#555]">⌘K search</span>
+    <a href="#" class="text-[#777] hover:text-white">[+ submit]</a>
+    <a href="#" class="text-[#777] hover:text-white">[sign in]</a>
+  </div>
+</header>
+
+<section class="px-5 py-8 border-b border-[#222] grid md:grid-cols-[1fr_auto] gap-6 items-end">
+  <div>
+    <p class="text-[#555] uppercase tracking-[.2em] text-[10px]">Index of the work of Carol Christian Poell</p>
+    <p class="text-white text-3xl mt-3 leading-tight max-w-3xl">Object dyed. Catalogued.<br><span class="text-[#555]">By model, material and colour.</span></p>
+  </div>
+  <div id="counts" class="text-right text-[#777] leading-6"></div>
+</section>
+
+<div class="px-5 py-3 border-b border-[#222] flex flex-wrap gap-2" id="chips"></div>
+
+<main id="grid" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 border-l border-[#222]"></main>
+
+<div id="detail" class="hidden fixed inset-0 z-30 bg-[#0b0b0b] overflow-y-auto">
+  <div class="grid lg:grid-cols-[1fr_460px] min-h-screen">
+    <div id="d-images" class="grid grid-cols-2 gap-px bg-[#222] content-start"></div>
+    <div class="border-l border-[#222] p-6 lg:sticky lg:top-0 lg:h-screen overflow-y-auto">
+      <button id="close" class="text-[#777] hover:text-white uppercase tracking-[.15em] text-[10px]">[esc] close</button>
+      <p id="d-cat" class="text-[#555] uppercase tracking-[.15em] text-[10px] mt-8"></p>
+      <h2 id="d-title" class="text-white text-xl mt-2 leading-snug"></h2>
+      <div id="d-code" class="mt-5 border border-[#2a2a2a] p-3 text-[13px] text-white leading-6 bg-[#111]"></div>
+      <table id="d-attrs" class="w-full mt-6"></table>
+      <a id="d-source" target="_blank" class="block mt-6 border border-[#2a2a2a] px-3 py-2 hover:bg-white hover:text-black uppercase tracking-[.12em] text-[10px]"></a>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let D, active = null;
+const row = (k, v) => v && v.length ? `<tr class="border-b border-[#1c1c1c] align-top"><td class="py-2 pr-4 text-[#555] uppercase tracking-[.12em] text-[10px] w-28">${k}</td><td class="py-2">${[].concat(v).join(" › ")}</td></tr>` : "";
+function render() {
+  const list = D.garments.filter((g) => !active || g.color[0] === active || g.material[0] === active);
+  $("#grid").innerHTML = list.map((g) => `
+    <a href="#" data-i="${D.garments.indexOf(g)}" class="group block border-r border-b border-[#222] p-3 hover:bg-[#141414]">
+      <div class="flex justify-between text-[10px] text-[#555]"><span>${g.model}</span><span>${g.color.at(-1)?.split(" – ")[0] ?? ""}</span></div>
+      <div class="aspect-square my-3 overflow-hidden"><img src="${g.images[0]}" loading="lazy" class="w-full h-full object-cover grayscale group-hover:grayscale-0 transition duration-300"></div>
+      <p class="text-[#e8e5df] leading-snug">${g.title}</p>
+      <p class="text-[#555] text-[10px] mt-1">${g.code[0]}<br>${g.code[1]}</p>
+    </a>`).join("");
+}
+function open(g) {
+  $("#d-images").innerHTML = g.images.map((u) => `<img src="${u}" class="w-full aspect-square object-cover bg-black">`).join("");
+  $("#d-cat").textContent = g.category.join(" / ");
+  $("#d-title").textContent = g.title;
+  $("#d-code").innerHTML = g.code.join("<br>");
+  $("#d-attrs").innerHTML = row("Model", g.model) + row("Material", g.material) + row("Colour", g.color) + row("Type", g.type) + row("Gender", g.gender) + row("Procedure", g.procedure.join(", ")) + row("Process", g.process.join(", "));
+  $("#d-source").textContent = `Source: ${g.source} ↗`; $("#d-source").href = g.url;
+  $("#detail").classList.remove("hidden"); $("#detail").scrollTop = 0;
+}
+fetch("/data").then((r) => r.json()).then((d) => {
+  D = d;
+  $("#counts").innerHTML = `${d.counts.garments.toLocaleString()} GARMENTS<br>${d.counts.models} MODELS`;
+  $("#nav").innerHTML = d.categories.map((c) => `<a href="#" class="hover:text-white">${c.label}</a>`).join("");
+  $("#chips").innerHTML = [...d.colorFamilies.slice(0, 8), ...d.materialGroups].map((c) =>
+    `<button data-v="${c.label}" class="border border-[#2a2a2a] px-2.5 py-1 uppercase tracking-[.12em] text-[10px] text-[#888] hover:text-white">${c.label} <span class="text-[#444]">${c.n}</span></button>`).join("");
+  $("#chips").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; active = active === b.dataset.v ? null : b.dataset.v;
+    document.querySelectorAll("#chips button").forEach((x) => x.classList.toggle("!bg-white", x.dataset.v === active)); document.querySelectorAll("#chips button").forEach((x) => x.classList.toggle("!text-black", x.dataset.v === active)); render(); };
+  $("#grid").onclick = (e) => { const a = e.target.closest("a[data-i]"); if (a) { e.preventDefault(); open(D.garments[a.dataset.i]); } };
+  $("#close").onclick = () => $("#detail").classList.add("hidden");
+  document.onkeydown = (e) => e.key === "Escape" && $("#detail").classList.add("hidden");
+  render();
+});
+</script>
+</body>
+</html>

@@ -14,3 +14,6 @@ certificates/
 
 # separate project, not webapp source (see wikipoell-ingest/README.md)
 wikipoell-ingest/
+
+# the new app, with its own config
+web/

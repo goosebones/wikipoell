@@ -1,0 +1,58 @@
+[
+  { "group": "Browsing", "items": [
+    { "id": "home-search", "status": "current", "name": "Homepage search", "desc": "Full-screen random background photo with a search box in the middle. Type-ahead suggests garments (by title) and vocabulary values." },
+    { "id": "category-menu", "status": "current", "name": "Category menu", "desc": "Nested category menu: a dropdown on desktop and a full-screen sidebar on mobile." },
+    { "id": "category-pages", "status": "current", "name": "Category pages", "desc": "/category/... lists every garment in a category and its subcategories, with a breadcrumb." },
+    { "id": "filters", "status": "current", "name": "Filter menu", "desc": "Filter the category pages by type, gender, model, material, color, procedure and process. Filters live in the URL." },
+    { "id": "garment-page", "status": "current", "name": "Garment page", "desc": "Image carousel, title, two-line article code, category breadcrumb, and every attribute linking to a filtered browse." },
+    { "id": "similar", "status": "current", "name": "Similar garments", "desc": "Up to 10 similar garments on each garment page, scored by shared attributes." },
+    { "id": "source-display", "status": "current", "name": "Source on garment page", "desc": "Shows where a garment came from: the uploader's own piece, or an external listing with a link." },
+    { "id": "not-found", "status": "current", "name": "404 page", "desc": "" },
+    { "id": "tree-filters", "status": "new", "name": "Tree filters with counts", "desc": "Category, color and material filters as trees: tick 'black' to include 010, 010B, etc., with a count next to every option." },
+    { "id": "model-pages", "status": "new", "name": "Model pages", "desc": "/model/2600: the model's name, suggested category, and every garment of that model. Model numbers link here everywhere." },
+    { "id": "model-matrix", "status": "new", "name": "Model variant matrix", "desc": "On a model page, a grid of material × color showing which combinations are known to exist, each cell linking to its garments." },
+    { "id": "attribute-pages", "status": "new", "name": "Color and material pages", "desc": "/color/black.010 or /material/leather.kangaroo: everything in that color or material and below, plus a short description." },
+    { "id": "codebook", "status": "new", "name": "Codebook / glossary", "desc": "Reference pages explaining CCP codes: types, procedures, processes, every material with its composition, every color. Linked from article codes." },
+    { "id": "code-decoder", "status": "new", "name": "Article code decoder", "desc": "Paste a code like 'LM/2699-IN BIMS-PTC/19' and get it explained piece by piece, with links to matching garments." },
+    { "id": "identity-grouping", "status": "new", "name": "Group listings of the same garment", "desc": "Garments with the same identity (gender + model + material + color) from different retailers shown as one item, with 'seen at 3 retailers'." },
+    { "id": "sorting", "status": "new", "name": "Sorting", "desc": "Sort any grid by newest, model number or title." },
+    { "id": "view-toggle", "status": "new", "name": "Grid / list view", "desc": "Switch between an image grid and a dense list with codes in columns." },
+    { "id": "lightbox", "status": "new", "name": "Image zoom / lightbox", "desc": "Full-screen image viewer with zoom on the garment page." },
+    { "id": "recent", "status": "new", "name": "Recently added", "desc": "A feed of the newest garments, on the homepage or its own page." },
+    { "id": "random", "status": "new", "name": "Random garment", "desc": "A button that opens a random garment, for browsing the archive." },
+    { "id": "color-swatches", "status": "new", "name": "Color swatches", "desc": "A small swatch next to every color, from a hex value stored on each color." }
+  ]},
+  { "group": "Accounts and contributions", "items": [
+    { "id": "auth", "status": "current", "name": "Sign in / sign up", "desc": "Clerk-hosted sign-in, avatar in the header." },
+    { "id": "profiles", "status": "current", "name": "User profiles", "desc": "/user/name: avatar, username and the garments that user uploaded." },
+    { "id": "upload", "status": "current", "name": "Upload a garment", "desc": "Form with image upload (JPEG/PNG/GIF/WebP up to 10 MB, converted to WebP) and every field. Source is 'my own garment' or an external link. Lands as pending." },
+    { "id": "edit-own", "status": "current", "name": "Edit your own garments", "desc": "Owners can edit their garment from its page." },
+    { "id": "user-sync", "status": "current", "name": "User sync", "desc": "Clerk webhook keeps the users collection in step (created, updated, deleted)." },
+    { "id": "favorites", "status": "new", "name": "Favorites / wishlist", "desc": "Save garments to a list on your profile." },
+    { "id": "owned", "status": "new", "name": "'I own this'", "desc": "Mark garments you own; your profile shows your collection. Optional public/private." },
+    { "id": "suggest-edit", "status": "new", "name": "Suggest a correction", "desc": "Anyone signed in can propose a fix to a garment's fields; it lands in the admin queue instead of changing the garment directly." },
+    { "id": "add-photos", "status": "new", "name": "Add photos to an existing garment", "desc": "Contribute extra photos of a garment already in the archive, reviewed like new submissions." }
+  ]},
+  { "group": "Admin", "items": [
+    { "id": "review-queue", "status": "current", "name": "Review queue", "desc": "Every pending garment from users and the pipeline: publish, reject or edit. Image lightbox. Filter by source and by why it was held back, ranked by how many garments share each blocker." },
+    { "id": "inline-vocab", "status": "current", "name": "Add missing values inline", "desc": "Unknown values are flagged in review, and can be added to the vocabulary without leaving the queue." },
+    { "id": "ingest-details", "status": "current", "name": "Ingest review details", "desc": "For pipeline garments: why they were held back, each field's confidence and where it came from, the LLM's notes." },
+    { "id": "recheck", "status": "current", "name": "Re-check queue", "desc": "Re-tests pending garments against the current vocabulary and publishes anything no longer blocked." },
+    { "id": "runs", "status": "current", "name": "Ingest runs", "desc": "Run history with per-source counters and errors, and unpublish-by-run." },
+    { "id": "properties-admin", "status": "current", "name": "Vocabulary manager", "desc": "Add, edit and delete vocabulary values (flat list today)." },
+    { "id": "backgrounds", "status": "current", "name": "Homepage backgrounds", "desc": "Rotating homepage images. Stored in the database, but there is no admin screen for them today." },
+    { "id": "tree-editor", "status": "new", "name": "Tree vocabulary editor", "desc": "One editor for every collection: models, colors, materials, extras, categories and the flat lists. Add, rename and move nodes." },
+    { "id": "bulk-edit", "status": "new", "name": "Bulk edit", "desc": "Select many garments and set a field on all of them at once (e.g. add an extra, change a color)." },
+    { "id": "quality", "status": "new", "name": "Data quality dashboard", "desc": "Lists of garments with problems: no material/color, single-layer values, category different from the model, models with no garments." },
+    { "id": "edit-history", "status": "new", "name": "Edit history", "desc": "Every change to a garment recorded: who changed which field, from what to what, and when. Shown on the garment for admins." },
+    { "id": "merge", "status": "new", "name": "Merge duplicates", "desc": "Combine two garments that are really the same listing, keeping all images." },
+    { "id": "backgrounds-admin", "status": "new", "name": "Backgrounds screen", "desc": "Upload, remove and toggle homepage backgrounds from the admin." }
+  ]},
+  { "group": "Site", "items": [
+    { "id": "analytics", "status": "current", "name": "Vercel analytics", "desc": "Page analytics and speed insights." },
+    { "id": "mobile", "status": "current", "name": "Mobile layout", "desc": "" },
+    { "id": "seo", "status": "new", "name": "Link previews and SEO", "desc": "Proper page titles, Open Graph images (the garment's cover photo) for shared links, and a sitemap." },
+    { "id": "dark-mode", "status": "new", "name": "Dark mode", "desc": "Follows the system setting." },
+    { "id": "about", "status": "new", "name": "About page", "desc": "What Wikipoell is, how to contribute, credits." }
+  ]}
+]

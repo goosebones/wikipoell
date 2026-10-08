@@ -2,11 +2,11 @@
   {
     "_id": "f",
     "code": "F",
-    "label": "emale"
+    "label": "Female"
   },
   {
     "_id": "m",
     "code": "M",
-    "label": "ale"
+    "label": "Male"
   }
 ]
