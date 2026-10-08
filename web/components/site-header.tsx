@@ -1,11 +1,13 @@
 // Site header: the wordmark linking home, the browse menus (category, model,
-// color, material; from tablet width up) and the account corner (sign in /
-// avatar), in a bar that stays at the top while scrolling. The menus are built
-// from the cached vocabulary, so they cost no database work per page. Search
-// (milestone 11) and the phone menu (next chunk) are added here later.
+// color, material: dropdowns from tablet width up, a slide-out sheet behind a
+// menu button on phones) and the account corner (sign in / avatar), in a bar
+// that stays at the top while scrolling. The menus are built from the cached
+// vocabulary, so they cost no database work per page. Search (milestone 11)
+// is added here later.
 import Link from "next/link";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
+import { MobileNav } from "@/components/mobile-nav";
 import { SiteNav } from "@/components/site-nav";
 import { UserMenu } from "@/components/user-menu";
 import { browseMenus } from "@/lib/nav";
@@ -15,7 +17,8 @@ export async function SiteHeader() {
   const menus = browseMenus(await getVocabulary());
   return (
     <header className="sticky top-0 z-20 border-b border-muted bg-background/90 backdrop-blur">
-      <Container className="flex h-14 items-center gap-6">
+      <Container className="flex h-14 items-center gap-2 md:gap-6">
+        <MobileNav menus={menus} />
         <Link
           href="/"
           className="text-[15px] font-semibold tracking-tight"
