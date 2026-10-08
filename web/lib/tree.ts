@@ -25,9 +25,12 @@ export function ancestors(tree: Tree, id: string) {
 }
 
 // How a single node reads on screen: "010 – Black (Leather)" for a node with
-// a CCP code, just "Black" for a family or group.
+// a CCP code, just "Black" for a family or group. Some codes have no better
+// label than the code itself (e.g. "SILVER"); those show once.
 export function nodeLabel(node: TreeNode) {
-  return node.code ? `${node.code} – ${node.label}` : node.label;
+  return node.code && node.code !== node.label
+    ? `${node.code} – ${node.label}`
+    : node.label;
 }
 
 // The full readable path of a node, root first:
