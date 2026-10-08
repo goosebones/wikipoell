@@ -1,14 +1,14 @@
-// A garment's page at /garment/[id]: its photo, title, article code and every
-// attribute. Tree values (category, material, color, extras) are written out
-// as full paths, each step linking to its page; the model links to its page.
-// Unknown or unpublished ids get the 404 page. The photo gallery and the
-// source listing are added in the next chunks.
+// A garment's page at /garment/[id]: its photos (with a full-screen viewer),
+// title, article code and every attribute, in article-code order. Tree values
+// (category, material, color, extras) are written out as full paths, each step
+// linking to its page; the model links to its page. Unknown or unpublished ids
+// get the 404 page. The source listing is added in the next chunk.
 import { cacheLife, cacheTag } from "next/cache";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
+import { GarmentGallery } from "@/components/garment-gallery";
 import { TreePath } from "@/components/tree-path";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { getGarment } from "@/lib/garments";
@@ -46,20 +46,10 @@ async function GarmentDetails({ id }: { id: string }) {
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
-      {/* 3:4 like the photos. On desktop it takes its size from the window
-          height, so the whole photo fits on screen. */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-muted lg:h-[calc(100vh-7rem)] lg:w-auto">
-        {garment.images[0] && (
-          <Image
-            src={garment.images[0].url}
-            alt={title}
-            fill
-            priority
-            sizes="(min-width: 1024px) 60vw, 100vw"
-            className="object-cover"
-          />
-        )}
-      </div>
+      <GarmentGallery
+        images={garment.images.map((i) => i.url)}
+        alt={title}
+      />
 
       <div className="lg:sticky lg:top-20 lg:self-start">
         {garment.category && (
@@ -90,7 +80,7 @@ async function GarmentDetails({ id }: { id: string }) {
                 href={`/model/${garment.model}`}
                 className="hover:underline"
               >
-                {garment.model} - {vocab.models[garment.model]?.label}
+                {garment.model} – {vocab.models[garment.model]?.label}
               </Link>
             )}
           </Attribute>
