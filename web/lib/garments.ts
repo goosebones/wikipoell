@@ -1,12 +1,14 @@
 // Garment queries. Only published garments are ever shown to the public.
 // Grids are fed plain card data (id, title, code, cover photo and a few short
 // labels) rather than raw documents, which carry ObjectIds and so can't be
-// cached or sent to the browser as they are.
+// cached or sent to the browser as they are. A grid can be narrowed to a scope:
+// a category, color or material (that node and everything beneath it) or a
+// model.
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
-import { nodeLabel } from "@/lib/tree";
+import { nodeLabel, subtree } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Garment, TreeNode } from "@/types";
 
@@ -22,6 +24,32 @@ export function parseSort(value: unknown): Sort {
   return typeof value === "string" && Object.hasOwn(SORTS, value)
     ? (value as Sort)
     : "newest";
+}
+
+// What a grid is narrowed to; null means the whole archive.
+export type Scope = {
+  field: "category" | "color" | "material" | "model";
+  id: string;
+} | null;
+
+const SCOPE_FIELDS = ["category", "color", "material", "model"];
+
+// A scope sent from the browser (through a server action), checked before use.
+export function parseScope(value: unknown): Scope {
+  const v = value as Scope;
+  return v && SCOPE_FIELDS.includes(v.field) && typeof v.id === "string"
+    ? { field: v.field, id: v.id }
+    : null;
+}
+
+// Published garments in the scope. Tree fields match the node and everything
+// beneath it; a model matches exactly.
+function scopeFilter(scope: Scope) {
+  if (!scope) return { status: "published" as const };
+  return {
+    status: "published" as const,
+    [scope.field]: scope.field === "model" ? scope.id : subtree(scope.id),
+  };
 }
 
 export type GarmentCardData = {
@@ -42,10 +70,10 @@ const ORDER = {
   title: { title: 1, model: 1, _id: -1 },
 } as const;
 
-// One page (from 1) of published garments for the archive grid, and whether
-// more pages follow. Cached for an hour per page and sort under the
+// One page (from 1) of published garments in the scope, and whether more
+// pages follow. Cached for an hour per page, sort and scope under the
 // "garments" tag, so admin edits can refresh it.
-export async function getGarmentCards(page: number, sort: Sort) {
+export async function getGarmentCards(page: number, sort: Sort, scope: Scope) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
@@ -55,7 +83,7 @@ export async function getGarmentCards(page: number, sort: Sort) {
     garments
       .aggregate<Garment>(
         [
-          { $match: { status: "published" } },
+          { $match: scopeFilter(scope) },
           // Titles aren't stored: sorting by title looks up the model's name.
           ...(sort === "title"
             ? [
@@ -104,6 +132,14 @@ export async function getGarmentCards(page: number, sort: Sort) {
     })),
     hasMore: items.length > PER_PAGE,
   };
+}
+
+// How many published garments are in the scope. Cached like the cards.
+export async function countGarments(scope: Scope) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+  return garments.countDocuments(scopeFilter(scope));
 }
 
 // A single published garment by its id, or null if the id is malformed or no
