@@ -210,5 +210,11 @@ Each milestone ends with a working site. Each numbered chunk is one review.
 2. Point Vercel at `web/` with `MONGODB_URL` set to the new cluster.
 3. Check production, then delete the old app.
 
+### Revisit
+
+Decisions deferred during the build, to come back to:
+
+- **Sort options.** Newest, model and title exist today (`SORTS` in `web/lib/garments.ts`). Title and model may not be very useful; choose which sorts to offer.
+
 ### After cutover: ingest pipeline rework
 Planned separately. It brings back the `/api/ingest/*` routes and the re-check queue, and decides what happens to agent corrections. The pipeline stays paused from cutover until then.

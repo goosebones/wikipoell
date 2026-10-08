@@ -1,0 +1,167 @@
+// A garment's page at /garment/[id]: its photo, title, article code and every
+// attribute. Tree values (category, material, color, extras) are written out
+// as full paths, each step linking to its page; the model links to its page.
+// Unknown or unpublished ids get the 404 page. The photo gallery and the
+// source listing are added in the next chunks.
+import { cacheLife, cacheTag } from "next/cache";
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { Container } from "@/components/container";
+import { TreePath } from "@/components/tree-path";
+import { articleCode, garmentTitle } from "@/lib/garment-display";
+import { getGarment } from "@/lib/garments";
+import { ancestors } from "@/lib/tree";
+import { getVocabulary } from "@/lib/vocabulary";
+import type { Term } from "@/types";
+
+export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
+  return (
+    <Container className="pt-8">
+      {/* The id comes from the URL, so it is only known per request. */}
+      <Suspense>
+        {params.then(({ id }) => (
+          <GarmentDetails id={id} />
+        ))}
+      </Suspense>
+    </Container>
+  );
+}
+
+// Cached for an hour per garment, under "garments" (every garment) and
+// "garment:<id>" (just this one), so admin edits can refresh it.
+async function GarmentDetails({ id }: { id: string }) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments", `garment:${id}`);
+
+  const [vocab, garment] = await Promise.all([getVocabulary(), getGarment(id)]);
+  if (!garment) notFound();
+
+  const [line1, line2] = articleCode(garment, vocab);
+  const title = garmentTitle(garment, vocab);
+  const term = (t: Term | undefined) =>
+    t && (t.label ? `${t.code} – ${t.label}` : t.code);
+
+  return (
+    <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
+      {/* 3:4 like the photos. On desktop it takes its size from the window
+          height, so the whole photo fits on screen. */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-muted lg:h-[calc(100vh-7rem)] lg:w-auto">
+        {garment.images[0] && (
+          <Image
+            src={garment.images[0].url}
+            alt={title}
+            fill
+            priority
+            sizes="(min-width: 1024px) 60vw, 100vw"
+            className="object-cover"
+          />
+        )}
+      </div>
+
+      <div className="lg:sticky lg:top-20 lg:self-start">
+        {garment.category && (
+          <p className="text-xs text-muted-foreground">
+            {ancestors(vocab.categories, garment.category)
+              .map((c) => c.label)
+              .join(" / ")}
+          </p>
+        )}
+        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
+        <p className="mt-3 font-mono text-[13px] leading-6 text-muted-foreground">
+          {line1}
+          <br />
+          {line2}
+        </p>
+
+        <dl className="mt-8 divide-y divide-muted border-y border-muted text-[13px]">
+          {/* Same order as the article code, then what the code leaves out. */}
+          <Attribute label="Type">
+            {term(vocab.types[garment.type ?? ""])}
+          </Attribute>
+          <Attribute label="Gender">
+            {vocab.genders[garment.gender ?? ""]?.label}
+          </Attribute>
+          <Attribute label="Model">
+            {garment.model && (
+              <Link
+                href={`/model/${garment.model}`}
+                className="hover:underline"
+              >
+                {garment.model} - {vocab.models[garment.model]?.label}
+              </Link>
+            )}
+          </Attribute>
+          <Attribute label="Procedure">
+            {garment.procedure.length > 0 &&
+              garment.procedure
+                .map((p) => term(vocab.procedures[p]))
+                .join(", ")}
+          </Attribute>
+          <Attribute label="Material">
+            {garment.material && (
+              <TreePath
+                tree={vocab.materials}
+                id={garment.material}
+                base="/material"
+              />
+            )}
+          </Attribute>
+          <Attribute label="Process">
+            {garment.process.length > 0 &&
+              garment.process.map((p) => term(vocab.processes[p])).join(", ")}
+          </Attribute>
+          <Attribute label="Color">
+            {garment.color && (
+              <TreePath
+                tree={vocab.colors}
+                id={garment.color}
+                base="/color"
+              />
+            )}
+          </Attribute>
+          <Attribute label="Category">
+            {garment.category && (
+              <TreePath
+                tree={vocab.categories}
+                id={garment.category}
+                base="/category"
+              />
+            )}
+          </Attribute>
+          <Attribute label="Extras">
+            {garment.extras.length > 0 &&
+              garment.extras.map((e) => (
+                <div key={e}>
+                  <TreePath
+                    tree={vocab.extras}
+                    id={e}
+                    base="/extra"
+                  />
+                </div>
+              ))}
+          </Attribute>
+        </dl>
+      </div>
+    </div>
+  );
+}
+
+// One row of the attribute list; rows with nothing to show are left out.
+function Attribute({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  if (!children) return null;
+  return (
+    <div className="flex gap-4 py-2.5">
+      <dt className="w-24 shrink-0 text-muted-foreground">{label}</dt>
+      <dd className="min-w-0">{children}</dd>
+    </div>
+  );
+}

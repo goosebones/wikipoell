@@ -33,6 +33,11 @@ export function nodeLabel(node: TreeNode) {
     : node.label;
 }
 
+// The page for a node: nodeHref("/color", "black.010") → "/color/black/010".
+export function nodeHref(base: string, id: string) {
+  return `${base}/${id.replaceAll(".", "/")}`;
+}
+
 // The full readable path of a node, root first:
 // labelPath(colors, "black.010") → ["Black", "010 – Black (Leather)"].
 export function labelPath(tree: Tree, id: string) {

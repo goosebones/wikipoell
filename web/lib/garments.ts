@@ -2,6 +2,7 @@
 // Grids are fed plain card data (id, title, code, cover photo and a few short
 // labels) rather than raw documents, which carry ObjectIds and so can't be
 // cached or sent to the browser as they are.
+import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
@@ -11,6 +12,8 @@ import type { Garment, TreeNode } from "@/types";
 
 export const PER_PAGE = 48;
 
+// TODO: revisit which sorts to offer. Title and model may not be very useful;
+// choose the options that are (also listed under "Revisit" in PLAN.md).
 export const SORTS = { newest: "Newest", model: "Model", title: "Title" };
 export type Sort = keyof typeof SORTS;
 
@@ -101,4 +104,11 @@ export async function getGarmentCards(page: number, sort: Sort) {
     })),
     hasMore: items.length > PER_PAGE,
   };
+}
+
+// A single published garment by its id, or null if the id is malformed or no
+// published garment has it.
+export async function getGarment(id: string) {
+  if (!ObjectId.isValid(id)) return null;
+  return garments.findOne({ _id: new ObjectId(id), status: "published" });
 }
