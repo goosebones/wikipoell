@@ -1,8 +1,9 @@
 // A garment's page at /garment/[id]: its photos (with a full-screen viewer),
 // title, article code and every attribute, in article-code order. Tree values
 // (category, material, color, extras) are written out as full paths, each step
-// linking to its page; the model links to its page. Unknown or unpublished ids
-// get the 404 page. The source listing is added in the next chunk.
+// linking to its page; the model links to its page. Ends with a link to the
+// retailer listing the garment came from. Unknown or unpublished ids get the
+// 404 page.
 import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -134,6 +135,23 @@ async function GarmentDetails({ id }: { id: string }) {
               ))}
           </Attribute>
         </dl>
+
+        {garment.source?.url ? (
+          <a
+            href={garment.source.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-block text-[13px] underline underline-offset-4"
+          >
+            View on {garment.source.label ?? "the original listing"} ↗
+          </a>
+        ) : (
+          garment.source?.label && (
+            <p className="mt-6 text-[13px] text-muted-foreground">
+              Listed by {garment.source.label}
+            </p>
+          )
+        )}
       </div>
     </div>
   );
