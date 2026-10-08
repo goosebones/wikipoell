@@ -6,8 +6,11 @@
  *   node scripts/migrate-garments.mjs --apply      # write to the new cluster
  *   node scripts/migrate-garments.mjs --apply --replace
  *                                                  # re-run: clear the target first
+ *   node scripts/migrate-garments.mjs --apply --db wikipoell-dev
+ *                                                  # write a different database
  *
- * Reads MONGODB_URL (never written to) and writes MONGODB_URL_2. Vocabulary
+ * Reads MONGODB_URL (never written to) and writes MONGODB_URL_2 (database
+ * "wikipoell" unless --db names another). Vocabulary
  * comes from scripts/seed/, which setup-db.mjs has already loaded into the new
  * cluster. Refuses to write if any garment fails conversion.
  *
@@ -22,6 +25,8 @@ process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
 
 const apply = process.argv.includes("--apply");
 const replace = process.argv.includes("--replace");
+const dbFlag = process.argv.indexOf("--db");
+const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "wikipoell";
 const seed = (n) =>
   JSON.parse(
     readFileSync(resolve(import.meta.dirname, "seed", `${n}.json`), "utf8"),
@@ -168,7 +173,7 @@ const source = await mongoose
   .createConnection(process.env.MONGODB_URL)
   .asPromise();
 const target = await mongoose
-  .createConnection(process.env.MONGODB_URL_2)
+  .createConnection(process.env.MONGODB_URL_2, { dbName: DB_NAME })
   .asPromise();
 console.log(
   `${apply ? "APPLY" : "DRY RUN"}: ${source.db.databaseName} (old) → ${target.db.databaseName} (new)\n`,

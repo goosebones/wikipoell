@@ -1,8 +1,11 @@
-// Site header: the wordmark linking home, in a bar that stays at the top while
-// scrolling. Navigation dropdowns (milestone 6), search (milestone 11) and the
-// sign-in button (milestone 2) are added here later.
+// Site header: the wordmark linking home on the left and the account corner
+// (sign in / avatar) on the right, in a bar that stays at the top while
+// scrolling. Navigation dropdowns (milestone 6) and search (milestone 11) are
+// added here later.
 import Link from "next/link";
+import { Suspense } from "react";
 import { Container } from "@/components/container";
+import { UserMenu } from "@/components/user-menu";
 
 export function SiteHeader() {
   return (
@@ -14,6 +17,13 @@ export function SiteHeader() {
         >
           wikipoell
         </Link>
+        <div className="flex-1" />
+        {/* The session is read per request, so the rest of the header can
+            render instantly while this streams in. The placeholder keeps the
+            avatar's space so nothing shifts. */}
+        <Suspense fallback={<div className="size-7" />}>
+          <UserMenu />
+        </Suspense>
       </Container>
     </header>
   );

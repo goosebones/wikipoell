@@ -2,8 +2,9 @@
  * Create the collections, validators and indexes described in SCHEMA.md on
  * the new cluster, and seed the vocabulary in scripts/seed/.
  *
- *   node scripts/setup-db.mjs            # MONGODB_URL_2, database "wikipoell"
- *   node scripts/setup-db.mjs --dry-run  # print the plan, write nothing
+ *   node scripts/setup-db.mjs                    # MONGODB_URL_2, database "wikipoell"
+ *   node scripts/setup-db.mjs --db wikipoell-dev  # a different database
+ *   node scripts/setup-db.mjs --dry-run          # print the plan, write nothing
  *
  * Idempotent. Validators are (re)applied on every run. Seed documents are
  * inserted only when their _id is missing, so later edits are never
@@ -15,7 +16,8 @@ import mongoose from "mongoose";
 
 process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
 
-const DB_NAME = "wikipoell";
+const dbFlag = process.argv.indexOf("--db");
+const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "wikipoell";
 const dryRun = process.argv.includes("--dry-run");
 const seedDir = resolve(import.meta.dirname, "seed");
 

@@ -196,6 +196,8 @@ node scripts/migrate-garments.mjs              # dry run: report only
 node scripts/migrate-garments.mjs --apply      # add --replace to re-run
 ```
 
+Both scripts take `--db <name>` to build a different database on the same cluster. Local development uses `wikipoell-dev`, built the same way and refreshed by re-running the migration with `--replace`. Production (`wikipoell`) is never touched from a laptop.
+
 The webapp and the ingest pipeline must not point at the new cluster before their code is updated. Both still write the old format, and the new cluster's validators reject it.
 
 ### Webapp surfaces affected
