@@ -302,7 +302,7 @@
   {
     "_id": "silver",
     "label": "Silver",
-    "code": "SILVER",
+    "code": null,
     "parent": null
   },
   {
