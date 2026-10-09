@@ -191,3 +191,25 @@ export async function getVariantMatrix(model: string) {
     cells,
   };
 }
+
+// How many published garments have each value of a field, keyed by value id
+// (e.g. { "black.010": 343, ... } for color). Exact matches only; use
+// rollUp() from lib/tree to add each count to its ancestors. Cached like the
+// cards.
+export async function getCounts(
+  field: "category" | "color" | "material" | "model",
+) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+
+  const rows = await garments
+    .aggregate<{ _id: string | null; n: number }>([
+      { $match: { status: "published" } },
+      { $group: { _id: `$${field}`, n: { $sum: 1 } } },
+    ])
+    .toArray();
+  return Object.fromEntries(
+    rows.filter((r) => r._id).map((r) => [r._id as string, r.n]),
+  ) as Record<string, number>;
+}

@@ -43,3 +43,16 @@ export function nodeHref(base: string, id: string) {
 export function labelPath(tree: Tree, id: string) {
   return ancestors(tree, id).map(nodeLabel);
 }
+
+// Turns exact per-node counts into totals that include everything beneath:
+// a garment counted on "black.010.010b" also counts for "black.010" and
+// "black".
+export function rollUp(tree: Tree, counts: Record<string, number>) {
+  const totals: Record<string, number> = {};
+  for (const [id, n] of Object.entries(counts)) {
+    for (const node of ancestors(tree, id)) {
+      totals[node._id] = (totals[node._id] ?? 0) + n;
+    }
+  }
+  return totals;
+}
