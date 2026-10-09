@@ -148,3 +148,46 @@ export async function getGarment(id: string) {
   if (!ObjectId.isValid(id)) return null;
   return garments.findOne({ _id: new ObjectId(id), status: "published" });
 }
+
+export type VariantCell = { count: number; garmentId: string };
+
+// Which material × color combinations of a model exist, for the model page's
+// matrix: per combination, how many published garments and the newest one's
+// id. Rows and columns are the material and color ids that occur (null when a
+// garment has none). Cached like the cards.
+export async function getVariantMatrix(model: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+
+  const groups = await garments
+    .aggregate<{
+      _id: { material: string | null; color: string | null };
+      count: number;
+      newest: ObjectId;
+    }>([
+      { $match: { status: "published", model } },
+      { $sort: { createdAt: -1, _id: -1 } },
+      {
+        $group: {
+          _id: { material: "$material", color: "$color" },
+          count: { $sum: 1 },
+          newest: { $first: "$_id" },
+        },
+      },
+    ])
+    .toArray();
+
+  const cells: Record<string, VariantCell> = {};
+  for (const g of groups) {
+    cells[`${g._id.material}|${g._id.color}`] = {
+      count: g.count,
+      garmentId: g.newest.toString(),
+    };
+  }
+  return {
+    materials: [...new Set(groups.map((g) => g._id.material))],
+    colors: [...new Set(groups.map((g) => g._id.color))],
+    cells,
+  };
+}
