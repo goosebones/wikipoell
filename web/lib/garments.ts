@@ -1,12 +1,13 @@
 // Garment queries. Only published garments are ever shown to the public.
 // Grids are fed plain card data (id, title, code, cover photo and a few short
 // labels) rather than raw documents, which carry ObjectIds and so can't be
-// cached or sent to the browser as they are. A grid can be narrowed to a scope:
-// a category, color or material (that node and everything beneath it) or a
-// model.
+// cached or sent to the browser as they are. A grid can be narrowed to a scope
+// (a category, color or material, meaning that node and everything beneath
+// it, or a model) and further by the filters in its URL (lib/filters).
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
+import { FILTER_FIELDS, filterQuery, type Filters } from "@/lib/filters";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { nodeLabel, subtree } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
@@ -42,13 +43,16 @@ export function parseScope(value: unknown): Scope {
     : null;
 }
 
-// Published garments in the scope. Tree fields match the node and everything
-// beneath it; a model matches exactly.
-function scopeFilter(scope: Scope) {
-  if (!scope) return { status: "published" as const };
+// Published garments in the scope that pass the filters. Tree fields match the
+// node and everything beneath it; a model matches exactly. The scope wins over
+// a filter on the same field.
+function scopeFilter(scope: Scope, filters: Filters = {}) {
   return {
+    ...filterQuery(filters),
     status: "published" as const,
-    [scope.field]: scope.field === "model" ? scope.id : subtree(scope.id),
+    ...(scope && {
+      [scope.field]: scope.field === "model" ? scope.id : subtree(scope.id),
+    }),
   };
 }
 
@@ -70,10 +74,15 @@ const ORDER = {
   title: { title: 1, model: 1, _id: -1 },
 } as const;
 
-// One page (from 1) of published garments in the scope, and whether more
-// pages follow. Cached for an hour per page, sort and scope under the
-// "garments" tag, so admin edits can refresh it.
-export async function getGarmentCards(page: number, sort: Sort, scope: Scope) {
+// One page (from 1) of published garments in the scope that pass the filters,
+// and whether more pages follow. Cached for an hour per page, sort, scope and
+// filters under the "garments" tag, so admin edits can refresh it.
+export async function getGarmentCards(
+  page: number,
+  sort: Sort,
+  scope: Scope,
+  filters: Filters,
+) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
@@ -83,7 +92,7 @@ export async function getGarmentCards(page: number, sort: Sort, scope: Scope) {
     garments
       .aggregate<Garment>(
         [
-          { $match: scopeFilter(scope) },
+          { $match: scopeFilter(scope, filters) },
           // Titles aren't stored: sorting by title looks up the model's name.
           ...(sort === "title"
             ? [
@@ -134,12 +143,28 @@ export async function getGarmentCards(page: number, sort: Sort, scope: Scope) {
   };
 }
 
-// How many published garments are in the scope. Cached like the cards.
-export async function countGarments(scope: Scope) {
+// How many published garments are in the scope and pass the filters. Cached
+// like the cards.
+export async function countGarments(scope: Scope, filters: Filters = {}) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
-  return garments.countDocuments(scopeFilter(scope));
+  return garments.countDocuments(scopeFilter(scope, filters));
+}
+
+// Which values of each filter field occur among the published garments in the
+// scope (ignoring any filters), so the filter panel only offers choices that
+// can match something. Cached like the cards.
+export async function getFilterOptions(scope: Scope) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+  const values = await Promise.all(
+    FILTER_FIELDS.map((field) => garments.distinct(field, scopeFilter(scope))),
+  );
+  return Object.fromEntries(
+    FILTER_FIELDS.map((field, i) => [field, values[i].filter(Boolean)]),
+  ) as Record<(typeof FILTER_FIELDS)[number], string[]>;
 }
 
 // A single published garment by its id, or null if the id is malformed or no

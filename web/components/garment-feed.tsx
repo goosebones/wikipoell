@@ -3,8 +3,8 @@
 // next one whenever the visitor scrolls within about 800px of the bottom, until
 // there are no more. When the visitor opens a garment and comes back, Next
 // keeps this component alive, so the loaded garments and scroll position are
-// still there. Give it a `key` that changes with the sort, so a new sort
-// starts over from the top.
+// still there. Give it a `key` that changes with the sort and filters, so a
+// new sort or filter starts over from the top.
 // Props: initialCards, initialHasMore (from the first page), loadMore (a server
 // action returning `{ cards, hasMore }` for a page number), view ("grid" or
 // "list").
