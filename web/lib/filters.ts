@@ -1,19 +1,31 @@
 // Grid filters, kept in the URL as comma-separated ids per field, e.g.
-// ?type=a&procedure=r,in. Within a field any listed value matches; across
-// fields all must match. Pure apart from the Mongo filter shape, so pages,
-// server actions and the query all agree on one format.
+// ?type=a&procedure=r,in&color=black. Within a field any listed value
+// matches; across fields all must match. A category, color or material
+// matches that node and everything beneath it. One format shared by pages,
+// server actions, the query and the filter panel.
+import { ancestors, byCode, nodeLabel, subtreePattern } from "@/lib/tree";
+import type { Vocabulary } from "@/lib/vocabulary";
+import type { TreeNode } from "@/types";
+
+// In the filter panel's order: category, then the article code's order.
 export const FILTER_FIELDS = [
-  "model",
+  "category",
   "type",
   "gender",
+  "model",
   "procedure",
+  "material",
   "process",
+  "color",
 ] as const;
 export type FilterField = (typeof FILTER_FIELDS)[number];
 export type Filters = Partial<Record<FilterField, string[]>>;
 
-// Ids are slugs (or model numbers), so anything else is dropped.
-const ID = /^[a-z0-9-]+$/;
+const TREE_FIELDS = new Set<string>(["category", "color", "material"]);
+
+// Ids are slugs, model numbers or dot paths (categories are camelCase), so
+// anything else is dropped.
+const ID = /^[A-Za-z0-9.-]+$/;
 
 // Reads filters from URL search params, or from a filters object sent back
 // by the browser through a server action. Values are sorted, so the same
@@ -63,6 +75,63 @@ export function setFilterParams(params: URLSearchParams, filters: Filters) {
 // garment, and `$in` matches if any of them is selected.
 export function filterQuery(filters: Filters) {
   return Object.fromEntries(
-    Object.entries(filters).map(([field, values]) => [field, { $in: values }]),
+    Object.entries(filters).map(([field, values]) => [
+      field,
+      {
+        $in: TREE_FIELDS.has(field) ? values.map(subtreePattern) : values,
+      },
+    ]),
   );
+}
+
+// One choice in the filter panel, with the choices nested beneath it.
+export type FilterOption = {
+  id: string;
+  label: string;
+  children: FilterOption[];
+};
+
+// The filter panel's contents: for each field given, its values as options,
+// plus their parents so trees stay whole, in code order. Flat vocabularies
+// become one-level trees, so the panel draws every field the same way.
+// Fields without values are left out.
+export function filterSections(
+  vocab: Vocabulary,
+  values: Partial<Record<FilterField, string[]>>,
+) {
+  const flat = (docs: { _id: string; code?: string; label: string | null }[]) =>
+    Object.fromEntries(
+      docs.map((d) => {
+        const code = d.code ?? d._id;
+        return [
+          d._id,
+          { _id: d._id, code, label: d.label ?? code, parent: null },
+        ];
+      }),
+    );
+  const trees: Record<FilterField, Record<string, TreeNode>> = {
+    category: vocab.categories,
+    type: flat(Object.values(vocab.types)),
+    gender: flat(Object.values(vocab.genders)),
+    model: flat(Object.values(vocab.models)),
+    procedure: flat(Object.values(vocab.procedures)),
+    material: vocab.materials,
+    process: flat(Object.values(vocab.processes)),
+    color: vocab.colors,
+  };
+
+  return FILTER_FIELDS.filter((field) => values[field]?.length).map((field) => {
+    const tree = trees[field];
+    const nodes = new Set(values[field]!.flatMap((id) => ancestors(tree, id)));
+    const under = (parent: string | null): FilterOption[] =>
+      [...nodes]
+        .filter((n) => n.parent === parent)
+        .sort(byCode)
+        .map((n) => ({
+          id: n._id,
+          label: nodeLabel(n),
+          children: under(n._id),
+        }));
+    return { field, options: under(null) };
+  });
 }

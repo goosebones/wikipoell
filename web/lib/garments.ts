@@ -7,7 +7,12 @@
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
-import { FILTER_FIELDS, filterQuery, type Filters } from "@/lib/filters";
+import {
+  FILTER_FIELDS,
+  filterQuery,
+  filterSections,
+  type Filters,
+} from "@/lib/filters";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { nodeLabel, subtree } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
@@ -152,19 +157,23 @@ export async function countGarments(scope: Scope, filters: Filters = {}) {
   return garments.countDocuments(scopeFilter(scope, filters));
 }
 
-// Which values of each filter field occur among the published garments in the
-// scope (ignoring any filters), so the filter panel only offers choices that
-// can match something. Cached like the cards.
-export async function getFilterOptions(scope: Scope) {
+// The filter panel's sections for a grid: the values of each field that occur
+// among the published garments in the scope (ignoring any filters), so it only
+// offers choices that can match something. The field the scope already
+// narrows to is left out. Cached like the cards.
+export async function getFilterSections(scope: Scope) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
-  const values = await Promise.all(
-    FILTER_FIELDS.map((field) => garments.distinct(field, scopeFilter(scope))),
+  const fields = FILTER_FIELDS.filter((field) => field !== scope?.field);
+  const [vocab, ...values] = await Promise.all([
+    getVocabulary(),
+    ...fields.map((field) => garments.distinct(field, scopeFilter(scope))),
+  ]);
+  return filterSections(
+    vocab,
+    Object.fromEntries(fields.map((field, i) => [field, values[i]])),
   );
-  return Object.fromEntries(
-    FILTER_FIELDS.map((field, i) => [field, values[i].filter(Boolean)]),
-  ) as Record<(typeof FILTER_FIELDS)[number], string[]>;
 }
 
 // A single published garment by its id, or null if the id is malformed or no

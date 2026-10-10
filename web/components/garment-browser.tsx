@@ -17,13 +17,12 @@ import {
 } from "@/lib/filters";
 import {
   countGarments,
-  getFilterOptions,
+  getFilterSections,
   getGarmentCards,
   parseSort,
   type Scope,
   type Sort,
 } from "@/lib/garments";
-import { getVocabulary } from "@/lib/vocabulary";
 import { loadMoreGarments } from "@/app/garments/actions";
 
 export async function GarmentBrowser({
@@ -40,10 +39,9 @@ export async function GarmentBrowser({
   const view: View = params.view === "list" ? "list" : "grid";
   const filters = parseFilters(params);
   const filtered = hasFilters(filters);
-  const [{ cards, hasMore }, options, vocab, count] = await Promise.all([
+  const [{ cards, hasMore }, sections, count] = await Promise.all([
     getGarmentCards(1, sort, scope, filters),
-    getFilterOptions(scope),
-    getVocabulary(),
+    getFilterSections(scope),
     filtered ? countGarments(scope, filters) : null,
   ]);
 
@@ -64,11 +62,9 @@ export async function GarmentBrowser({
     <div className="lg:grid lg:grid-cols-[13rem_1fr] lg:gap-10">
       <aside className="mt-8 hidden lg:block">
         <FilterPanel
-          options={options}
+          sections={sections}
           filters={filters}
-          vocab={vocab}
           href={(f) => href({ filters: f })}
-          hide={scope?.field === "model" ? ["model"] : []}
         />
       </aside>
       <div className="min-w-0">

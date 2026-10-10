@@ -14,7 +14,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { FilterInput } from "@/components/filter-input";
-import { ancestors, nodeHref, nodeLabel } from "@/lib/tree";
+import { ancestors, byCode, nodeHref, nodeLabel } from "@/lib/tree";
 import type { TreeNode } from "@/types";
 
 type Tree = Record<string, TreeNode>;
@@ -48,13 +48,7 @@ export function TreeIndex({
   const shown = (n: TreeNode) => !q || visible.has(n._id);
 
   const childrenOf = (id: string | null) =>
-    nodes
-      .filter((n) => n.parent === id && shown(n))
-      .sort((a, b) =>
-        (a.code ?? a.label).localeCompare(b.code ?? b.label, "en", {
-          numeric: true,
-        }),
-      );
+    nodes.filter((n) => n.parent === id && shown(n)).sort(byCode);
 
   const entry = (node: TreeNode, depth: number): React.ReactNode => (
     <li key={node._id}>

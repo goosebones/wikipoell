@@ -13,7 +13,7 @@ import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { GarmentBrowser } from "@/components/garment-browser";
 import { countGarments } from "@/lib/garments";
-import { ancestors, nodeHref, nodeLabel } from "@/lib/tree";
+import { ancestors, byCode, nodeHref, nodeLabel } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 
 const TREES = {
@@ -46,11 +46,7 @@ export async function TreeListing({
   const count = await countGarments(scope);
   const children = Object.values(tree)
     .filter((n) => n.parent === id)
-    .sort((a, b) =>
-      (a.code ?? a.label).localeCompare(b.code ?? b.label, "en", {
-        numeric: true,
-      }),
-    );
+    .sort(byCode);
 
   return (
     <>

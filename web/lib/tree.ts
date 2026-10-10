@@ -10,8 +10,14 @@ type Tree = Record<string, TreeNode>;
 // The match stops at a dot boundary, so "black.01" does not match
 // "black.010". Ids can come from the URL, so they are escaped.
 export function subtree(id: string) {
+  return { $regex: subtreePattern(id) };
+}
+
+// The same match as a regular expression, for lists of nodes:
+// `{ color: { $in: ["black", "white"].map(subtreePattern) } }`.
+export function subtreePattern(id: string) {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return { $regex: `^${escaped}(\\.|$)` };
+  return new RegExp(`^${escaped}(\\.|$)`);
 }
 
 // The node and its ancestors, root first:
@@ -31,6 +37,14 @@ export function nodeLabel(node: TreeNode) {
   return node.code && node.code !== node.label
     ? `${node.code} – ${node.label}`
     : node.label;
+}
+
+// Sorts sibling nodes by code (falling back to the label), comparing numbers
+// as numbers: "04" < "20", "010" < "101" < "1010".
+export function byCode(a: TreeNode, b: TreeNode) {
+  return (a.code ?? a.label).localeCompare(b.code ?? b.label, "en", {
+    numeric: true,
+  });
 }
 
 // The page for a node: nodeHref("/color", "black.010") → "/color/black/010".
