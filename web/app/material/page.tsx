@@ -1,6 +1,6 @@
-// The material index at /material: every material that has garments, grouped under
-// its top-level material with garment counts, each linking to its page, with a
-// filter box to narrow the list.
+// The material index at /material: every material that has garments, grouped
+// under its top-level material with garment counts, each linking to its page,
+// with a filter box to narrow the list.
 import { Container } from "@/components/container";
 import { TreeIndex } from "@/components/tree-index";
 import { getCounts } from "@/lib/garments";

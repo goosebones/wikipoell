@@ -3,7 +3,7 @@
 // matches; across fields all must match. A category, color or material
 // matches that node and everything beneath it. One format shared by pages,
 // server actions, the query and the filter panel.
-import { ancestors, byCode, nodeLabel, subtreePattern } from "@/lib/tree";
+import { ancestors, byCode, nodeLabel, subtree } from "@/lib/tree";
 import type { Vocabulary } from "@/lib/vocabulary";
 import type { TreeNode } from "@/types";
 
@@ -30,14 +30,14 @@ const ID = /^[A-Za-z0-9.-]+$/;
 // Reads filters from URL search params, or from a filters object sent back
 // by the browser through a server action. Values are sorted, so the same
 // filters always produce the same cache key.
-export function parseFilters(
-  input: Record<string, string | string[] | undefined> | unknown,
-): Filters {
+export function parseFilters(input: unknown): Filters {
   const source = (input ?? {}) as Record<string, unknown>;
   const filters: Filters = {};
   for (const field of FILTER_FIELDS) {
-    const raw = ([] as unknown[]).concat(source[field] ?? []);
-    const values = raw
+    // A URL gives "a,b" (or ["a", "b"] for a repeated param); a server
+    // action gives back ["a", "b"].
+    const values = [source[field]]
+      .flat()
       .flatMap((v) => (typeof v === "string" ? v.split(",") : []))
       .filter((v) => ID.test(v));
     if (values.length) filters[field] = [...new Set(values)].sort();
@@ -78,7 +78,7 @@ export function filterQuery(filters: Filters) {
     Object.entries(filters).map(([field, values]) => [
       field,
       {
-        $in: TREE_FIELDS.has(field) ? values.map(subtreePattern) : values,
+        $in: TREE_FIELDS.has(field) ? values.map(subtree) : values,
       },
     ]),
   );

@@ -5,17 +5,11 @@ import type { TreeNode } from "@/types";
 
 type Tree = Record<string, TreeNode>;
 
-// A Mongo filter value matching a node and everything beneath it, e.g.
-// `garments.find({ color: subtree("black.010") })` finds 010, 010B and 010T.
-// The match stops at a dot boundary, so "black.01" does not match
-// "black.010". Ids can come from the URL, so they are escaped.
+// A regular expression matching a node's id and the ids of everything beneath
+// it, for Mongo queries: `{ color: { $in: ["black.010"].map(subtree) } }`
+// finds 010, 010B and 010T. The match stops at a dot boundary, so "black.01"
+// does not match "black.010". Ids can come from the URL, so they are escaped.
 export function subtree(id: string) {
-  return { $regex: subtreePattern(id) };
-}
-
-// The same match as a regular expression, for lists of nodes:
-// `{ color: { $in: ["black", "white"].map(subtreePattern) } }`.
-export function subtreePattern(id: string) {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`^${escaped}(\\.|$)`);
 }

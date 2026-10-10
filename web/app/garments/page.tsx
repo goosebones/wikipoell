@@ -16,7 +16,7 @@ export default function GarmentsPage({ searchParams }: PageProps<"/garments">) {
       <Suspense>
         <GarmentBrowser
           searchParams={searchParams}
-          scope={null}
+          scope={{}}
           basePath="/garments"
         />
       </Suspense>

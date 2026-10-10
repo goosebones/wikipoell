@@ -1,7 +1,7 @@
 // A garment's page at /garment/[id]: its photos (with a full-screen viewer),
 // title, article code and every attribute, in article-code order. Tree values
 // (category, material, color, extras) are written out as full paths, each step
-// linking to its page; the model links to its page. Ends with a link to the
+// but extras' linking to its page; the model links to its page. Ends with a link to the
 // retailer listing the garment came from. Unknown or unpublished ids get the
 // 404 page.
 import { cacheLife, cacheTag } from "next/cache";
@@ -13,7 +13,7 @@ import { GarmentGallery } from "@/components/garment-gallery";
 import { TreePath } from "@/components/tree-path";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { getGarment } from "@/lib/garments";
-import { ancestors } from "@/lib/tree";
+import { ancestors, labelPath } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Term } from "@/types";
 
@@ -86,10 +86,7 @@ async function GarmentDetails({ id }: { id: string }) {
             )}
           </Attribute>
           <Attribute label="Procedure">
-            {garment.procedure.length > 0 &&
-              garment.procedure
-                .map((p) => term(vocab.procedures[p]))
-                .join(", ")}
+            {garment.procedure.map((p) => term(vocab.procedures[p])).join(", ")}
           </Attribute>
           <Attribute label="Material">
             {garment.material && (
@@ -101,8 +98,7 @@ async function GarmentDetails({ id }: { id: string }) {
             )}
           </Attribute>
           <Attribute label="Process">
-            {garment.process.length > 0 &&
-              garment.process.map((p) => term(vocab.processes[p])).join(", ")}
+            {garment.process.map((p) => term(vocab.processes[p])).join(", ")}
           </Attribute>
           <Attribute label="Color">
             {garment.color && (
@@ -122,16 +118,11 @@ async function GarmentDetails({ id }: { id: string }) {
               />
             )}
           </Attribute>
+          {/* Extras have no pages, so they're plain text. */}
           <Attribute label="Extras">
             {garment.extras.length > 0 &&
               garment.extras.map((e) => (
-                <div key={e}>
-                  <TreePath
-                    tree={vocab.extras}
-                    id={e}
-                    base="/extra"
-                  />
-                </div>
+                <div key={e}>{labelPath(vocab.extras, e).join(" › ")}</div>
               ))}
           </Attribute>
         </dl>

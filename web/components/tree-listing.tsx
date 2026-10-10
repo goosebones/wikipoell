@@ -42,7 +42,7 @@ export async function TreeListing({
   const node = tree[id];
   if (!node) notFound();
 
-  const scope = { field, id };
+  const scope = { [field]: [id] };
   const count = await countGarments(scope);
   const children = Object.values(tree)
     .filter((n) => n.parent === id)

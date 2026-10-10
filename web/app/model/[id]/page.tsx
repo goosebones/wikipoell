@@ -36,7 +36,7 @@ async function Model({ params, searchParams }: PageProps<"/model/[id]">) {
   const model = vocab.models[id];
   if (!model) notFound();
 
-  const scope = { field: "model", id } as const;
+  const scope = { model: [id] };
   const [count, matrix] = await Promise.all([
     countGarments(scope),
     getVariantMatrix(id),
@@ -69,13 +69,7 @@ async function Model({ params, searchParams }: PageProps<"/model/[id]">) {
         )}
       </p>
 
-      {count > 0 && (
-        <VariantMatrix
-          matrix={matrix}
-          materials={vocab.materials}
-          colors={vocab.colors}
-        />
-      )}
+      {count > 0 && <VariantMatrix matrix={matrix} />}
 
       <GarmentBrowser
         searchParams={searchParams}

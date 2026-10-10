@@ -1,9 +1,9 @@
 // Garment queries. Only published garments are ever shown to the public.
 // Grids are fed plain card data (id, title, code, cover photo and a few short
 // labels) rather than raw documents, which carry ObjectIds and so can't be
-// cached or sent to the browser as they are. A grid can be narrowed to a scope
-// (a category, color or material, meaning that node and everything beneath
-// it, or a model) and further by the filters in its URL (lib/filters).
+// cached or sent to the browser as they are. Grids are narrowed by filters
+// (lib/filters): the page's own, like { color: ["black"] } on /color/black,
+// plus any the visitor picks.
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
@@ -11,10 +11,11 @@ import {
   FILTER_FIELDS,
   filterQuery,
   filterSections,
+  type FilterField,
   type Filters,
 } from "@/lib/filters";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
-import { nodeLabel, subtree } from "@/lib/tree";
+import { byCode, nodeLabel } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Garment, TreeNode } from "@/types";
 
@@ -32,33 +33,9 @@ export function parseSort(value: unknown): Sort {
     : "newest";
 }
 
-// What a grid is narrowed to; null means the whole archive.
-export type Scope = {
-  field: "category" | "color" | "material" | "model";
-  id: string;
-} | null;
-
-const SCOPE_FIELDS = ["category", "color", "material", "model"];
-
-// A scope sent from the browser (through a server action), checked before use.
-export function parseScope(value: unknown): Scope {
-  const v = value as Scope;
-  return v && SCOPE_FIELDS.includes(v.field) && typeof v.id === "string"
-    ? { field: v.field, id: v.id }
-    : null;
-}
-
-// Published garments in the scope that pass the filters. Tree fields match the
-// node and everything beneath it; a model matches exactly. The scope wins over
-// a filter on the same field.
-function scopeFilter(scope: Scope, filters: Filters = {}) {
-  return {
-    ...filterQuery(filters),
-    status: "published" as const,
-    ...(scope && {
-      [scope.field]: scope.field === "model" ? scope.id : subtree(scope.id),
-    }),
-  };
+// Published garments that pass the filters.
+function published(filters: Filters) {
+  return { ...filterQuery(filters), status: "published" as const };
 }
 
 export type GarmentCardData = {
@@ -79,13 +56,12 @@ const ORDER = {
   title: { title: 1, model: 1, _id: -1 },
 } as const;
 
-// One page (from 1) of published garments in the scope that pass the filters,
-// and whether more pages follow. Cached for an hour per page, sort, scope and
-// filters under the "garments" tag, so admin edits can refresh it.
+// One page (from 1) of published garments that pass the filters, and whether
+// more pages follow. Cached for an hour per page, sort and filters under the
+// "garments" tag, so admin edits can refresh it.
 export async function getGarmentCards(
   page: number,
   sort: Sort,
-  scope: Scope,
   filters: Filters,
 ) {
   "use cache";
@@ -97,7 +73,7 @@ export async function getGarmentCards(
     garments
       .aggregate<Garment>(
         [
-          { $match: scopeFilter(scope, filters) },
+          { $match: published(filters) },
           // Titles aren't stored: sorting by title looks up the model's name.
           ...(sort === "title"
             ? [
@@ -148,27 +124,26 @@ export async function getGarmentCards(
   };
 }
 
-// How many published garments are in the scope and pass the filters. Cached
-// like the cards.
-export async function countGarments(scope: Scope, filters: Filters = {}) {
+// How many published garments pass the filters. Cached like the cards.
+export async function countGarments(filters: Filters) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
-  return garments.countDocuments(scopeFilter(scope, filters));
+  return garments.countDocuments(published(filters));
 }
 
-// The filter panel's sections for a grid: the values of each field that occur
-// among the published garments in the scope (ignoring any filters), so it only
-// offers choices that can match something. The field the scope already
-// narrows to is left out. Cached like the cards.
-export async function getFilterSections(scope: Scope) {
+// The filter panel's sections for a page's grid: the values of each field
+// that occur among the published garments passing the page's own filters, so
+// the panel only offers choices that can match something. Fields the page
+// already narrows are left out. Cached like the cards.
+export async function getFilterSections(pageFilters: Filters) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
-  const fields = FILTER_FIELDS.filter((field) => field !== scope?.field);
+  const fields = FILTER_FIELDS.filter((field) => !pageFilters[field]);
   const [vocab, ...values] = await Promise.all([
     getVocabulary(),
-    ...fields.map((field) => garments.distinct(field, scopeFilter(scope))),
+    ...fields.map((field) => garments.distinct(field, published(pageFilters))),
   ]);
   return filterSections(
     vocab,
@@ -184,33 +159,48 @@ export async function getGarment(id: string) {
 }
 
 export type VariantCell = { count: number; garmentId: string };
+export type VariantAxis = { id: string | null; head: string; title: string }[];
 
 // Which material × color combinations of a model exist, for the model page's
 // matrix: per combination, how many published garments and the newest one's
-// id. Rows and columns are the material and color ids that occur (null when a
-// garment has none). Cached like the cards.
+// id. Rows (materials) and columns (colors) are the values that occur, in code
+// order, with "none recorded" last. Cached like the cards.
 export async function getVariantMatrix(model: string) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
 
-  const groups = await garments
-    .aggregate<{
-      _id: { material: string | null; color: string | null };
-      count: number;
-      newest: ObjectId;
-    }>([
-      { $match: { status: "published", model } },
-      { $sort: { createdAt: -1, _id: -1 } },
-      {
-        $group: {
-          _id: { material: "$material", color: "$color" },
-          count: { $sum: 1 },
-          newest: { $first: "$_id" },
+  const [vocab, groups] = await Promise.all([
+    getVocabulary(),
+    garments
+      .aggregate<{
+        _id: { material: string | null; color: string | null };
+        count: number;
+        newest: ObjectId;
+      }>([
+        { $match: { status: "published", model } },
+        { $sort: { createdAt: -1, _id: -1 } },
+        {
+          $group: {
+            _id: { material: "$material", color: "$color" },
+            count: { $sum: 1 },
+            newest: { $first: "$_id" },
+          },
         },
-      },
-    ])
-    .toArray();
+      ])
+      .toArray(),
+  ]);
+
+  const axis = (tree: Record<string, TreeNode>, ids: (string | null)[]) => {
+    const heads: VariantAxis = [...new Set(ids)]
+      .flatMap((id) => (id && tree[id] ? [tree[id]] : []))
+      .sort(byCode)
+      .map((n) => ({ id: n._id, head: n.code ?? n.label, title: n.label }));
+    if (ids.includes(null)) {
+      heads.push({ id: null, head: "—", title: "None recorded" });
+    }
+    return heads;
+  };
 
   const cells: Record<string, VariantCell> = {};
   for (const g of groups) {
@@ -220,8 +210,14 @@ export async function getVariantMatrix(model: string) {
     };
   }
   return {
-    materials: [...new Set(groups.map((g) => g._id.material))],
-    colors: [...new Set(groups.map((g) => g._id.color))],
+    rows: axis(
+      vocab.materials,
+      groups.map((g) => g._id.material),
+    ),
+    cols: axis(
+      vocab.colors,
+      groups.map((g) => g._id.color),
+    ),
     cells,
   };
 }
@@ -230,9 +226,7 @@ export async function getVariantMatrix(model: string) {
 // (e.g. { "black.010": 343, ... } for color). Exact matches only; use
 // rollUp() from lib/tree to add each count to its ancestors. Cached like the
 // cards.
-export async function getCounts(
-  field: "category" | "color" | "material" | "model",
-) {
+export async function getCounts(field: FilterField) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");

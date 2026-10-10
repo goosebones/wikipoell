@@ -3,8 +3,9 @@
 // every page that lists garments (the archive, and each category, color,
 // material and model page). Reads the sort, view and filters from the URL, so
 // it must sit inside <Suspense>.
-// Props: searchParams (the page's), scope (what to list; null for the whole
-// archive), basePath (the page's path, for the control links).
+// Props: searchParams (the page's), scope (the page's own filters, e.g.
+// { color: ["black"] }; {} for the whole archive), basePath (the page's path,
+// for the control links).
 import Link from "next/link";
 import { FilterPanel } from "@/components/filter-panel";
 import { GarmentFeed } from "@/components/garment-feed";
@@ -20,7 +21,6 @@ import {
   getFilterSections,
   getGarmentCards,
   parseSort,
-  type Scope,
   type Sort,
 } from "@/lib/garments";
 import { loadMoreGarments } from "@/app/garments/actions";
@@ -31,7 +31,7 @@ export async function GarmentBrowser({
   basePath,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
-  scope: Scope;
+  scope: Filters;
   basePath: string;
 }) {
   const params = await searchParams;
@@ -39,10 +39,12 @@ export async function GarmentBrowser({
   const view: View = params.view === "list" ? "list" : "grid";
   const filters = parseFilters(params);
   const filtered = hasFilters(filters);
+  // The page's own filters win over the visitor's on the same field.
+  const all = { ...filters, ...scope };
   const [{ cards, hasMore }, sections, count] = await Promise.all([
-    getGarmentCards(1, sort, scope, filters),
+    getGarmentCards(1, sort, all),
     getFilterSections(scope),
-    filtered ? countGarments(scope, filters) : null,
+    filtered ? countGarments(all) : null,
   ]);
 
   // Defaults are left out of the URL, so the plain listing is just basePath.
@@ -94,7 +96,7 @@ export async function GarmentBrowser({
             key={`${sort} ${JSON.stringify(filters)}`}
             initialCards={cards}
             initialHasMore={hasMore}
-            loadMore={loadMoreGarments.bind(null, sort, scope, filters)}
+            loadMore={loadMoreGarments.bind(null, sort, all)}
             view={view}
           />
         )}
