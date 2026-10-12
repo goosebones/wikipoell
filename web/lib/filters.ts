@@ -3,7 +3,7 @@
 // matches; across fields all must match. A category, color or material
 // matches that node and everything beneath it. One format shared by pages,
 // server actions, the query and the filter panel.
-import { ancestors, byCode, nodeLabel, subtree } from "@/lib/tree";
+import { ancestors, byCode, nodeLabel, rollUp, subtree } from "@/lib/tree";
 import type { Vocabulary } from "@/lib/vocabulary";
 import type { TreeNode } from "@/types";
 
@@ -84,20 +84,27 @@ export function filterQuery(filters: Filters) {
   );
 }
 
-// One choice in the filter panel, with the choices nested beneath it.
+// Per field, how many garments have each value (exact matches, by id).
+export type FieldCounts = Partial<Record<FilterField, Record<string, number>>>;
+
+// One choice in the filter panel, with how many garments it would show and
+// the choices nested beneath it.
 export type FilterOption = {
   id: string;
   label: string;
+  count: number;
   children: FilterOption[];
 };
 
-// The filter panel's contents: for each field given, its values as options,
-// plus their parents so trees stay whole, in code order. Flat vocabularies
-// become one-level trees, so the panel draws every field the same way.
-// Fields without values are left out.
+// The filter panel's contents. `available` decides which values are offered
+// (each field's values, plus their parents so trees stay whole, in code
+// order); `counts` gives the number shown beside each, where a parent counts
+// everything beneath it. Flat vocabularies become one-level trees, so the
+// panel draws every field the same way. Fields without values are left out.
 export function filterSections(
   vocab: Vocabulary,
-  values: Partial<Record<FilterField, string[]>>,
+  available: FieldCounts,
+  counts: FieldCounts,
 ) {
   const flat = (docs: { _id: string; code?: string; label: string | null }[]) =>
     Object.fromEntries(
@@ -120,9 +127,11 @@ export function filterSections(
     color: vocab.colors,
   };
 
-  return FILTER_FIELDS.filter((field) => values[field]?.length).map((field) => {
+  return FILTER_FIELDS.map((field) => {
     const tree = trees[field];
-    const nodes = new Set(values[field]!.flatMap((id) => ancestors(tree, id)));
+    const ids = Object.keys(available[field] ?? {});
+    const nodes = new Set(ids.flatMap((id) => ancestors(tree, id)));
+    const totals = rollUp(tree, counts[field] ?? {});
     const under = (parent: string | null): FilterOption[] =>
       [...nodes]
         .filter((n) => n.parent === parent)
@@ -130,8 +139,9 @@ export function filterSections(
         .map((n) => ({
           id: n._id,
           label: nodeLabel(n),
+          count: totals[n._id] ?? 0,
           children: under(n._id),
         }));
     return { field, options: under(null) };
-  });
+  }).filter((section) => section.options.length > 0);
 }

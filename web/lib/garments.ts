@@ -10,6 +10,7 @@ import { garments } from "@/lib/db";
 import {
   FILTER_FIELDS,
   filterQuery,
+  type FieldCounts,
   filterSections,
   type FilterField,
   type Filters,
@@ -132,23 +133,56 @@ export async function countGarments(filters: Filters) {
   return garments.countDocuments(published(filters));
 }
 
-// The filter panel's sections for a page's grid: the values of each field
-// that occur among the published garments passing the page's own filters, so
-// the panel only offers choices that can match something. Fields the page
-// already narrows are left out. Cached like the cards.
-export async function getFilterSections(pageFilters: Filters) {
+// The filter panel's sections for a page's grid. It offers the values that
+// occur among the garments passing the page's own filters, so the choices stay
+// put as the visitor ticks; each shows how many garments it would give with
+// the visitor's current filters. Fields the page already narrows are left
+// out. Cached like the cards.
+export async function getFilterSections(
+  pageFilters: Filters,
+  filters: Filters,
+) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+  const [vocab, available, counts] = await Promise.all([
+    getVocabulary(),
+    countValues(pageFilters, {}),
+    countValues(pageFilters, filters),
+  ]);
+  return filterSections(vocab, available, counts);
+}
+
+// For each field the page doesn't narrow, how many published garments have
+// each value, given the page's filters and the visitor's filters on every
+// other field. A field's own filters are left out because ticking more of its
+// values adds garments rather than narrowing them. Cached like the cards.
+async function countValues(pageFilters: Filters, filters: Filters) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
   const fields = FILTER_FIELDS.filter((field) => !pageFilters[field]);
-  const [vocab, ...values] = await Promise.all([
-    getVocabulary(),
-    ...fields.map((field) => garments.distinct(field, published(pageFilters))),
-  ]);
-  return filterSections(
-    vocab,
-    Object.fromEntries(fields.map((field, i) => [field, values[i]])),
+  const rows = await Promise.all(
+    fields.map((field) => {
+      const others = { ...filters, ...pageFilters };
+      delete others[field];
+      return garments
+        .aggregate<{ _id: string; n: number }>([
+          { $match: published(others) },
+          // Procedure and process are lists; this counts each value once per
+          // garment (and passes single values through unchanged).
+          { $unwind: `$${field}` },
+          { $group: { _id: `$${field}`, n: { $sum: 1 } } },
+        ])
+        .toArray();
+    }),
   );
+  return Object.fromEntries(
+    fields.map((field, i) => [
+      field,
+      Object.fromEntries(rows[i].map((r) => [r._id, r.n])),
+    ]),
+  ) as FieldCounts;
 }
 
 // A single published garment by its id, or null if the id is malformed or no

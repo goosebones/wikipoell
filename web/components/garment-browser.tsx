@@ -1,5 +1,6 @@
-// A browsable garment listing: the filter panel beside (from desktop width
-// up) the sort and grid/list controls and an endlessly scrolling feed. Used by
+// A browsable garment listing: the filter panel (beside the grid from desktop
+// width up, in a sheet behind a "Filters" button below it), the sort and
+// grid/list controls and an endlessly scrolling feed. Used by
 // every page that lists garments (the archive, and each category, color,
 // material and model page). Reads the sort, view and filters from the URL, so
 // it must sit inside <Suspense>.
@@ -8,6 +9,7 @@
 // for the control links).
 import Link from "next/link";
 import { FilterPanel } from "@/components/filter-panel";
+import { FilterSheet } from "@/components/filter-sheet";
 import { GarmentFeed } from "@/components/garment-feed";
 import { GridControls, type View } from "@/components/grid-controls";
 import {
@@ -43,8 +45,8 @@ export async function GarmentBrowser({
   const all = { ...filters, ...scope };
   const [{ cards, hasMore }, sections, count] = await Promise.all([
     getGarmentCards(1, sort, all),
-    getFilterSections(scope),
-    filtered ? countGarments(all) : null,
+    getFilterSections(scope, filters),
+    countGarments(all),
   ]);
 
   // Defaults are left out of the URL, so the plain listing is just basePath.
@@ -60,16 +62,24 @@ export async function GarmentBrowser({
     return q ? `${basePath}?${q}` : basePath;
   };
 
+  const panel = (
+    <FilterPanel
+      sections={sections}
+      filters={filters}
+      href={(f) => href({ filters: f })}
+    />
+  );
+
   return (
     <div className="lg:grid lg:grid-cols-[13rem_1fr] lg:gap-10">
-      <aside className="mt-8 hidden lg:block">
-        <FilterPanel
-          sections={sections}
-          filters={filters}
-          href={(f) => href({ filters: f })}
-        />
-      </aside>
+      <aside className="mt-8 hidden lg:block">{panel}</aside>
       <div className="min-w-0">
+        <FilterSheet
+          active={Object.values(filters).flat().length}
+          count={count}
+        >
+          {panel}
+        </FilterSheet>
         <GridControls
           sort={sort}
           view={view}
@@ -77,7 +87,7 @@ export async function GarmentBrowser({
         />
         {filtered && (
           <p className="mt-4 font-mono text-xs text-muted-foreground">
-            {count!.toLocaleString("en")} matching ·{" "}
+            {count.toLocaleString("en")} matching ·{" "}
             <Link
               href={href({ filters: {} })}
               scroll={false}
