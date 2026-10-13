@@ -13,10 +13,10 @@ import { FilterSheet } from "@/components/filter-sheet";
 import { GarmentFeed } from "@/components/garment-feed";
 import { GridControls, type View } from "@/components/grid-controls";
 import {
+  filterHref,
   type Filters,
   hasFilters,
   parseFilters,
-  setFilterParams,
 } from "@/lib/filters";
 import {
   countGarments,
@@ -51,15 +51,12 @@ export async function GarmentBrowser({
 
   // Defaults are left out of the URL, so the plain listing is just basePath.
   const href = (choice: { sort?: Sort; view?: View; filters?: Filters }) => {
-    const query = new URLSearchParams();
-    setFilterParams(query, choice.filters ?? filters);
     const s = choice.sort ?? sort;
     const v = choice.view ?? view;
-    if (s !== "newest") query.set("sort", s);
-    if (v !== "grid") query.set("view", v);
-    // Commas need no escaping in a query, and read better as they are.
-    const q = query.toString().replaceAll("%2C", ",");
-    return q ? `${basePath}?${q}` : basePath;
+    return filterHref(basePath, choice.filters ?? filters, {
+      ...(s !== "newest" && { sort: s }),
+      ...(v !== "grid" && { view: v }),
+    });
   };
 
   const panel = (

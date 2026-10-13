@@ -2,17 +2,19 @@
 // title, article code and every attribute, in article-code order. Tree values
 // (category, material, color, extras) are written out as full paths, each step
 // but extras' linking to its page; the model links to its page. Ends with a link to the
-// retailer listing the garment came from. Unknown or unpublished ids get the
-// 404 page.
+// retailer listing the garment came from. Below it, similar garments (same
+// piece, other colors, other materials, same category). Unknown or unpublished
+// ids get the 404 page.
 import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { GarmentGallery } from "@/components/garment-gallery";
+import { SimilarGarments } from "@/components/similar-garments";
 import { TreePath } from "@/components/tree-path";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
-import { getGarment } from "@/lib/garments";
+import { getGarment, getSimilarGarments } from "@/lib/garments";
 import { ancestors, labelPath } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Term } from "@/types";
@@ -23,7 +25,12 @@ export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
       {/* The id comes from the URL, so it is only known per request. */}
       <Suspense>
         {params.then(({ id }) => (
-          <GarmentDetails id={id} />
+          <>
+            <GarmentDetails id={id} />
+            <Suspense>
+              <Similar id={id} />
+            </Suspense>
+          </>
         ))}
       </Suspense>
     </Container>
@@ -146,6 +153,11 @@ async function GarmentDetails({ id }: { id: string }) {
       </div>
     </div>
   );
+}
+
+// Streams in after the garment itself.
+async function Similar({ id }: { id: string }) {
+  return <SimilarGarments sections={await getSimilarGarments(id)} />;
 }
 
 // One row of the attribute list; rows with nothing to show are left out.

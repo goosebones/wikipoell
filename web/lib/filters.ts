@@ -64,11 +64,21 @@ export function toggleFilter(
   return result;
 }
 
-// Writes filters into URL search params (comma-separated per field).
-export function setFilterParams(params: URLSearchParams, filters: Filters) {
+// A page's URL with these filters and any other params:
+// filterHref("/model/2600", { color: ["black.010"] }) → "/model/2600?color=black.010".
+export function filterHref(
+  base: string,
+  filters: Filters,
+  params: Record<string, string> = {},
+) {
+  const query = new URLSearchParams();
   for (const field of FILTER_FIELDS) {
-    if (filters[field]?.length) params.set(field, filters[field].join(","));
+    if (filters[field]?.length) query.set(field, filters[field].join(","));
   }
+  for (const [key, value] of Object.entries(params)) query.set(key, value);
+  // Commas need no escaping in a query, and read better as they are.
+  const q = query.toString().replaceAll("%2C", ",");
+  return q ? `${base}?${q}` : base;
 }
 
 // The Mongo filter for these filters. Procedure and process are lists on a

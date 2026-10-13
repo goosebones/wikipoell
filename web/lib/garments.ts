@@ -4,20 +4,21 @@
 // cached or sent to the browser as they are. Grids are narrowed by filters
 // (lib/filters): the page's own, like { color: ["black"] } on /color/black,
 // plus any the visitor picks.
-import { ObjectId } from "mongodb";
+import { type Filter, ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
 import {
   FILTER_FIELDS,
   filterQuery,
   type FieldCounts,
+  filterHref,
   filterSections,
   type FilterField,
   type Filters,
 } from "@/lib/filters";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
-import { byCode, nodeLabel } from "@/lib/tree";
-import { getVocabulary } from "@/lib/vocabulary";
+import { byCode, nodeHref, nodeLabel } from "@/lib/tree";
+import { getVocabulary, type Vocabulary } from "@/lib/vocabulary";
 import type { Garment, TreeNode } from "@/types";
 
 export const PER_PAGE = 48;
@@ -109,19 +110,22 @@ export async function getGarmentCards(
       .toArray(),
   ]);
 
-  const label = (node?: TreeNode) => node && nodeLabel(node);
-
   return {
-    cards: items.slice(0, PER_PAGE).map((garment): GarmentCardData => ({
-      id: garment._id.toString(),
-      title: garmentTitle(garment, vocab),
-      code: articleCode(garment, vocab),
-      image: garment.images[0]?.url,
-      material: label(vocab.materials[garment.material ?? ""]),
-      color: label(vocab.colors[garment.color ?? ""]),
-      category: vocab.categories[garment.category ?? ""]?.label,
-    })),
+    cards: items.slice(0, PER_PAGE).map((g) => toCard(g, vocab)),
     hasMore: items.length > PER_PAGE,
+  };
+}
+
+function toCard(garment: Garment, vocab: Vocabulary): GarmentCardData {
+  const label = (node?: TreeNode) => node && nodeLabel(node);
+  return {
+    id: garment._id.toString(),
+    title: garmentTitle(garment, vocab),
+    code: articleCode(garment, vocab),
+    image: garment.images[0]?.url,
+    material: label(vocab.materials[garment.material ?? ""]),
+    color: label(vocab.colors[garment.color ?? ""]),
+    category: vocab.categories[garment.category ?? ""]?.label,
   };
 }
 
@@ -190,6 +194,96 @@ async function countValues(pageFilters: Filters, filters: Filters) {
 export async function getGarment(id: string) {
   if (!ObjectId.isValid(id)) return null;
   return garments.findOne({ _id: new ObjectId(id), status: "published" });
+}
+
+const PER_SECTION = 12;
+
+// The garment page's similar garments, in sections from closest to loosest:
+// the same piece (same model, material and color), other colors of it (same
+// model and material), other materials of it (same model and color), and other
+// models in its category, all within its gender. Model sections need a model
+// and the category section a category; empty sections are left out. Each section links to its filtered
+// grid, which also counts materials and colors beneath the garment's own, so
+// it can hold a few more. Cached like the cards.
+export async function getSimilarGarments(id: string) {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("garments");
+
+  const [vocab, garment] = await Promise.all([getVocabulary(), getGarment(id)]);
+  if (!garment) return [];
+  const { gender, model, material, color, category } = garment;
+  // A filter on one value, or none when the garment lacks it.
+  const only = (field: FilterField, value: string | null) =>
+    value ? { [field]: [value] } : {};
+  const modelPage = `/model/${model}`;
+
+  const sections: { title: string; query: Filter<Garment>; href: string }[] = [
+    ...(model
+      ? [
+          {
+            title: "Same piece",
+            query: { model, material, color },
+            href: filterHref(modelPage, {
+              ...only("gender", gender),
+              ...only("material", material),
+              ...only("color", color),
+            }),
+          },
+          {
+            title: "Other colors",
+            query: { model, material, color: { $ne: color } },
+            href: filterHref(modelPage, {
+              ...only("gender", gender),
+              ...only("material", material),
+            }),
+          },
+          {
+            title: "Other materials",
+            query: { model, color, material: { $ne: material } },
+            href: filterHref(modelPage, {
+              ...only("gender", gender),
+              ...only("color", color),
+            }),
+          },
+        ]
+      : []),
+    ...(category
+      ? [
+          {
+            title: `More ${vocab.categories[category]?.label ?? ""}`,
+            query: { category, model: { $ne: model } },
+            href: filterHref(
+              nodeHref("/category", category),
+              only("gender", gender),
+            ),
+          },
+        ]
+      : []),
+  ];
+
+  const found = await Promise.all(
+    sections.map((section) =>
+      garments
+        .find({
+          ...section.query,
+          gender,
+          status: "published",
+          _id: { $ne: garment._id },
+        })
+        .sort({ createdAt: -1, _id: -1 })
+        .limit(PER_SECTION + 1)
+        .toArray(),
+    ),
+  );
+  return sections
+    .map((section, i) => ({
+      title: section.title,
+      href: section.href,
+      cards: found[i].slice(0, PER_SECTION).map((g) => toCard(g, vocab)),
+      hasMore: found[i].length > PER_SECTION,
+    }))
+    .filter((section) => section.cards.length > 0);
 }
 
 export type VariantCell = { count: number; garmentId: string };
