@@ -64,6 +64,8 @@ export type User = {
   email: string | null;
   imageUrl: string | null;
   deletedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 };
 
 export type HomepageBackground = {
