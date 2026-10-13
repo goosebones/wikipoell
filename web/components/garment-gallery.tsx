@@ -72,7 +72,7 @@ export function GarmentGallery({
                 src={src}
                 alt={alt}
                 fill
-                priority={i === 0}
+                loading={i === 0 ? "eager" : "lazy"}
                 sizes="(min-width: 1024px) 50vw, 100vw"
                 className="object-contain"
               />
@@ -130,6 +130,9 @@ export function GarmentGallery({
                 alt=""
                 fill
                 sizes="64px"
+                // Same file as the large photo; eager like it, or Next takes
+                // the cover for a lazy image and warns.
+                loading={i === 0 ? "eager" : "lazy"}
                 className="object-cover"
               />
             </button>

@@ -1,5 +1,5 @@
 // The header's browse menus, from tablet width up: Category, Model, Color and
-// Material, each opening a panel on hover or click. Category, color and
+// Material, each opening a panel on hover or click, then a Codebook link. Category, color and
 // material panels show their top-level groups as columns with the next level
 // beneath; the model panel has a filter box over the full list of models.
 // Every panel ends with a link to that attribute's index page.
@@ -59,6 +59,14 @@ export function SiteNav({ menus }: { menus: BrowseMenus }) {
             cols={4}
           />
         </Menu>
+        <NavigationMenuItem>
+          <NavigationMenuLink
+            asChild
+            className={trigger}
+          >
+            <Link href="/codebook">Codebook</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
       </NavigationMenuList>
     </NavigationMenu>
   );

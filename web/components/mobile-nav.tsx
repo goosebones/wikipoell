@@ -1,7 +1,8 @@
 // The browse menus for phones: a menu button (shown below tablet width) that
 // slides in a sheet from the left. Category, Model, Color and Material are
 // collapsible sections holding the same contents as the desktop dropdowns,
-// including the model filter. Tapping any link closes the sheet.
+// including the model filter, then a Codebook link. Tapping any link closes
+// the sheet.
 // Props: menus (from browseMenus() in lib/nav.ts).
 "use client";
 
@@ -76,6 +77,13 @@ export function MobileNav({ menus }: { menus: BrowseMenus }) {
               onNavigate={close}
             />
           </Section>
+          <Link
+            href="/codebook"
+            onClick={close}
+            className="border-b border-muted py-3 text-[15px] font-medium"
+          >
+            Codebook
+          </Link>
         </SheetContent>
       </Sheet>
     </>

@@ -362,6 +362,8 @@ export async function getCounts(field: FilterField) {
   const rows = await garments
     .aggregate<{ _id: string | null; n: number }>([
       { $match: { status: "published" } },
+      // Procedure and process are lists: count each value once per garment.
+      { $unwind: `$${field}` },
       { $group: { _id: `$${field}`, n: { $sum: 1 } } },
     ])
     .toArray();
