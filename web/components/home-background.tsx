@@ -1,5 +1,5 @@
 // The homepage's full-bleed background: the active homepage photos, one at a
-// time, crossfading to the next every 8 seconds, under a dark wash so the
+// time, crossfading to the next every 24 seconds, under a dark wash so the
 // text and search box on top stay readable.
 // Props: images (photo URLs, in order).
 "use client";

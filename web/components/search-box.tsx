@@ -31,6 +31,7 @@ export function SearchBox({
   const [results, setResults] = useState<SearchResult[]>([]);
   const [active, setActive] = useState(-1);
   const [open, setOpen] = useState(false);
+  const showList = open && results.length > 0;
   // Replies can arrive out of order; only the latest query's is shown.
   const latest = useRef(0);
 
@@ -58,10 +59,13 @@ export function SearchBox({
       setOpen(false);
       router.push(results[active].href);
     }
-    if (e.key === "Escape") setOpen(false);
+    // Escape closes the suggestions; the browser's own Escape (clearing the
+    // box) only happens once they're closed.
+    if (e.key === "Escape" && showList) {
+      e.preventDefault();
+      setOpen(false);
+    }
   };
-
-  const showList = open && results.length > 0;
 
   return (
     <Form
