@@ -1,10 +1,10 @@
 // The page for one node of a tree vocabulary (a category, color or material):
-// a breadcrumb, a heading, the garment count, links to the nodes directly
-// beneath it, and every published garment in it or beneath it, with the usual
-// sort, view and endless scrolling. A node with a CCP code leads with the code
-// ("ROOMS", with "Kangaroo" beneath it); a family or group shows its name.
-// Unknown nodes get the 404 page. Reads the URL, so it must sit inside
-// <Suspense>.
+// a breadcrumb, a heading, the garment count, a "Suggest a correction" link,
+// links to the nodes directly beneath it, and every published garment in it
+// or beneath it, with the usual sort, view and endless scrolling. A node
+// with a CCP code leads with the code ("ROOMS", with "Kangaroo" beneath it); a
+// family or group shows its name. Unknown nodes get the 404 page. Reads the
+// URL, so it must sit inside <Suspense>.
 // Props: params (the route's, with the node's `path` segments), searchParams,
 // field ("category" | "color" | "material"), base (the URL prefix, e.g.
 // "/color"), rootLabel (the breadcrumb's first step, e.g. "Colors").
@@ -12,7 +12,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { GarmentBrowser } from "@/components/garment-browser";
+import { SuggestCorrection } from "@/components/suggest-correction";
 import { countGarments } from "@/lib/garments";
+import { getSuggestionFields } from "@/lib/suggestions";
 import { ancestors, byCode, nodeHref, nodeLabel } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 
@@ -43,7 +45,11 @@ export async function TreeListing({
   if (!node) notFound();
 
   const scope = { [field]: [id] };
-  const count = await countGarments(scope);
+  const target = { collection: TREES[field], id };
+  const [count, suggestionFields] = await Promise.all([
+    countGarments(scope),
+    getSuggestionFields(target),
+  ]);
   const children = Object.values(tree)
     .filter((n) => n.parent === id)
     .sort(byCode);
@@ -68,6 +74,14 @@ export async function TreeListing({
       <p className="mt-2 font-mono text-xs text-muted-foreground">
         {count.toLocaleString("en")} garments
       </p>
+      {suggestionFields && (
+        <div className="mt-2">
+          <SuggestCorrection
+            target={target}
+            fields={suggestionFields}
+          />
+        </div>
+      )}
 
       {children.length > 0 && (
         <div className="mt-6 flex flex-wrap gap-2">

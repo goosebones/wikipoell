@@ -6,7 +6,13 @@
 // Parts whose value has no code (a bare family like "black") are left out.
 // Pure: takes the vocabulary as an argument, so client components can use it.
 import type { Vocabulary } from "@/lib/vocabulary";
-import type { Garment } from "@/types";
+import type { Garment, Term } from "@/types";
+
+// How a flat vocabulary value reads: "R – Rubber Drip", or just the code
+// when it has no name.
+export function termLabel(term: Term) {
+  return term.label ? `${term.code} – ${term.label}` : term.code;
+}
 
 export function garmentTitle(garment: Garment, vocab: Vocabulary) {
   return (

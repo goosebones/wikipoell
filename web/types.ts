@@ -75,6 +75,22 @@ export type UserFavorite = {
   createdAt: Date;
 };
 
+// A correction suggested by a user (SCHEMA.md, "User data"). The driver adds
+// `_id` when one is read back.
+export type Suggestion = {
+  userId: string;
+  target: {
+    collection: "garments" | "models" | "categories" | "materials" | "colors";
+    id: string;
+  };
+  field: string;
+  current: string;
+  proposed: string;
+  note: string;
+  status: "open" | "accepted" | "dismissed";
+  createdAt: Date;
+};
+
 export type HomepageBackground = {
   _id: ObjectId;
   imageUrl: string;

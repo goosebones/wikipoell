@@ -185,6 +185,26 @@ Garments a user has marked as a favorite, added with the rebuild (milestone 13).
 
 - Unique on `userId` + `garmentId`.
 
+### `suggestions`
+
+Corrections suggested by signed-in users, added with the rebuild (milestone 14). They wait in the admin review queue.
+
+```js
+{
+  userId:    "user_2abc…",
+  target:    { collection: "garments", id: "6ab3…" },  // or models, categories, materials, colors
+  field:     "color",            // which field, from the form's list for that target
+  current:   "Black › 010 – Black (Leather)",  // what the field showed at the time
+  proposed:  "Should be 10, it's fabric",       // free text
+  note:      "",                  // optional
+  status:    "open",              // "open" | "accepted" | "dismissed"
+  createdAt: ISODate("…")
+}
+```
+
+- `proposed` is free text. An admin applies an accepted suggestion with the edit screen, so it never writes to the target directly.
+- `current` is recorded by the server, not taken from the form.
+
 ## Migration outline
 
 The data moves to a **new cluster** (`MONGODB_URL_2`, database `wikipoell`). The current cluster (`MONGODB_URL`) is only ever read, so falling back means pointing the app at it again.

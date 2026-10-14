@@ -1,15 +1,18 @@
 // A model's page at /model/[id] (e.g. /model/2600): the model's name and
-// number, its suggested category, a matrix of which material × color
-// combinations exist, and every published garment of the model, with the
-// usual sort, view and endless scrolling. Unknown models get the 404 page.
+// number, its suggested category, a "Suggest a correction" link, a matrix of
+// which material × color combinations exist, and every published garment of
+// the model, with the usual sort, view and endless scrolling. Unknown models
+// get the 404 page.
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Container } from "@/components/container";
 import { GarmentBrowser } from "@/components/garment-browser";
+import { SuggestCorrection } from "@/components/suggest-correction";
 import { VariantMatrix } from "@/components/variant-matrix";
 import { countGarments, getVariantMatrix } from "@/lib/garments";
+import { getSuggestionFields } from "@/lib/suggestions";
 import { ancestors, nodeHref } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 
@@ -37,9 +40,11 @@ async function Model({ params, searchParams }: PageProps<"/model/[id]">) {
   if (!model) notFound();
 
   const scope = { model: [id] };
-  const [count, matrix] = await Promise.all([
+  const target = { collection: "models", id } as const;
+  const [count, matrix, suggestionFields] = await Promise.all([
     countGarments(scope),
     getVariantMatrix(id),
+    getSuggestionFields(target),
   ]);
   const category = ancestors(vocab.categories, model.suggestedCategory);
 
@@ -68,6 +73,14 @@ async function Model({ params, searchParams }: PageProps<"/model/[id]">) {
           </>
         )}
       </p>
+      {suggestionFields && (
+        <div className="mt-2">
+          <SuggestCorrection
+            target={target}
+            fields={suggestionFields}
+          />
+        </div>
+      )}
 
       {count > 0 && <VariantMatrix matrix={matrix} />}
 

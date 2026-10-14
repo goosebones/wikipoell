@@ -9,6 +9,7 @@ import type {
   Garment,
   HomepageBackground,
   Model,
+  Suggestion,
   Term,
   TreeNode,
   User,
@@ -31,6 +32,7 @@ export const procedures = db.collection<Term>("procedures");
 export const processes = db.collection<Term>("processes");
 export const users = db.collection<User>("users");
 export const userFavorites = db.collection<UserFavorite>("userFavorites");
+export const suggestions = db.collection<Suggestion>("suggestions");
 export const homepageBackgrounds = db.collection<HomepageBackground>(
   "homepagebackgrounds",
 );

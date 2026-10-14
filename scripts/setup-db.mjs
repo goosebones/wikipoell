@@ -177,6 +177,47 @@ const collections = {
     ],
   },
 
+  // Corrections suggested by signed-in users, for the admin queue. `current`
+  // is what the field showed when the suggestion was made.
+  suggestions: {
+    validator: {
+      bsonType: "object",
+      required: [
+        "userId",
+        "target",
+        "field",
+        "current",
+        "proposed",
+        "note",
+        "status",
+        "createdAt",
+      ],
+      properties: {
+        userId: str,
+        target: {
+          bsonType: "object",
+          required: ["collection", "id"],
+          properties: {
+            collection: {
+              enum: ["garments", "models", "categories", "materials", "colors"],
+            },
+            id: str,
+          },
+        },
+        field: str,
+        current: str,
+        proposed: str,
+        note: str,
+        status: { enum: ["open", "accepted", "dismissed"] },
+        createdAt: { bsonType: "date" },
+      },
+    },
+    indexes: [
+      { key: { status: 1, createdAt: -1 } },
+      { key: { "target.collection": 1, "target.id": 1 } },
+    ],
+  },
+
   // Unchanged from the current cluster.
   users: {
     indexes: [{ key: { userId: 1 }, unique: true }, { key: { deletedAt: 1 } }],

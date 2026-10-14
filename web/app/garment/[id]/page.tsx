@@ -1,11 +1,11 @@
 // A garment's page at /garment/[id]: its photos (with a full-screen viewer),
 // title, article code, a favorite button, and every attribute, in
-// article-code order. Tree values (category, material, color,
-// extras) are written out as full paths, each step but extras' linking to its
-// page; the model links to its page. Ends with a link to the retailer listing
-// the garment came from. Below it, similar garments (same piece, other
-// colors, other materials, same category). Unknown or unpublished ids get the
-// 404 page.
+// article-code order. Tree values (category, material, color, extras) are
+// written out as full paths, each step but extras' linking to its page; the
+// model links to its page. Ends with a link to the retailer listing the
+// garment came from and a "Suggest a correction" form. Below it, similar
+// garments (same piece, other colors, other materials, same category).
+// Unknown or unpublished ids get the 404 page.
 import { auth } from "@clerk/nextjs/server";
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
@@ -17,11 +17,13 @@ import { Container } from "@/components/container";
 import { GarmentGallery } from "@/components/garment-gallery";
 import { FavoriteButton } from "@/components/favorite-button";
 import { SimilarGarments } from "@/components/similar-garments";
+import { SuggestCorrection } from "@/components/suggest-correction";
 import { TreePath } from "@/components/tree-path";
-import { articleCode, garmentTitle } from "@/lib/garment-display";
+import { articleCode, garmentTitle, termLabel } from "@/lib/garment-display";
 import { getGarment, getSimilarGarments } from "@/lib/garments";
 import { ancestors, labelPath } from "@/lib/tree";
 import { isFavorite } from "@/lib/favorites";
+import { getSuggestionFields } from "@/lib/suggestions";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Term } from "@/types";
 
@@ -64,13 +66,17 @@ async function GarmentDetails({
   cacheLife("hours");
   cacheTag("garments", `garment:${id}`);
 
-  const [vocab, garment] = await Promise.all([getVocabulary(), getGarment(id)]);
-  if (!garment) notFound();
+  const target = { collection: "garments", id } as const;
+  const [vocab, garment, suggestionFields] = await Promise.all([
+    getVocabulary(),
+    getGarment(id),
+    getSuggestionFields(target),
+  ]);
+  if (!garment || !suggestionFields) notFound();
 
   const [line1, line2] = articleCode(garment, vocab);
   const title = garmentTitle(garment, vocab);
-  const term = (t: Term | undefined) =>
-    t && (t.label ? `${t.code} – ${t.label}` : t.code);
+  const term = (t: Term | undefined) => t && termLabel(t);
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_380px] lg:gap-12">
@@ -172,6 +178,12 @@ async function GarmentDetails({
             </p>
           )
         )}
+        <div className="mt-4">
+          <SuggestCorrection
+            target={target}
+            fields={suggestionFields}
+          />
+        </div>
       </div>
     </div>
   );
