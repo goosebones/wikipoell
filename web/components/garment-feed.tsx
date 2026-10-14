@@ -11,7 +11,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { GarmentCard } from "@/components/garment-card";
+import { CardGrid } from "@/components/card-grid";
 import { GarmentRow } from "@/components/garment-row";
 import type { View } from "@/components/grid-controls";
 import type { GarmentCardData } from "@/lib/garments";
@@ -62,14 +62,10 @@ export function GarmentFeed({
   return (
     <>
       {view === "grid" ? (
-        <div className="mt-6 grid grid-cols-2 gap-x-4 gap-y-10 sm:grid-cols-3 sm:gap-x-5 xl:grid-cols-4">
-          {cards.map((card) => (
-            <GarmentCard
-              key={card.id}
-              {...card}
-            />
-          ))}
-        </div>
+        <CardGrid
+          cards={cards}
+          className="mt-6"
+        />
       ) : (
         <div className="mt-6 divide-y divide-muted border-y border-muted">
           {cards.map((card) => (

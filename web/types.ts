@@ -68,6 +68,13 @@ export type User = {
   updatedAt: Date;
 };
 
+// A garment a user has marked as a favorite (SCHEMA.md, "User data").
+export type UserFavorite = {
+  userId: string; // Clerk user id
+  garmentId: ObjectId;
+  createdAt: Date;
+};
+
 export type HomepageBackground = {
   _id: ObjectId;
   imageUrl: string;

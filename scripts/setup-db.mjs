@@ -160,6 +160,23 @@ const collections = {
     ],
   },
 
+  // Favorites: one document per user and garment.
+  userFavorites: {
+    validator: {
+      bsonType: "object",
+      required: ["userId", "garmentId", "createdAt"],
+      properties: {
+        userId: str,
+        garmentId: { bsonType: "objectId" },
+        createdAt: { bsonType: "date" },
+      },
+    },
+    indexes: [
+      { key: { userId: 1, garmentId: 1 }, unique: true },
+      { key: { userId: 1, createdAt: -1 } },
+    ],
+  },
+
   // Unchanged from the current cluster.
   users: {
     indexes: [{ key: { userId: 1 }, unique: true }, { key: { deletedAt: 1 } }],

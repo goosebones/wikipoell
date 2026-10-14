@@ -12,6 +12,7 @@ import type {
   Term,
   TreeNode,
   User,
+  UserFavorite,
 } from "@/types";
 
 const g = globalThis as { mongo?: MongoClient };
@@ -29,6 +30,7 @@ export const genders = db.collection<Term>("genders");
 export const procedures = db.collection<Term>("procedures");
 export const processes = db.collection<Term>("processes");
 export const users = db.collection<User>("users");
+export const userFavorites = db.collection<UserFavorite>("userFavorites");
 export const homepageBackgrounds = db.collection<HomepageBackground>(
   "homepagebackgrounds",
 );

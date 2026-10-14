@@ -1,21 +1,27 @@
 // A garment's page at /garment/[id]: its photos (with a full-screen viewer),
-// title, article code and every attribute, in article-code order. Tree values
-// (category, material, color, extras) are written out as full paths, each step
-// but extras' linking to its page; the model links to its page. Ends with a link to the
-// retailer listing the garment came from. Below it, similar garments (same
-// piece, other colors, other materials, same category). Unknown or unpublished
-// ids get the 404 page.
+// title, article code, a favorite button, and every attribute, in
+// article-code order. Tree values (category, material, color,
+// extras) are written out as full paths, each step but extras' linking to its
+// page; the model links to its page. Ends with a link to the retailer listing
+// the garment came from. Below it, similar garments (same piece, other
+// colors, other materials, same category). Unknown or unpublished ids get the
+// 404 page.
+import { auth } from "@clerk/nextjs/server";
+import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { GarmentGallery } from "@/components/garment-gallery";
+import { FavoriteButton } from "@/components/favorite-button";
 import { SimilarGarments } from "@/components/similar-garments";
 import { TreePath } from "@/components/tree-path";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { getGarment, getSimilarGarments } from "@/lib/garments";
 import { ancestors, labelPath } from "@/lib/tree";
+import { isFavorite } from "@/lib/favorites";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Term } from "@/types";
 
@@ -26,7 +32,14 @@ export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
       <Suspense>
         {params.then(({ id }) => (
           <>
-            <GarmentDetails id={id} />
+            <GarmentDetails
+              id={id}
+              favorite={
+                <Suspense fallback={<div className="h-8" />}>
+                  <Favorite id={id} />
+                </Suspense>
+              }
+            />
             <Suspense>
               <Similar id={id} />
             </Suspense>
@@ -38,8 +51,15 @@ export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
 }
 
 // Cached for an hour per garment, under "garments" (every garment) and
-// "garment:<id>" (just this one), so admin edits can refresh it.
-async function GarmentDetails({ id }: { id: string }) {
+// "garment:<id>" (just this one), so admin edits can refresh it. `favorite`
+// (the visitor's own button) passes through the cache untouched.
+async function GarmentDetails({
+  id,
+  favorite,
+}: {
+  id: string;
+  favorite: React.ReactNode;
+}) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments", `garment:${id}`);
@@ -60,13 +80,15 @@ async function GarmentDetails({ id }: { id: string }) {
       />
 
       <div className="lg:sticky lg:top-20 lg:self-start">
-        {garment.category && (
+        <div className="flex items-center justify-between gap-4">
           <p className="text-xs text-muted-foreground">
-            {ancestors(vocab.categories, garment.category)
-              .map((c) => c.label)
-              .join(" / ")}
+            {garment.category &&
+              ancestors(vocab.categories, garment.category)
+                .map((c) => c.label)
+                .join(" / ")}
           </p>
-        )}
+          <div className="shrink-0">{favorite}</div>
+        </div>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-3 font-mono text-[13px] leading-6 text-muted-foreground">
           {line1}
@@ -152,6 +174,22 @@ async function GarmentDetails({ id }: { id: string }) {
         )}
       </div>
     </div>
+  );
+}
+
+// The visitor's favorite button, read per request. Clerk's auth() doesn't
+// mark the render as per-request by itself, so connection() does, before the
+// database is read.
+async function Favorite({ id }: { id: string }) {
+  await connection();
+  const { userId } = await auth();
+  const favorite =
+    userId && ObjectId.isValid(id) ? await isFavorite(userId, id) : null;
+  return (
+    <FavoriteButton
+      garmentId={id}
+      favorite={favorite}
+    />
   );
 }
 

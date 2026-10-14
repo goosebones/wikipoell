@@ -116,7 +116,8 @@ export async function getGarmentCards(
   };
 }
 
-function toCard(garment: Garment, vocab: Vocabulary): GarmentCardData {
+// A garment as grid card data.
+export function toCard(garment: Garment, vocab: Vocabulary): GarmentCardData {
   const label = (node?: TreeNode) => node && nodeLabel(node);
   return {
     id: garment._id.toString(),

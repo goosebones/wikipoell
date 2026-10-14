@@ -78,8 +78,8 @@ What the new site will have, from the feature review.
 
 **Accounts**
 - Sign in with Clerk, and user sync through the webhook.
-- Profiles showing a user's favorites and owned pieces.
-- Favorites, and "I own this" (with a public or private choice for owned pieces).
+- Profiles showing a user's favorites.
+- Favorites.
 - Suggest a correction to a garment's fields, or to vocabulary data such as a fabric's composition. Suggestions go to the admin queue.
 
 **Admin**
@@ -94,8 +94,9 @@ What the new site will have, from the feature review.
 **Site**
 - Link previews and SEO: page titles, Open Graph images and a sitemap.
 - Vercel analytics.
+- MCP server so AI assistants can search the archive, find garments by attribute and decode article codes.
 
-**Maybe, later:** grouping listings of the same garment across retailers; a "recently added" feed.
+**Maybe, later:** grouping listings of the same garment across retailers; a "recently added" feed; "I own this" (marking owned pieces, with a choice of showing them on your profile).
 
 **Dropped:**
 - user uploads (garments come only from the ingest pipeline)
@@ -104,7 +105,7 @@ What the new site will have, from the feature review.
 - random garment, color swatches, dark mode, and the about page
 
 **New collections this needs:**
-- `userGarments`: `{ userId, garmentId, kind: "favorite" | "owned", public, createdAt }`, unique on user + garment + kind.
+- `userFavorites`: `{ userId, garmentId, createdAt }`, unique on user + garment.
 - `suggestions`: `{ userId, target: { collection, id }, field, current, proposed, note, status, createdAt }`.
 
 Both are added to `scripts/setup-db.mjs` in the milestone that introduces them.
@@ -168,9 +169,9 @@ Each milestone ends with a working site. Each numbered chunk is one review.
 1. Clerk webhook keeping `users` in sync.
 2. `/user/[username]` profile page.
 
-### 13. Favorites and owned
-1. `userGarments` collection, plus favorite and own buttons on garments.
-2. Profile sections for favorites and owned pieces, with the public/private setting.
+### 13. Favorites
+1. `userFavorites` collection, plus a favorite button on garments.
+2. A favorites section on profiles.
 
 ### 14. Suggest a correction
 1. `suggestions` collection, plus a suggest form on garment pages.
@@ -209,6 +210,11 @@ Each milestone ends with a working site. Each numbered chunk is one review.
 1. Re-run `migrate-garments.mjs --apply --replace` to bring the latest edits across.
 2. Point Vercel at `web/` with `MONGODB_URL` set to the new cluster.
 3. Check production, then delete the old app.
+
+### 23. MCP server
+After cutover. Public and read-only, so no auth. Site search finds entities (models, materials, colors, codes) rather than garments, so `find_garments` is the tool assistants will lean on most; `search` helps them find the ids to filter by.
+1. A read-only MCP endpoint at `/api/mcp` (Streamable HTTP, in a route handler), with tools that wrap existing lib functions: `search` (lib/search.ts), `find_garments` (getGarmentCards with the filter format from lib/filters.ts), `get_garment`, `similar_garments` (getSimilarGarments), `decode_article_code` (lib/article-code.ts, plus the matching-garment count) and `codebook` (types, procedures, processes). Responses are compact: ids, titles, codes, URLs.
+2. Rate limiting for the public endpoint, and a short "Use with AI assistants" note on the codebook page explaining how to connect.
 
 ### Revisit
 

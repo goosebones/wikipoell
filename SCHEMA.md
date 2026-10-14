@@ -169,6 +169,22 @@ Procedures and processes are joined with `-`. When the material or color is a no
 - Unknown values in any other vocabulary keep blocking, as today.
 - Extras never block publishing.
 
+## User data
+
+### `userFavorites`
+
+Garments a user has marked as a favorite, added with the rebuild (milestone 13). A user's favorites show on their profile.
+
+```js
+{
+  userId:    "user_2abc…",   // Clerk user id
+  garmentId: ObjectId("…"),
+  createdAt: ISODate("…")
+}
+```
+
+- Unique on `userId` + `garmentId`.
+
 ## Migration outline
 
 The data moves to a **new cluster** (`MONGODB_URL_2`, database `wikipoell`). The current cluster (`MONGODB_URL`) is only ever read, so falling back means pointing the app at it again.
