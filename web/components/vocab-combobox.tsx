@@ -4,9 +4,10 @@
 // Enter, or a click, pick one. A single-value box shows the chosen value's
 // path and an × to clear it. A multi-value box shows the chosen values as
 // removable chips and stays open for the next pick; Backspace in the empty
-// box removes the last one.
+// box removes the last one. With `onAdd`, typing also offers "Add “…”" at the
+// end of the list, for a value that doesn't exist yet.
 // Props: label (for screen readers), tree (the vocabulary map), value (chosen
-// ids), onChange, multiple.
+// ids), onChange, multiple, onAdd (called with the typed text).
 "use client";
 
 import { X } from "lucide-react";
@@ -21,12 +22,14 @@ export function VocabCombobox({
   value,
   onChange,
   multiple,
+  onAdd,
 }: {
   label: string;
   tree: Record<string, TreeNode>;
   value: string[];
   onChange: (ids: string[]) => void;
   multiple?: boolean;
+  onAdd?: (typed: string) => void;
 }) {
   const listId = useId();
   const [query, setQuery] = useState("");
@@ -72,17 +75,34 @@ export function VocabCombobox({
     }
   };
 
+  // "Add" sits after the options, as one more stop for the arrow keys.
+  const addable = onAdd && query.trim();
+  const stops = shown.length + (addable ? 1 : 0);
+  const add = () => {
+    onAdd?.(query.trim());
+    setQuery("");
+    setOpen(false);
+  };
+
   const keyDown = (e: React.KeyboardEvent) => {
     if (e.key === "ArrowDown" || e.key === "ArrowUp") {
       e.preventDefault();
       setOpen(true);
       const step = e.key === "ArrowDown" ? 1 : -1;
-      setActive((i) => (i + step + shown.length) % Math.max(shown.length, 1));
+      setActive((i) => (i + step + stops) % Math.max(stops, 1));
     }
     // Enter picks rather than submitting the form.
     if (e.key === "Enter" && open && shown[active]) {
       e.preventDefault();
       pick(shown[active].id);
+    } else if (
+      e.key === "Enter" &&
+      open &&
+      addable &&
+      active === shown.length
+    ) {
+      e.preventDefault();
+      add();
     }
     if (e.key === "Escape" && open) {
       e.preventDefault();
@@ -161,7 +181,7 @@ export function VocabCombobox({
           </button>
         )}
       </div>
-      {open && shown.length > 0 && (
+      {open && stops > 0 && (
         <ul
           id={listId}
           role="listbox"
@@ -191,6 +211,21 @@ export function VocabCombobox({
               {o.path}
             </li>
           ))}
+          {addable && (
+            <li
+              role="option"
+              aria-selected={active === shown.length}
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={add}
+              onMouseEnter={() => setActive(shown.length)}
+              className={cn(
+                "cursor-pointer border-t px-3 py-1.5 text-muted-foreground",
+                active === shown.length && "bg-muted text-foreground",
+              )}
+            >
+              Add “{query.trim()}”…
+            </li>
+          )}
         </ul>
       )}
     </div>

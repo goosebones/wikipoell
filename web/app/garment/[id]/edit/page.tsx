@@ -1,7 +1,9 @@
 // The admin edit screen at /garment/[id]/edit: the garment's cover photo,
 // title, article code and status, then the editor for its title override and
-// every vocabulary field. Works for garments of any status. Admins only;
-// everyone else, and unknown ids, get the 404 page.
+// every vocabulary field. Works for garments of any status. With
+// ?suggestion=<id> (from the review queue), that suggestion shows above the
+// fields and saving accepts it. Admins only; everyone else, and unknown ids,
+// get the 404 page.
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,31 +11,58 @@ import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { GarmentEditor } from "@/components/garment-editor";
 import { requireAdmin } from "@/lib/auth";
-import { EDIT_FIELDS, getGarmentEdit, LIST_FIELDS } from "@/lib/garment-edit";
+import {
+  EDIT_FIELDS,
+  type EditField,
+  getGarmentEdit,
+  LIST_FIELDS,
+} from "@/lib/garment-edit";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
+import { getGarmentSuggestion } from "@/lib/review";
 import { getVocabulary, vocabularyTrees } from "@/lib/vocabulary";
+
+// The fields a missing value can be added to from the editor, and what kind
+// of value that is.
+const ADDABLE: Partial<Record<EditField, "model" | "materials" | "colors">> = {
+  model: "model",
+  material: "materials",
+  color: "colors",
+};
 
 export default function EditGarmentPage({
   params,
+  searchParams,
 }: PageProps<"/garment/[id]/edit">) {
   return (
     <Container className="pt-10">
       {/* Everything sits inside the boundary, so nothing renders for a
           non-admin before the check fails. */}
       <Suspense>
-        {params.then(({ id }) => (
-          <Editor id={id} />
-        ))}
+        {Promise.all([params, searchParams]).then(
+          ([{ id }, { suggestion }]) => (
+            <Editor
+              id={id}
+              suggestionId={typeof suggestion === "string" ? suggestion : null}
+            />
+          ),
+        )}
       </Suspense>
     </Container>
   );
 }
 
-async function Editor({ id }: { id: string }) {
+async function Editor({
+  id,
+  suggestionId,
+}: {
+  id: string;
+  suggestionId: string | null;
+}) {
   await requireAdmin();
-  const [vocab, found] = await Promise.all([
+  const [vocab, found, suggestion] = await Promise.all([
     getVocabulary(),
     getGarmentEdit(id),
+    suggestionId ? getGarmentSuggestion(suggestionId, id) : null,
   ]);
   if (!found) notFound();
   const { garment, edit } = found;
@@ -86,6 +115,7 @@ async function Editor({ id }: { id: string }) {
           label: field[0].toUpperCase() + field.slice(1),
           tree: trees[field],
           multiple: LIST_FIELDS.has(field),
+          addAs: ADDABLE[field] ?? null,
         }))}
         models={Object.fromEntries(
           Object.values(vocab.models).map((m) => [
@@ -93,6 +123,8 @@ async function Editor({ id }: { id: string }) {
             { label: m.label, category: m.suggestedCategory },
           ]),
         )}
+        categories={vocab.categories}
+        suggestion={suggestion}
       />
     </>
   );

@@ -82,3 +82,17 @@ export function filterTree(tree: Tree, nodes: TreeNode[], query: string) {
   }
   return visible;
 }
+
+// The slug suggested for a new node from its code (SCHEMA.md, "Slugs"):
+// lowercase, `*` spelled out as `star` (with a count when repeated), and any
+// other run of symbols or spaces as one `-`.
+// slugFromCode("19**") → "19-star2", slugFromCode("X=NIT") → "x-nit".
+export function slugFromCode(code: string) {
+  return code
+    .toLowerCase()
+    .replace(/\*+/g, (stars) =>
+      stars.length > 1 ? `-star${stars.length}` : "-star",
+    )
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}

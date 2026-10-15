@@ -50,9 +50,19 @@ export type Garment = {
   status: GarmentStatus;
   uploadedByUserId: string;
   source?: { type: "me" | "external"; label?: string; url?: string };
-  // Present on pipeline garments only; its details are typed when the admin
-  // ingest views need them.
-  ingest?: { source: string; siteKey: string; humanReviewedAt?: Date };
+  // Present on pipeline garments only. `review` is why the pipeline held the
+  // garment back for a person, and what it read from the listing; the rest
+  // is typed when the admin ingest views need it.
+  ingest?: {
+    source: string;
+    siteKey: string;
+    humanReviewedAt?: Date;
+    review?: {
+      reasons?: string[];
+      fields?: { title?: { value: string } };
+      llm?: { notes?: string };
+    };
+  };
   createdAt: Date;
   updatedAt: Date;
 };

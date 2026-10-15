@@ -4,11 +4,11 @@
 // the same list checks a submitted suggestion, and the server records the
 // current value itself. Suggestions are free text and wait for an admin.
 import { suggestions } from "@/lib/db";
-import { garmentTitle, termLabel } from "@/lib/garment-display";
+import { garmentFields } from "@/lib/garment-display";
 import { getGarment } from "@/lib/garments";
 import { labelPath } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
-import type { Suggestion, TreeNode } from "@/types";
+import type { Suggestion } from "@/types";
 
 export type SuggestionTarget = Suggestion["target"];
 export type SuggestionField = { field: string; label: string; current: string };
@@ -41,57 +41,12 @@ export async function getSuggestionFields(
   if (target.collection === "garments") {
     const garment = await getGarment(target.id);
     if (!garment) return null;
-    const path = (tree: Record<string, TreeNode>, id: string | null) =>
-      id ? labelPath(tree, id).join(" › ") : "";
-    const terms = (
-      map: "types" | "genders" | "procedures" | "processes",
-      ids: (string | null)[],
-    ) =>
-      ids
-        .flatMap((id) =>
-          id && vocab[map][id] ? [termLabel(vocab[map][id])] : [],
-        )
-        .join(", ");
     return [
-      { field: "title", label: "Title", current: garmentTitle(garment, vocab) },
-      { field: "type", label: "Type", current: terms("types", [garment.type]) },
-      {
-        field: "gender",
-        label: "Gender",
-        current: terms("genders", [garment.gender]),
-      },
-      {
-        field: "model",
-        label: "Model",
-        current: garment.model
-          ? `${garment.model} – ${vocab.models[garment.model]?.label ?? ""}`
-          : "",
-      },
-      {
-        field: "procedure",
-        label: "Procedure",
-        current: terms("procedures", garment.procedure),
-      },
-      {
-        field: "material",
-        label: "Material",
-        current: path(vocab.materials, garment.material),
-      },
-      {
-        field: "process",
-        label: "Process",
-        current: terms("processes", garment.process),
-      },
-      {
-        field: "color",
-        label: "Color",
-        current: path(vocab.colors, garment.color),
-      },
-      {
-        field: "category",
-        label: "Category",
-        current: path(vocab.categories, garment.category),
-      },
+      ...garmentFields(garment, vocab).map(({ field, label, value }) => ({
+        field,
+        label,
+        current: value,
+      })),
       other,
     ];
   }
