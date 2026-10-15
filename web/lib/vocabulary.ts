@@ -54,3 +54,35 @@ export async function getVocabulary() {
     processes: byId<Term>(processes),
   };
 }
+
+// Every garment field's vocabulary as a tree, keyed by field, so pickers and
+// filters can treat them all alike. Flat vocabularies (and models) become
+// one-level trees whose nodes are labelled "code – name" by nodeLabel(), or
+// just the code when there's no name.
+export function vocabularyTrees(vocab: Vocabulary) {
+  const flat = (
+    docs: { _id: string; code?: string; label: string | null }[],
+  ): Record<string, TreeNode> =>
+    Object.fromEntries(
+      docs.map((d) => {
+        const code = d.code ?? d._id;
+        return [
+          d._id,
+          { _id: d._id, code, label: d.label ?? code, parent: null },
+        ];
+      }),
+    );
+  return {
+    category: vocab.categories,
+    type: flat(Object.values(vocab.types)),
+    gender: flat(Object.values(vocab.genders)),
+    model: flat(Object.values(vocab.models)),
+    procedure: flat(Object.values(vocab.procedures)),
+    material: vocab.materials,
+    process: flat(Object.values(vocab.processes)),
+    color: vocab.colors,
+    extras: vocab.extras,
+  };
+}
+
+export type VocabularyTrees = ReturnType<typeof vocabularyTrees>;

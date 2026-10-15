@@ -4,8 +4,7 @@
 // matches that node and everything beneath it. One format shared by pages,
 // server actions, the query and the filter panel.
 import { ancestors, byCode, nodeLabel, rollUp, subtree } from "@/lib/tree";
-import type { Vocabulary } from "@/lib/vocabulary";
-import type { TreeNode } from "@/types";
+import { type Vocabulary, vocabularyTrees } from "@/lib/vocabulary";
 
 // In the filter panel's order: category, then the article code's order.
 export const FILTER_FIELDS = [
@@ -116,26 +115,7 @@ export function filterSections(
   available: FieldCounts,
   counts: FieldCounts,
 ) {
-  const flat = (docs: { _id: string; code?: string; label: string | null }[]) =>
-    Object.fromEntries(
-      docs.map((d) => {
-        const code = d.code ?? d._id;
-        return [
-          d._id,
-          { _id: d._id, code, label: d.label ?? code, parent: null },
-        ];
-      }),
-    );
-  const trees: Record<FilterField, Record<string, TreeNode>> = {
-    category: vocab.categories,
-    type: flat(Object.values(vocab.types)),
-    gender: flat(Object.values(vocab.genders)),
-    model: flat(Object.values(vocab.models)),
-    procedure: flat(Object.values(vocab.procedures)),
-    material: vocab.materials,
-    process: flat(Object.values(vocab.processes)),
-    color: vocab.colors,
-  };
+  const trees = vocabularyTrees(vocab);
 
   return FILTER_FIELDS.map((field) => {
     const tree = trees[field];

@@ -1,11 +1,11 @@
 // A garment's page at /garment/[id]: its photos (with a full-screen viewer),
-// title, article code, a favorite button, and every attribute, in
-// article-code order. Tree values (category, material, color, extras) are
-// written out as full paths, each step but extras' linking to its page; the
-// model links to its page. Ends with a link to the retailer listing the
-// garment came from and a "Suggest a correction" form. Below it, similar
-// garments (same piece, other colors, other materials, same category).
-// Unknown or unpublished ids get the 404 page.
+// title, article code, a favorite button (and an Edit link for admins), and
+// every attribute, in article-code order. Tree values (category, material,
+// color, extras) are written out as full paths, each step but extras' linking
+// to its page; the model links to its page. Ends with a link to the retailer
+// listing the garment came from and a "Suggest a correction" form. Below it,
+// similar garments (same piece, other colors, other materials, same
+// category). Unknown or unpublished ids get the 404 page.
 import { auth } from "@clerk/nextjs/server";
 import { ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
@@ -22,6 +22,8 @@ import { TreePath } from "@/components/tree-path";
 import { articleCode, garmentTitle, termLabel } from "@/lib/garment-display";
 import { getGarment, getSimilarGarments } from "@/lib/garments";
 import { ancestors, labelPath } from "@/lib/tree";
+import { Button } from "@/components/ui/button";
+import { isAdmin } from "@/lib/auth";
 import { isFavorite } from "@/lib/favorites";
 import { getSuggestionFields } from "@/lib/suggestions";
 import { getVocabulary } from "@/lib/vocabulary";
@@ -36,9 +38,9 @@ export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
           <>
             <GarmentDetails
               id={id}
-              favorite={
+              actions={
                 <Suspense fallback={<div className="h-8" />}>
-                  <Favorite id={id} />
+                  <Actions id={id} />
                 </Suspense>
               }
             />
@@ -53,14 +55,14 @@ export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
 }
 
 // Cached for an hour per garment, under "garments" (every garment) and
-// "garment:<id>" (just this one), so admin edits can refresh it. `favorite`
+// "garment:<id>" (just this one), so admin edits can refresh it. `actions`
 // (the visitor's own button) passes through the cache untouched.
 async function GarmentDetails({
   id,
-  favorite,
+  actions,
 }: {
   id: string;
-  favorite: React.ReactNode;
+  actions: React.ReactNode;
 }) {
   "use cache";
   cacheLife("hours");
@@ -93,7 +95,7 @@ async function GarmentDetails({
                 .map((c) => c.label)
                 .join(" / ")}
           </p>
-          <div className="shrink-0">{favorite}</div>
+          <div className="shrink-0">{actions}</div>
         </div>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight">{title}</h1>
         <p className="mt-3 font-mono text-[13px] leading-6 text-muted-foreground">
@@ -189,19 +191,30 @@ async function GarmentDetails({
   );
 }
 
-// The visitor's favorite button, read per request. Clerk's auth() doesn't
-// mark the render as per-request by itself, so connection() does, before the
-// database is read.
-async function Favorite({ id }: { id: string }) {
+// The visitor's own buttons, read per request: favorite, and Edit for
+// admins. Clerk's auth() doesn't mark the render as per-request by itself, so
+// connection() does, before the database is read.
+async function Actions({ id }: { id: string }) {
   await connection();
-  const { userId } = await auth();
+  const [{ userId }, admin] = await Promise.all([auth(), isAdmin()]);
   const favorite =
     userId && ObjectId.isValid(id) ? await isFavorite(userId, id) : null;
   return (
-    <FavoriteButton
-      garmentId={id}
-      favorite={favorite}
-    />
+    <div className="flex items-center gap-2">
+      {admin && (
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+        >
+          <Link href={`/garment/${id}/edit`}>Edit</Link>
+        </Button>
+      )}
+      <FavoriteButton
+        garmentId={id}
+        favorite={favorite}
+      />
+    </div>
   );
 }
 

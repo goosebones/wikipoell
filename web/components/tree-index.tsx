@@ -14,7 +14,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { FilterInput } from "@/components/filter-input";
-import { ancestors, byCode, nodeHref, nodeLabel } from "@/lib/tree";
+import { byCode, filterTree, nodeHref, nodeLabel } from "@/lib/tree";
 import type { TreeNode } from "@/types";
 
 type Tree = Record<string, TreeNode>;
@@ -33,19 +33,8 @@ export function TreeIndex({
   const [query, setQuery] = useState("");
   const nodes = Object.values(tree).filter((n) => totals[n._id]);
 
-  // With a query: the matching nodes, their ancestors and their descendants.
-  const q = query.trim().toLowerCase();
-  const visible = new Set<string>();
-  if (q) {
-    for (const n of nodes) {
-      if (!nodeLabel(n).toLowerCase().includes(q)) continue;
-      ancestors(tree, n._id).forEach((a) => visible.add(a._id));
-      nodes
-        .filter((d) => d._id.startsWith(`${n._id}.`))
-        .forEach((d) => visible.add(d._id));
-    }
-  }
-  const shown = (n: TreeNode) => !q || visible.has(n._id);
+  const visible = filterTree(tree, nodes, query);
+  const shown = (n: TreeNode) => !visible || visible.has(n._id);
 
   const childrenOf = (id: string | null) =>
     nodes.filter((n) => n.parent === id && shown(n)).sort(byCode);

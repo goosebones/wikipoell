@@ -1,7 +1,7 @@
 // A garment's photos: one large photo at a time, with a strip of thumbnails
 // below it (the current one in full color, the rest greyed out). Swipe the
-// large photo on phones, or use the arrows beside it; tap a thumbnail to jump
-// to it. Tapping the large photo opens the full-screen lightbox, and the
+// large photo, or use the arrows beside it (they wrap around from the last
+// photo to the first, and back); tap a thumbnail to jump to it. Tapping the large photo opens the full-screen lightbox, and the
 // gallery follows along to whichever photo was last viewed there.
 // Photos are always shown whole: each sits in a square frame and is fitted
 // inside it rather than cropped. Square because the photos are a mix, mostly
@@ -30,10 +30,20 @@ export function GarmentGallery({
   const thumbs = useRef<HTMLDivElement>(null);
 
   // Scroll the large photo to `i`; the strip's onScroll then sets `current`.
-  const goTo = (i: number, behavior: ScrollBehavior = "smooth") => {
+  // Neighbours slide over; longer jumps (including wrapping around) go
+  // straight there.
+  const goTo = (i: number, behavior?: ScrollBehavior) => {
     const el = strip.current!;
-    el.scrollTo({ left: i * el.clientWidth, behavior });
+    const near = Math.abs(i - current) <= 1;
+    el.scrollTo({
+      left: i * el.clientWidth,
+      behavior: behavior ?? (near ? "smooth" : "instant"),
+    });
   };
+
+  // The previous or next photo, wrapping around at either end.
+  const step = (by: number) =>
+    goTo((current + by + images.length) % images.length);
 
   // Keep the current thumbnail in view when there are more than fit.
   useEffect(() => {
@@ -86,8 +96,8 @@ export function GarmentGallery({
               variant="ghost"
               size="icon"
               aria-label="Previous photo"
-              onClick={() => goTo(Math.max(0, current - 1))}
-              className="absolute top-1/2 left-0 hidden -translate-y-1/2 bg-background/70 sm:inline-flex"
+              onClick={() => step(-1)}
+              className="absolute top-1/2 left-0 -translate-y-1/2 bg-background/70"
             >
               <ChevronLeft />
             </Button>
@@ -95,8 +105,8 @@ export function GarmentGallery({
               variant="ghost"
               size="icon"
               aria-label="Next photo"
-              onClick={() => goTo(Math.min(images.length - 1, current + 1))}
-              className="absolute top-1/2 right-0 hidden -translate-y-1/2 bg-background/70 sm:inline-flex"
+              onClick={() => step(1)}
+              className="absolute top-1/2 right-0 -translate-y-1/2 bg-background/70"
             >
               <ChevronRight />
             </Button>
@@ -112,10 +122,7 @@ export function GarmentGallery({
           {images.map((src, i) => (
             <button
               key={src}
-              // Neighbours slide over; longer jumps go straight there.
-              onClick={() =>
-                goTo(i, Math.abs(i - current) > 1 ? "instant" : "smooth")
-              }
+              onClick={() => goTo(i)}
               aria-label={`Photo ${i + 1}`}
               aria-current={i === current}
               className={cn(

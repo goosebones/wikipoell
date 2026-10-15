@@ -64,3 +64,21 @@ export function rollUp(tree: Tree, counts: Record<string, number>) {
   }
   return totals;
 }
+
+// The nodes to show for a filter query: those whose label matches, with
+// their ancestors (so a match keeps its place in the tree) and everything
+// beneath them (so "black" shows the whole Black family). `nodes` is the
+// part of the tree on offer. Null when the query is empty, meaning show all.
+export function filterTree(tree: Tree, nodes: TreeNode[], query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  const visible = new Set<string>();
+  for (const n of nodes) {
+    if (!nodeLabel(n).toLowerCase().includes(q)) continue;
+    ancestors(tree, n._id).forEach((a) => visible.add(a._id));
+    nodes
+      .filter((d) => d._id.startsWith(`${n._id}.`))
+      .forEach((d) => visible.add(d._id));
+  }
+  return visible;
+}
