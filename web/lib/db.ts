@@ -2,8 +2,9 @@
 // from MONGODB_URL (wikipoell-dev locally, wikipoell in production). The driver
 // connects lazily on the first query and pools connections itself; the client
 // is kept on `globalThis` so dev hot reloads reuse it instead of opening new
-// connections each time.
-import { MongoClient } from "mongodb";
+// connections each time. The client itself stays private; writes that must
+// land together go through withTransaction.
+import { type ClientSession, MongoClient } from "mongodb";
 import type {
   Category,
   Garment,
@@ -36,3 +37,13 @@ export const suggestions = db.collection<Suggestion>("suggestions");
 export const homepageBackgrounds = db.collection<HomepageBackground>(
   "homepagebackgrounds",
 );
+
+// Runs `work` as one transaction: every write it makes with the session it's
+// given lands together, or none does.
+export async function withTransaction(
+  work: (session: ClientSession) => Promise<void>,
+) {
+  await client.withSession((session) =>
+    session.withTransaction(() => work(session)),
+  );
+}

@@ -1,13 +1,22 @@
-// Server actions for the admin review queue: publishing or rejecting a
-// pending garment, accepting or dismissing a suggestion, and adding a missing
-// model, material or color while reviewing. Each refuses anyone who isn't an
-// admin, and checks its input.
+// Server actions for the admin pages: publishing or rejecting a pending
+// garment, accepting or dismissing a suggestion, and adding, renaming,
+// moving and deleting vocabulary entries (from the vocabulary editor, or
+// while reviewing). Each refuses anyone who isn't an admin, and checks its
+// input.
 "use server";
 
 import { ObjectId } from "mongodb";
 import { isAdmin } from "@/lib/auth";
 import { resolveSuggestion, setGarmentStatus } from "@/lib/review";
-import { addModel, addTreeNode } from "@/lib/vocab-edit";
+import {
+  addEntry,
+  deleteEntry,
+  type EntryInput,
+  isVocabName,
+  moveEntry,
+  updateEntry,
+  VOCABULARIES,
+} from "@/lib/vocab-edit";
 
 const text = (value: unknown) => (typeof value === "string" ? value : "");
 const isId = (value: unknown): value is string =>
@@ -24,25 +33,45 @@ export async function settleSuggestion(id: unknown, accept: unknown) {
   await resolveSuggestion(id, accept === true ? "accepted" : "dismissed");
 }
 
-export async function createModel(input: unknown) {
-  if (!(await isAdmin())) return { error: "Not allowed." };
-  const v = (input ?? {}) as Record<string, unknown>;
-  return addModel({
-    number: text(v.number),
-    label: text(v.label),
-    category: text(v.category),
-  });
-}
-
-export async function createTreeNode(collection: unknown, input: unknown) {
-  if (!(await isAdmin())) return { error: "Not allowed." };
-  if (collection !== "materials" && collection !== "colors") {
+// Adds an entry to any vocabulary (used for adding a missing value while
+// reviewing): the new id, or why it couldn't be added.
+export async function addVocabEntry(name: unknown, input: unknown) {
+  if (!(await isAdmin()) || !isVocabName(name)) {
     return { error: "Not allowed." };
   }
+  return addEntry(name, entryInput(input));
+}
+
+// Renames an entry, then moves it if its parent changed: the entry's id
+// afterwards, or why it didn't happen.
+export async function changeVocabEntry(
+  name: unknown,
+  id: unknown,
+  input: unknown,
+) {
+  if (!(await isAdmin()) || !isVocabName(name) || typeof id !== "string") {
+    return { error: "Not allowed." };
+  }
+  const entry = entryInput(input);
+  const renamed = await updateEntry(name, id, entry);
+  if (renamed.error) return renamed;
+  return VOCABULARIES[name].tree ? moveEntry(name, id, entry.parent) : { id };
+}
+
+export async function deleteVocabEntry(name: unknown, id: unknown) {
+  if (!(await isAdmin()) || !isVocabName(name) || typeof id !== "string") {
+    return { error: "Not allowed." };
+  }
+  return deleteEntry(name, id);
+}
+
+// An entry's fields as sent from the browser, as plain strings.
+function entryInput(input: unknown): EntryInput {
   const v = (input ?? {}) as Record<string, unknown>;
-  return addTreeNode(collection, {
+  return {
     code: text(v.code),
     label: text(v.label),
     parent: text(v.parent) || null,
-  });
+    category: text(v.category) || null,
+  };
 }

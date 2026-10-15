@@ -114,6 +114,8 @@ export function VocabCombobox({
   };
 
   const chosen = (id: string) => labelPath(tree, id).join(" › ");
+  // A single box shows its value while closed.
+  const shownValue = !multiple && value[0] ? chosen(value[0]) : "";
 
   return (
     <div
@@ -151,7 +153,7 @@ export function VocabCombobox({
           autoComplete="off"
           spellCheck={false}
           // A single value shows in the box until the user starts typing.
-          value={open || multiple ? query : value[0] ? chosen(value[0]) : ""}
+          value={open || multiple ? query : shownValue}
           placeholder={
             multiple
               ? value.length
@@ -162,8 +164,17 @@ export function VocabCombobox({
                 : "None"
           }
           onFocus={() => setOpen(true)}
+          // Focus stays after a pick, so a click must open the list too.
+          onClick={() => setOpen(true)}
           onChange={(e) => {
-            setQuery(e.target.value);
+            // Typing into a closed box starts a new search, rather than
+            // searching the shown value plus what was typed.
+            const typed = e.target.value;
+            setQuery(
+              !open && typed.startsWith(shownValue)
+                ? typed.slice(shownValue.length)
+                : typed,
+            );
             setActive(0);
             setOpen(true);
           }}

@@ -11,7 +11,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createModel, createTreeNode } from "@/app/admin/actions";
+import { addVocabEntry } from "@/app/admin/actions";
 import { Button } from "@/components/ui/button";
 import { VocabCombobox } from "@/components/vocab-combobox";
 import type { TreeNode } from "@/types";
@@ -47,10 +47,13 @@ export function AddVocabValue({
 
   const add = () =>
     startTransition(async () => {
-      const result = isModel
-        ? await createModel({ number: code, label, category: place[0] })
-        : await createTreeNode(kind, { code, label, parent: place[0] });
-      if ("error" in result) return setError(result.error);
+      const result = await addVocabEntry(kind === "model" ? "models" : kind, {
+        code,
+        label,
+        parent: isModel ? null : place[0],
+        category: isModel ? place[0] : null,
+      });
+      if (result.error || !result.id) return setError(result.error ?? null);
       router.refresh();
       onAdded(result.id, isModel ? place[0] : undefined);
     });

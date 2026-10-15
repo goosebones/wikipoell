@@ -8,6 +8,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { AdminNav } from "@/components/admin-nav";
 import { Container } from "@/components/container";
 import { GarmentReview, SuggestionReview } from "@/components/review-actions";
 import { requireAdmin } from "@/lib/auth";
@@ -39,7 +40,7 @@ async function Queue() {
 
   return (
     <>
-      <p className="eyebrow">Admin</p>
+      <AdminNav current="review" />
       <h1 className="mt-3 text-3xl font-semibold tracking-tight">
         Review queue
       </h1>
