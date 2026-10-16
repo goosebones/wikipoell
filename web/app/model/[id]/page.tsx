@@ -12,9 +12,14 @@ import { GarmentBrowser } from "@/components/garment-browser";
 import { SuggestCorrection } from "@/components/suggest-correction";
 import { VariantMatrix } from "@/components/variant-matrix";
 import { countGarments, getVariantMatrix } from "@/lib/garments";
+import { modelMetadata } from "@/lib/seo";
 import { getSuggestionFields } from "@/lib/suggestions";
 import { ancestors, nodeHref } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
+
+export async function generateMetadata({ params }: PageProps<"/model/[id]">) {
+  return modelMetadata((await params).id);
+}
 
 export default function ModelPage({
   params,

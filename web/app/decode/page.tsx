@@ -3,6 +3,7 @@
 // linking to its page, with a link to the garments it describes (matched on
 // everything but procedures; see decodeArticleCode). Parts missing from the
 // vocabulary are flagged; a code that can't be read gets a note on the format.
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
@@ -11,6 +12,12 @@ import { cleanArticleCode, decodeArticleCode } from "@/lib/article-code";
 import { filterHref } from "@/lib/filters";
 import { countGarments } from "@/lib/garments";
 import { getVocabulary } from "@/lib/vocabulary";
+
+export const metadata: Metadata = {
+  title: "Decode an article code",
+  description:
+    "Paste a Carol Christian Poell article code to see what each part means and find matching garments.",
+};
 
 export default function DecodePage({ searchParams }: PageProps<"/decode">) {
   return (

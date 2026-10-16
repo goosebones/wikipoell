@@ -25,9 +25,14 @@ import { ancestors, labelPath } from "@/lib/tree";
 import { Button } from "@/components/ui/button";
 import { isAdmin } from "@/lib/auth";
 import { isFavorite } from "@/lib/favorites";
+import { garmentMetadata } from "@/lib/seo";
 import { getSuggestionFields } from "@/lib/suggestions";
 import { getVocabulary } from "@/lib/vocabulary";
 import type { Term } from "@/types";
+
+export async function generateMetadata({ params }: PageProps<"/garment/[id]">) {
+  return garmentMetadata((await params).id);
+}
 
 export default function GarmentPage({ params }: PageProps<"/garment/[id]">) {
   return (

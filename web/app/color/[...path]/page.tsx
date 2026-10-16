@@ -3,6 +3,14 @@
 import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { TreeListing } from "@/components/tree-listing";
+import { nodeMetadata } from "@/lib/seo";
+import { pathToId } from "@/lib/tree";
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/color/[...path]">) {
+  return nodeMetadata("color", pathToId((await params).path));
+}
 
 export default function ColorPage({
   params,

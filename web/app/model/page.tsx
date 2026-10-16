@@ -1,10 +1,17 @@
 // The model index at /model: every model with its number, name, suggested
 // category and garment count, in model-number order, with a filter box to
 // narrow the list. The list itself is ModelIndex.
+import type { Metadata } from "next";
 import { Container } from "@/components/container";
 import { ModelIndex } from "@/components/model-index";
 import { getCounts } from "@/lib/garments";
 import { getVocabulary } from "@/lib/vocabulary";
+
+export const metadata: Metadata = {
+  title: "Models",
+  description:
+    "Every Carol Christian Poell model in the archive, by number and name.",
+};
 
 export default async function ModelIndexPage() {
   const [vocab, counts] = await Promise.all([

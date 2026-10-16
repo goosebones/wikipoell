@@ -2,6 +2,7 @@
 // decode one, and every type, gender, procedure and process code with what it
 // means and how many garments carry it, each linking to those garments.
 // Models, materials and colors have their own index pages, linked from here.
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Fragment } from "react";
 import { Container } from "@/components/container";
@@ -20,6 +21,12 @@ const EXAMPLE = [
   { code: "-PTC", part: "Process" },
   { code: "/010", part: "Color" },
 ];
+
+export const metadata: Metadata = {
+  title: "Codebook",
+  description:
+    "How Carol Christian Poell article codes work, with every type, gender, procedure and process code and what it means.",
+};
 
 export default async function CodebookPage() {
   const fields = [

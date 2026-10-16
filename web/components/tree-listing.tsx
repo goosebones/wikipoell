@@ -15,7 +15,7 @@ import { GarmentBrowser } from "@/components/garment-browser";
 import { SuggestCorrection } from "@/components/suggest-correction";
 import { countGarments } from "@/lib/garments";
 import { getSuggestionFields } from "@/lib/suggestions";
-import { ancestors, byCode, nodeHref, nodeLabel } from "@/lib/tree";
+import { ancestors, byCode, nodeHref, nodeLabel, pathToId } from "@/lib/tree";
 import { getVocabulary } from "@/lib/vocabulary";
 
 const TREES = {
@@ -38,7 +38,7 @@ export async function TreeListing({
   rootLabel: string;
 }) {
   const { path } = await params;
-  const id = path.map(decodeURIComponent).join(".");
+  const id = pathToId(path);
   const vocab = await getVocabulary();
   const tree = vocab[TREES[field]];
   const node = tree[id];

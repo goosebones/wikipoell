@@ -41,6 +41,12 @@ export function byCode(a: TreeNode, b: TreeNode) {
   });
 }
 
+// The node id for a page's path segments, the reverse of nodeHref:
+// pathToId(["black", "010"]) → "black.010".
+export function pathToId(path: string[]) {
+  return path.map(decodeURIComponent).join(".");
+}
+
 // The page for a node: nodeHref("/color", "black.010") → "/color/black/010".
 export function nodeHref(base: string, id: string) {
   return `${base}/${id.replaceAll(".", "/")}`;

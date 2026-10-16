@@ -10,6 +10,16 @@ import { Container } from "@/components/container";
 import { getFavoriteCards } from "@/lib/favorites";
 import { getProfile } from "@/lib/users";
 
+export async function generateMetadata({
+  params,
+}: PageProps<"/user/[username]">) {
+  const username = decodeURIComponent((await params).username);
+  return {
+    title: username,
+    description: `${username}’s favorites on Wikipoell.`,
+  };
+}
+
 export default function UserPage({ params }: PageProps<"/user/[username]">) {
   return (
     <Container className="pt-10">

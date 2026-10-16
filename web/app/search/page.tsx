@@ -1,11 +1,18 @@
 // Search results at /search?q=…: the search box, then every match (up to 50)
 // as rows leading to each model, material, color, category or code. Reached
 // by pressing Enter in a search box, or from the header's search link.
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { SearchBox } from "@/components/search-box";
 import { SearchResultRow } from "@/components/search-result";
 import { search } from "@/lib/search";
+
+export const metadata: Metadata = {
+  title: "Search",
+  description:
+    "Search the Carol Christian Poell archive by model, material, color or article code.",
+};
 
 export default function SearchPage({ searchParams }: PageProps<"/search">) {
   return (
