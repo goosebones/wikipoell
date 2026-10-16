@@ -1,9 +1,10 @@
 // A browsable garment listing: the filter panel (beside the grid from desktop
 // width up, in a sheet behind a "Filters" button below it), the sort and
-// grid/list controls and an endlessly scrolling feed. Used by
-// every page that lists garments (the archive, and each category, color,
-// material and model page). Reads the sort, view and filters from the URL, so
-// it must sit inside <Suspense>.
+// grid/list controls and an endlessly scrolling feed, plus a "Bulk edit
+// these" link for admins on any narrowed grid. Used by every page that lists
+// garments (the archive, and each category, color, material and model page).
+// Reads the sort, view and filters from the URL, so it must sit inside
+// <Suspense>.
 // Props: searchParams (the page's), scope (the page's own filters, e.g.
 // { color: ["black"] }; {} for the whole archive), basePath (the page's path,
 // for the control links).
@@ -26,6 +27,7 @@ import {
   type Sort,
 } from "@/lib/garments";
 import { loadMoreGarments } from "@/app/garments/actions";
+import { isAdmin } from "@/lib/auth";
 
 export async function GarmentBrowser({
   searchParams,
@@ -43,10 +45,11 @@ export async function GarmentBrowser({
   const filtered = hasFilters(filters);
   // The page's own filters win over the visitor's on the same field.
   const all = { ...filters, ...scope };
-  const [{ cards, hasMore }, sections, count] = await Promise.all([
+  const [{ cards, hasMore }, sections, count, admin] = await Promise.all([
     getGarmentCards(1, sort, all),
     getFilterSections(scope, filters),
     countGarments(all),
+    isAdmin(),
   ]);
 
   // Defaults are left out of the URL, so the plain listing is just basePath.
@@ -82,6 +85,15 @@ export async function GarmentBrowser({
           view={view}
           href={href}
         />
+        {/* Admins can bulk edit any narrowed grid, with the same filters. */}
+        {admin && hasFilters(all) && (
+          <Link
+            href={filterHref("/admin/bulk", all)}
+            className="eyebrow mt-3 inline-block hover:text-foreground"
+          >
+            Bulk edit these →
+          </Link>
+        )}
         {filtered && (
           <p className="mt-4 font-mono text-xs text-muted-foreground">
             {count.toLocaleString("en")} matching ·{" "}

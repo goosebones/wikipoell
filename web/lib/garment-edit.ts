@@ -6,7 +6,11 @@
 import { ObjectId } from "mongodb";
 import { updateTag } from "next/cache";
 import { garments } from "@/lib/db";
-import { getVocabulary, vocabularyTrees } from "@/lib/vocabulary";
+import {
+  getVocabulary,
+  type Vocabulary,
+  vocabularyTrees,
+} from "@/lib/vocabulary";
 
 // In article-code order, then what the code leaves out.
 export const EDIT_FIELDS = [
@@ -28,6 +32,18 @@ export const LIST_FIELDS = new Set<EditField>([
   "process",
   "extras",
 ]);
+
+// Each editable field with its label, its vocabulary as a tree, and whether
+// it holds several values, for the editor and bulk edit.
+export function editFields(vocab: Vocabulary) {
+  const trees = vocabularyTrees(vocab);
+  return EDIT_FIELDS.map((field) => ({
+    field,
+    label: field[0].toUpperCase() + field.slice(1),
+    tree: trees[field],
+    multiple: LIST_FIELDS.has(field),
+  }));
+}
 
 // Each field's value as a list of ids (empty for none), plus the title
 // override (null to use the model's name).

@@ -1,12 +1,14 @@
 // Server actions for the admin pages: publishing or rejecting a pending
-// garment, accepting or dismissing a suggestion, and adding, renaming,
-// moving and deleting vocabulary entries (from the vocabulary editor, or
-// while reviewing). Each refuses anyone who isn't an admin, and checks its
+// garment, accepting or dismissing a suggestion, adding, renaming, moving and
+// deleting vocabulary entries (from the vocabulary editor, or while
+// reviewing), and bulk edits. Each refuses anyone who isn't an admin, and checks its
 // input.
 "use server";
 
 import { ObjectId } from "mongodb";
 import { isAdmin } from "@/lib/auth";
+import { EDIT_FIELDS, type EditField } from "@/lib/garment-edit";
+import { applyBulkEdit } from "@/lib/quality";
 import { resolveSuggestion, setGarmentStatus } from "@/lib/review";
 import {
   addEntry,
@@ -63,6 +65,30 @@ export async function deleteVocabEntry(name: unknown, id: unknown) {
     return { error: "Not allowed." };
   }
   return deleteEntry(name, id);
+}
+
+// Sets, clears, adds or removes one field's value on many garments: how many
+// changed, or why nothing did.
+export async function bulkEdit(
+  ids: unknown,
+  field: unknown,
+  op: unknown,
+  value: unknown,
+) {
+  if (!(await isAdmin())) return { error: "Not allowed." };
+  if (
+    !Array.isArray(ids) ||
+    !EDIT_FIELDS.includes(field as EditField) ||
+    (op !== "set" && op !== "add" && op !== "remove")
+  ) {
+    return { error: "Not allowed." };
+  }
+  return applyBulkEdit(
+    ids.filter(isId),
+    field as EditField,
+    op,
+    text(value) || null,
+  );
 }
 
 // An entry's fields as sent from the browser, as plain strings.

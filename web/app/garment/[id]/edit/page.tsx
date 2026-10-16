@@ -11,15 +11,10 @@ import { Suspense } from "react";
 import { Container } from "@/components/container";
 import { GarmentEditor } from "@/components/garment-editor";
 import { requireAdmin } from "@/lib/auth";
-import {
-  EDIT_FIELDS,
-  type EditField,
-  getGarmentEdit,
-  LIST_FIELDS,
-} from "@/lib/garment-edit";
+import { editFields, type EditField, getGarmentEdit } from "@/lib/garment-edit";
 import { articleCode, garmentTitle } from "@/lib/garment-display";
 import { getGarmentSuggestion } from "@/lib/review";
-import { getVocabulary, vocabularyTrees } from "@/lib/vocabulary";
+import { getVocabulary } from "@/lib/vocabulary";
 
 // The fields a missing value can be added to from the editor, and what kind
 // of value that is.
@@ -66,7 +61,6 @@ async function Editor({
   ]);
   if (!found) notFound();
   const { garment, edit } = found;
-  const trees = vocabularyTrees(vocab);
   const [line1, line2] = articleCode(garment, vocab);
   const published = garment.status === "published";
 
@@ -110,12 +104,9 @@ async function Editor({
         garmentId={id}
         published={published}
         edit={edit}
-        fields={EDIT_FIELDS.map((field) => ({
-          field,
-          label: field[0].toUpperCase() + field.slice(1),
-          tree: trees[field],
-          multiple: LIST_FIELDS.has(field),
-          addAs: ADDABLE[field] ?? null,
+        fields={editFields(vocab).map((f) => ({
+          ...f,
+          addAs: ADDABLE[f.field] ?? null,
         }))}
         models={Object.fromEntries(
           Object.values(vocab.models).map((m) => [
