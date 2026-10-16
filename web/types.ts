@@ -50,16 +50,21 @@ export type Garment = {
   status: GarmentStatus;
   uploadedByUserId: string;
   source?: { type: "me" | "external"; label?: string; url?: string };
-  // Present on pipeline garments only. `review` is why the pipeline held the
-  // garment back for a person, and what it read from the listing; the rest
-  // is typed when the admin ingest views need it.
+  // Present on pipeline garments only. `runId` is the run that created it;
+  // `review` is what the pipeline read from the listing (each field with how
+  // sure it was and where it came from) and why it held the garment back for
+  // a person, if it did.
   ingest?: {
     source: string;
     siteKey: string;
+    runId?: string;
     humanReviewedAt?: Date;
     review?: {
       reasons?: string[];
-      fields?: { title?: { value: string } };
+      fields?: Record<
+        string,
+        { value: string | string[]; confidence: number; origin: string }
+      >;
       llm?: { notes?: string };
     };
   };
@@ -99,6 +104,28 @@ export type Suggestion = {
   note: string;
   status: "open" | "accepted" | "dismissed";
   createdAt: Date;
+};
+
+// One run of the ingest pipeline (`ingestruns`); its id is stamped on every
+// garment it created.
+export type IngestRun = {
+  _id: string;
+  startedAt: Date;
+  finishedAt?: Date;
+  durationMs?: number;
+  status: string;
+  trigger?: string;
+  sources?: {
+    name: string;
+    status: string;
+    listingsFound?: number;
+    created?: number;
+    updated?: number;
+    published?: number;
+    needsReview?: number;
+    failed?: number;
+  }[];
+  failures?: unknown[];
 };
 
 export type HomepageBackground = {

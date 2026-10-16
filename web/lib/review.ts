@@ -34,6 +34,18 @@ export type ReviewCell = {
   problem: { text: string; blocking: boolean } | null;
   // What the retailer wrote, when the pipeline couldn't match it.
   hint: string | null;
+  // How the pipeline read the value: where from, and how sure it was.
+  read: { from: string; confidence: number } | null;
+};
+
+// Below this, the pipeline's reading is flagged for a closer look.
+const LOW_CONFIDENCE = 0.7;
+
+// Where the pipeline read a value from, in plain words.
+const ORIGINS: Record<string, string> = {
+  code: "from the code",
+  title: "from the title",
+  llm: "AI",
 };
 
 // Pending garments, oldest first, laid out for the queue: all their photos,
@@ -70,18 +82,30 @@ export async function getPendingGarments() {
     if (review?.llm?.notes) notes.push(review.llm.notes);
 
     const cells: ReviewCell[] = garmentFields(g, vocab).map(
-      ({ field, label, value }) => ({
-        label,
-        value,
-        problem:
-          field === "model" && !value
-            ? { text: "Needed to publish", blocking: true }
-            : REQUIRED.has(field) && !value
-              ? { text: "Empty", blocking: false }
-              : null,
-        hint: hints.get(field) ?? null,
-      }),
+      ({ field, label, value }) => {
+        const reading = review?.fields?.[field];
+        const read = reading && {
+          from: ORIGINS[reading.origin] ?? reading.origin,
+          confidence: reading.confidence,
+        };
+        return {
+          label,
+          value,
+          problem:
+            field === "model" && !value
+              ? { text: "Needed to publish", blocking: true }
+              : REQUIRED.has(field) && !value
+                ? { text: "Empty", blocking: false }
+                : value && read && read.confidence < LOW_CONFIDENCE
+                  ? { text: "Low confidence", blocking: false }
+                  : null,
+          hint: hints.get(field) ?? null,
+          read: read ?? null,
+        };
+      },
     );
+    const listedAs = review?.fields?.title?.value;
+    const listedTitle = typeof listedAs === "string" ? listedAs : null;
     const [line1, line2] = articleCode(g, vocab);
     const codeHint = hints.get("code") ?? null;
     cells.push(
@@ -90,12 +114,14 @@ export async function getPendingGarments() {
         value: [line1, line2].filter(Boolean).join(" "),
         problem: codeHint ? { text: "Not read", blocking: false } : null,
         hint: codeHint,
+        read: null,
       },
       {
         label: "Listed as",
-        value: review?.fields?.title?.value ?? "",
+        value: listedTitle ?? "",
         problem: null,
         hint: null,
+        read: null,
       },
     );
 
@@ -106,11 +132,12 @@ export async function getPendingGarments() {
       title:
         g.model || g.overrideTitle
           ? garmentTitle(g, vocab)
-          : (review?.fields?.title?.value ?? "Untitled"),
+          : (listedTitle ?? "Untitled"),
       images: g.images.map((i) => i.url),
       cells,
       notes,
       source: g.source,
+      runId: g.ingest?.runId ?? null,
       hasModel: !!g.model,
     };
   });

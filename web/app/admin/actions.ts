@@ -1,7 +1,8 @@
 // Server actions for the admin pages: publishing or rejecting a pending
 // garment, accepting or dismissing a suggestion, adding, renaming, moving and
 // deleting vocabulary entries (from the vocabulary editor, or while
-// reviewing), bulk edits, and homepage backgrounds. Each refuses anyone who isn't an admin, and checks its
+// reviewing), bulk edits, homepage backgrounds, and unpublishing an ingest
+// run. Each refuses anyone who isn't an admin, and checks its
 // input.
 "use server";
 
@@ -13,6 +14,7 @@ import {
   setBackgroundActive,
 } from "@/lib/backgrounds";
 import { EDIT_FIELDS, type EditField } from "@/lib/garment-edit";
+import { unpublishRun } from "@/lib/ingest";
 import { applyBulkEdit } from "@/lib/quality";
 import { resolveSuggestion, setGarmentStatus } from "@/lib/review";
 import {
@@ -113,6 +115,13 @@ export async function setHomepageBackgroundActive(id: unknown, on: unknown) {
 export async function removeHomepageBackground(id: unknown) {
   if (!(await isAdmin()) || !isId(id)) return;
   await removeBackground(id);
+}
+
+// Moves a run's still-published garments back to the review queue: how
+// many moved.
+export async function unpublishIngestRun(runId: unknown) {
+  if (!(await isAdmin()) || typeof runId !== "string") return 0;
+  return unpublishRun(runId);
 }
 
 // An entry's fields as sent from the browser, as plain strings.

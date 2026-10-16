@@ -1,6 +1,7 @@
 // The admin review queue at /admin, laid out for desktop: pending garments,
 // each with its photos on the left and a grid of its properties on the
 // right, problem cells tinted (red blocks publishing, amber needs a look),
+// each showing how the ingest pipeline read it and how sure it was,
 // with Edit, Publish and Reject; then open correction suggestions (what
 // they're about, the field's value now and as suggested, who sent it, and
 // Apply, Mark accepted and Dismiss). Admins only; everyone else gets the 404
@@ -90,6 +91,14 @@ async function Queue() {
                 >
                   View on {g.source.label ?? "the listing"} ↗
                 </a>
+              )}
+              {g.runId && (
+                <Link
+                  href={`/admin/runs?run=${g.runId}#${g.runId}`}
+                  className="mt-3 ml-4 inline-block text-[13px] text-muted-foreground hover:text-foreground"
+                >
+                  From run {g.runId.slice(0, 8)}
+                </Link>
               )}
             </div>
           </li>
@@ -188,7 +197,7 @@ function Photos({ images }: { images: string[] }) {
 
 // One property of a pending garment. Problems are tinted so they stand out:
 // red for what blocks publishing, amber for anything else that needs a look.
-function Cell({ label, value, problem, hint }: ReviewCell) {
+function Cell({ label, value, problem, hint, read }: ReviewCell) {
   return (
     <div
       className={cn(
@@ -216,6 +225,11 @@ function Cell({ label, value, problem, hint }: ReviewCell) {
       {hint && (
         <dd className="mt-1 font-mono text-[11px] text-muted-foreground">
           {hint}
+        </dd>
+      )}
+      {read && (
+        <dd className="mt-1 font-mono text-[11px] text-muted-foreground">
+          {read.from} · {Math.round(read.confidence * 100)}%
         </dd>
       )}
     </div>
