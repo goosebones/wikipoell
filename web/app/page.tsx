@@ -58,7 +58,7 @@ export default async function Home() {
 async function getHomeData() {
   "use cache";
   cacheLife("hours");
-  cacheTag("garments");
+  cacheTag("garments", "backgrounds");
 
   const [backgrounds, garmentCount, modelCount] = await Promise.all([
     homepageBackgrounds.find({ active: true }).toArray(),

@@ -1,7 +1,7 @@
 // The links between the admin areas, shown at the top of every admin page:
-// the review queue, the vocabulary editor and data quality (with bulk
-// editing), the current one dark.
-// Props: current ("review" | "vocabulary" | "quality").
+// the review queue, the vocabulary editor, data quality (with bulk editing)
+// and homepage backgrounds, the current one dark.
+// Props: current ("review" | "vocabulary" | "quality" | "backgrounds").
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,7 @@ const AREAS = [
   { key: "review", label: "Review queue", href: "/admin" },
   { key: "vocabulary", label: "Vocabulary", href: "/admin/vocabulary" },
   { key: "quality", label: "Data quality", href: "/admin/quality" },
+  { key: "backgrounds", label: "Backgrounds", href: "/admin/backgrounds" },
 ] as const;
 
 export function AdminNav({

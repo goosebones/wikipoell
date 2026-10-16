@@ -1,12 +1,17 @@
 // Server actions for the admin pages: publishing or rejecting a pending
 // garment, accepting or dismissing a suggestion, adding, renaming, moving and
 // deleting vocabulary entries (from the vocabulary editor, or while
-// reviewing), and bulk edits. Each refuses anyone who isn't an admin, and checks its
+// reviewing), bulk edits, and homepage backgrounds. Each refuses anyone who isn't an admin, and checks its
 // input.
 "use server";
 
 import { ObjectId } from "mongodb";
 import { isAdmin } from "@/lib/auth";
+import {
+  addBackground,
+  removeBackground,
+  setBackgroundActive,
+} from "@/lib/backgrounds";
 import { EDIT_FIELDS, type EditField } from "@/lib/garment-edit";
 import { applyBulkEdit } from "@/lib/quality";
 import { resolveSuggestion, setGarmentStatus } from "@/lib/review";
@@ -89,6 +94,25 @@ export async function bulkEdit(
     op,
     text(value) || null,
   );
+}
+
+// Records a background just uploaded to R2 (by /api/admin/backgrounds). Only
+// URLs from the background bucket are accepted.
+export async function addHomepageBackground(url: unknown) {
+  const base = process.env.R2_BACKGROUND_PUBLIC_URL?.replace(/\/$/, "");
+  if (!(await isAdmin()) || !base || !text(url).startsWith(`${base}/`)) return;
+  await addBackground(text(url));
+}
+
+export async function setHomepageBackgroundActive(id: unknown, on: unknown) {
+  if (!(await isAdmin()) || !isId(id)) return;
+  await setBackgroundActive(id, on === true);
+}
+
+// Removes a background, and deletes its file from R2.
+export async function removeHomepageBackground(id: unknown) {
+  if (!(await isAdmin()) || !isId(id)) return;
+  await removeBackground(id);
 }
 
 // An entry's fields as sent from the browser, as plain strings.
