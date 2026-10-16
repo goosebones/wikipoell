@@ -1,8 +1,8 @@
 // The bulk edit form, laid out for desktop: a bar to choose one change (a
-// field; set it, or for lists add or remove a value; and the value), then
-// the garments as rows with a tick box each, all ticked to start. Applying
-// changes every ticked garment and refreshes the list (fixed garments drop
-// out of an issue's list).
+// field; set it to a value or clear it, or for lists add or remove a value),
+// then the garments as rows with a tick box each, all ticked to start.
+// Applying changes every ticked garment and refreshes the list (fixed
+// garments drop out of an issue's list).
 // Props: garments (cards with their status), fields (label, tree and
 // whether it holds several values, per field).
 "use client";
@@ -20,6 +20,19 @@ import type { TreeNode } from "@/types";
 
 const select = "rounded-md bg-muted px-2.5 py-1.5 text-[13px] outline-none";
 
+// The changes each kind of field allows, first one the default.
+const OPS = {
+  single: ["set", "clear"],
+  list: ["add", "remove"],
+} as const;
+type Op = (typeof OPS)["single" | "list"][number];
+const OP_LABELS: Record<Op, string> = {
+  set: "set to",
+  clear: "clear",
+  add: "add",
+  remove: "remove",
+};
+
 export function BulkEditor({
   garments,
   fields,
@@ -36,12 +49,13 @@ export function BulkEditor({
   const [ticked, setTicked] = useState(new Set(garments.map((g) => g.id)));
   // The chosen field, by its place in `fields`.
   const [index, setIndex] = useState(0);
-  const [op, setOp] = useState<"set" | "add" | "remove">("set");
+  const [op, setOp] = useState<Op>("set");
   const [value, setValue] = useState<string[]>([]);
   const [message, setMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const chosen = fields[index];
   const { field } = chosen;
+  const ops = OPS[chosen.multiple ? "list" : "single"];
 
   const tick = (id: string) =>
     setTicked((t) => {
@@ -52,7 +66,10 @@ export function BulkEditor({
 
   const apply = () =>
     startTransition(async () => {
-      const result = await bulkEdit([...ticked], field, op, value[0] ?? null);
+      const result =
+        op === "clear"
+          ? await bulkEdit([...ticked], field, "set", null)
+          : await bulkEdit([...ticked], field, op, value[0]);
       setMessage(
         "error" in result
           ? (result.error ?? null)
@@ -73,7 +90,7 @@ export function BulkEditor({
           onChange={(e) => {
             const next = Number(e.target.value);
             setIndex(next);
-            setOp(fields[next].multiple ? "add" : "set");
+            setOp(OPS[fields[next].multiple ? "list" : "single"][0]);
             setValue([]);
           }}
           className={select}
@@ -87,37 +104,44 @@ export function BulkEditor({
             </option>
           ))}
         </select>
-        {chosen.multiple ? (
-          <select
-            aria-label="Change"
-            value={op}
-            onChange={(e) =>
-              setOp(e.target.value === "remove" ? "remove" : "add")
-            }
-            className={select}
-          >
-            <option value="add">add</option>
-            <option value="remove">remove</option>
-          </select>
-        ) : (
-          <span className="text-muted-foreground">set to</span>
+        <select
+          aria-label="Change"
+          value={op}
+          onChange={(e) =>
+            setOp(ops.find((o) => o === e.target.value) ?? ops[0])
+          }
+          className={select}
+        >
+          {ops.map((o) => (
+            <option
+              key={o}
+              value={o}
+            >
+              {OP_LABELS[o]}
+            </option>
+          ))}
+        </select>
+        {op !== "clear" && (
+          <div className="w-72">
+            <VocabCombobox
+              // A fresh box for each field.
+              key={field}
+              label={`${chosen.label} value`}
+              tree={chosen.tree}
+              value={value}
+              onChange={setValue}
+            />
+          </div>
         )}
-        <div className="w-72">
-          <VocabCombobox
-            // A fresh box for each field.
-            key={field}
-            label={`${chosen.label} value`}
-            tree={chosen.tree}
-            value={value}
-            onChange={setValue}
-          />
-        </div>
         <Button
           size="sm"
-          disabled={pending || ticked.size === 0}
+          // Clearing is its own choice, never what an empty box means.
+          disabled={
+            pending || ticked.size === 0 || (op !== "clear" && !value[0])
+          }
           onClick={apply}
         >
-          {chosen.multiple || value[0] ? "Apply" : `Clear ${field}`}
+          {op === "clear" ? `Clear ${field}` : "Apply"}
         </Button>
         {message && <span className="text-muted-foreground">{message}</span>}
         {field === "model" && (
