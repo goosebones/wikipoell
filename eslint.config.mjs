@@ -1,40 +1,21 @@
-import coreWebVitals from "eslint-config-next/core-web-vitals";
-import typescript from "eslint-config-next/typescript";
+// ESLint config: Next.js core-web-vitals and TypeScript rules, with Prettier
+// turning off anything that is a formatting concern.
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
 import prettier from "eslint-config-prettier";
 
-const eslintConfig = [
-  {
-    ignores: [
-      ".next/**",
-      ".claude/**",
-      "certificates/**",
-      // Separate project, not webapp source — see wikipoell-ingest/README.md
-      "wikipoell-ingest/**",
-      // The new app, with its own config — see web/
-      "web/**",
-    ],
-  },
-  ...coreWebVitals,
-  ...typescript,
+export default defineConfig([
+  ...nextVitals,
+  ...nextTs,
   prettier,
-  {
-    rules: {
-      semi: ["error", "always"],
-      "no-extra-semi": "error",
-      "semi-spacing": ["error", { before: false, after: true }],
-      // `const { dropMe, ...rest } = obj` is the idiom used across this
-      // codebase to omit keys; `_name` marks a binding that exists only to
-      // be discarded.
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          ignoreRestSiblings: true,
-          varsIgnorePattern: "^_",
-          argsIgnorePattern: "^_",
-        },
-      ],
-    },
-  },
-];
-
-export default eslintConfig;
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+    // A separate project, and one-off database scripts in plain Node.
+    "wikipoell-ingest/**",
+    "scripts/**",
+  ]),
+]);

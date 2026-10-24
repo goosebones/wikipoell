@@ -1,5 +1,5 @@
 // MongoDB connection and one typed handle per collection. The database comes
-// from MONGODB_URL (wikipoell-dev locally, wikipoell in production). The driver
+// from MONGODB_URL (pinch-seam locally, spur-biter in production). The driver
 // connects lazily on the first query and pools connections itself; the client
 // is kept on `globalThis` so dev hot reloads reuse it instead of opening new
 // connections each time. The client itself stays private; writes that must

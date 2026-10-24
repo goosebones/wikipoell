@@ -3,14 +3,15 @@
  * cluster to the new one, converting them to the schema in SCHEMA.md.
  *
  *   node scripts/migrate-garments.mjs              # dry run: report only
- *   node scripts/migrate-garments.mjs --apply      # write to the new cluster
+ *   node scripts/migrate-garments.mjs --apply      # write the new database
  *   node scripts/migrate-garments.mjs --apply --replace
  *                                                  # re-run: clear the target first
- *   node scripts/migrate-garments.mjs --apply --db wikipoell-dev
+ *   node scripts/migrate-garments.mjs --apply --db pinch-seam
  *                                                  # write a different database
  *
- * Reads MONGODB_URL (never written to) and writes MONGODB_URL_2 (database
- * "wikipoell" unless --db names another). Vocabulary
+ * Both live in the cluster MONGODB_URL points at: it reads the old app's
+ * database (the one named in MONGODB_URL, "wikipoell"; never written to) and
+ * writes "spur-biter" unless --db names another. Vocabulary
  * comes from scripts/seed/, which setup-db.mjs has already loaded into the new
  * cluster. Refuses to write if any garment fails conversion.
  *
@@ -19,14 +20,14 @@
  */
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
 
 const apply = process.argv.includes("--apply");
 const replace = process.argv.includes("--replace");
 const dbFlag = process.argv.indexOf("--db");
-const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "wikipoell";
+const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "spur-biter";
 const seed = (n) =>
   JSON.parse(
     readFileSync(resolve(import.meta.dirname, "seed", `${n}.json`), "utf8"),
@@ -160,7 +161,7 @@ function convert(g) {
       if (!known[field].has(v))
         errors.push(`${field} "${v}" not in vocabulary`);
   if (!out.uploadedByUserId) errors.push("no uploadedByUserId");
-  // Mirrors the new cluster's validator, so a bad value fails here rather than
+  // Mirrors the new database's validator, so a bad value fails here rather than
   // halfway through the insert.
   if (out.model != null && !/^[0-9]+$/.test(out.model))
     errors.push(`model "${out.model}" is not all digits`);
@@ -169,17 +170,22 @@ function convert(g) {
 }
 
 // ---------- run ----------
-const source = await mongoose
-  .createConnection(process.env.MONGODB_URL)
-  .asPromise();
-const target = await mongoose
-  .createConnection(process.env.MONGODB_URL_2, { dbName: DB_NAME })
-  .asPromise();
+// The source is the database named in the URL; the target is DB_NAME.
+const client = await MongoClient.connect(process.env.MONGODB_URL);
+const source = client.db();
+const target = client.db(DB_NAME);
+// Same cluster: never write over the database being read (--replace clears
+// the target first).
+if (target.databaseName === source.databaseName) {
+  throw new Error(
+    `Refusing to write "${DB_NAME}": it's the old app's database, the one being read.`,
+  );
+}
 console.log(
-  `${apply ? "APPLY" : "DRY RUN"}: ${source.db.databaseName} (old) → ${target.db.databaseName} (new)\n`,
+  `${apply ? "APPLY" : "DRY RUN"}: ${source.databaseName} (old) → ${target.databaseName} (new)\n`,
 );
 
-const old = await source.db.collection("garments").find({}).toArray();
+const old = await source.collection("garments").find({}).toArray();
 const results = old.map((g) => ({ g, ...convert(g) }));
 const failed = results.filter((r) => r.errors.length);
 
@@ -260,7 +266,7 @@ for (const r of [
 }
 for (const name of VERBATIM)
   console.log(
-    `${name}: ${await source.db.collection(name).countDocuments()} to copy as-is`,
+    `${name}: ${await source.collection(name).countDocuments()} to copy as-is`,
   );
 
 if (failed.length) {
@@ -272,10 +278,10 @@ if (failed.length) {
 } else if (apply) {
   const all = ["garments", ...VERBATIM];
   for (const name of all) {
-    const existing = await target.db.collection(name).countDocuments();
+    const existing = await target.collection(name).countDocuments();
     if (existing && !replace) {
       console.log(
-        `\n${name} already has ${existing} documents in the new cluster; re-run with --replace. Nothing written.`,
+        `\n${name} already has ${existing} documents in the new database; re-run with --replace. Nothing written.`,
       );
       process.exitCode = 1;
       break;
@@ -286,8 +292,8 @@ if (failed.length) {
       const docs =
         name === "garments"
           ? results.map((r) => r.out)
-          : await source.db.collection(name).find({}).toArray();
-      const col = target.db.collection(name);
+          : await source.collection(name).find({}).toArray();
+      const col = target.collection(name);
       if (replace) await col.deleteMany({});
       if (docs.length) await col.insertMany(docs, { ordered: true });
       const count = await col.countDocuments();
@@ -299,5 +305,4 @@ if (failed.length) {
   console.log("\nDry run: nothing written. Re-run with --apply.");
 }
 
-await source.close();
-await target.close();
+await client.close();

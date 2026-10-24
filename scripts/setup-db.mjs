@@ -1,9 +1,10 @@
 /**
  * Create the collections, validators and indexes described in SCHEMA.md on
- * the new cluster, and seed the vocabulary in scripts/seed/.
+ * the new database (spur-biter unless --db says otherwise), and seed the
+ * vocabulary in scripts/seed/.
  *
- *   node scripts/setup-db.mjs                    # MONGODB_URL_2, database "wikipoell"
- *   node scripts/setup-db.mjs --db wikipoell-dev  # a different database
+ *   node scripts/setup-db.mjs                    # MONGODB_URL, database "spur-biter"
+ *   node scripts/setup-db.mjs --db pinch-seam    # a different database
  *   node scripts/setup-db.mjs --dry-run          # print the plan, write nothing
  *
  * Idempotent. Validators are (re)applied on every run. Seed documents are
@@ -12,12 +13,17 @@
  */
 import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
-import mongoose from "mongoose";
+import { MongoClient } from "mongodb";
 
 process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
 
 const dbFlag = process.argv.indexOf("--db");
-const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "wikipoell";
+const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "spur-biter";
+// The old app's live database shares the cluster; its documents don't fit
+// the new validators, so it is never touched.
+if (DB_NAME === "wikipoell") {
+  throw new Error('Refusing to set up "wikipoell": the old app still uses it.');
+}
 const dryRun = process.argv.includes("--dry-run");
 const seedDir = resolve(import.meta.dirname, "seed");
 
@@ -229,10 +235,8 @@ const collections = {
   ingestruns: { indexes: [{ key: { startedAt: -1 } }] },
 };
 
-const conn = await mongoose
-  .createConnection(process.env.MONGODB_URL_2, { dbName: DB_NAME })
-  .asPromise();
-const db = conn.db;
+const client = await MongoClient.connect(process.env.MONGODB_URL);
+const db = client.db(DB_NAME);
 const existing = new Set(
   (await db.listCollections().toArray()).map((c) => c.name),
 );
@@ -283,4 +287,4 @@ for (const [name, { validator, indexes = [] }] of Object.entries(collections)) {
   );
 }
 
-await conn.close();
+await client.close();

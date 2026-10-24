@@ -32,15 +32,14 @@ Direction **A · Gallery** from the mockups:
 | Input validation | Zod, only at Server Action boundaries | |
 | Images | Cloudflare R2 (`@aws-sdk/client-s3`) + `sharp` | Only for admin uploads (homepage backgrounds). Garment images come from the pipeline. Existing URLs keep working |
 | Analytics | `@vercel/analytics`, `@vercel/speed-insights` | As today |
-| Hosting | Vercel | Same project, with the root directory switched to `web/` at cutover |
+| Hosting | Vercel | Same project; the app replaced the old one at the repo root |
 | Tooling | ESLint (`eslint-config-next`) + Prettier | Same house style as today |
 
 ## Where it lives
 
-`web/`, inside this repo, next to the old app, `SCHEMA.md`, `scripts/` (seed and migration) and `wikipoell-ingest/`.
+The repo root (it started in `web/` and replaced the old app at cutover), next to `SCHEMA.md`, `scripts/` (seed and migration) and `wikipoell-ingest/`.
 
 ```
-web/
   app/                    routes: pages, layouts, server actions
   components/             UI; components/ui/ holds the shadcn primitives
   lib/
@@ -207,9 +206,9 @@ Each milestone ends with a working site. Each numbered chunk is one review.
 2. Sitemap, plus Vercel analytics and speed insights.
 
 ### 22. Cutover
-1. Re-run `migrate-garments.mjs --apply --replace` to bring the latest edits across.
-2. Point Vercel at `web/` with `MONGODB_URL` set to the new cluster.
-3. Check production, then delete the old app.
+1. ~~Re-run the migration~~: not needed, the old database hadn't changed since `spur-biter` was filled.
+2. ~~Move `web/` to the repo root, replacing the old app~~. Vercel's root directory stays `/`; set `MONGODB_URL` to the `spur-biter` database.
+3. Check production.
 
 ### 23. MCP server
 After cutover. Public and read-only, so no auth. Site search finds entities (models, materials, colors, codes) rather than garments, so `find_garments` is the tool assistants will lean on most; `search` helps them find the ids to filter by.
@@ -220,7 +219,7 @@ After cutover. Public and read-only, so no auth. Site search finds entities (mod
 
 Decisions deferred during the build, to come back to:
 
-- **Sort options.** Newest, model and title exist today (`SORTS` in `web/lib/garments.ts`). Title and model may not be very useful; choose which sorts to offer.
+- **Sort options.** Newest, model and title exist today (`SORTS` in `lib/garments.ts`). Title and model may not be very useful; choose which sorts to offer.
 
 ### After cutover: ingest pipeline rework
 Planned separately. It brings back the `/api/ingest/*` routes and the re-check queue, and decides what happens to agent corrections. The pipeline stays paused from cutover until then.

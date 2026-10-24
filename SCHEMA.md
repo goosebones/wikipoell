@@ -207,7 +207,7 @@ Corrections suggested by signed-in users, added with the rebuild (milestone 14).
 
 ## Migration outline
 
-The data moves to a **new cluster** (`MONGODB_URL_2`, database `wikipoell`). The current cluster (`MONGODB_URL`) is only ever read, so falling back means pointing the app at it again.
+The data moves to a **new database in the same cluster** as the old app (`MONGODB_URL`, project `carols-vision`): production is `spur-biter`, development `pinch-seam`. The old app's database, `wikipoell`, is only ever read, so falling back means pointing the app at it again. (The data first lived in a separate project, `MONGODB_URL_2`; it moved into the original one on 2026-10-16, and the separate project is no longer used.)
 
 1. ✅ Model list generated from live data, verified by hand, seeded into `models`.
 2. ✅ `colors` and `materials` trees built and verified by hand.
@@ -220,11 +220,11 @@ The data moves to a **new cluster** (`MONGODB_URL_2`, database `wikipoell`). The
    - hand fixes for missing or single-layer materials and colors come from `seed/garment-fixes.json`
    - a garment without a model becomes `pending`
    - `_id`, images, `source`, `ingest` and timestamps are kept unchanged, so garment URLs survive
-5. ✅ `users`, `homepagebackgrounds` and `ingestruns` copied as they are. `agentcorrections` is deliberately **not** copied; it stays in the old cluster until the ingest pipeline is reworked.
+5. ✅ `users`, `homepagebackgrounds` and `ingestruns` copied as they are. `agentcorrections` is deliberately **not** copied; it stays in the old database until the ingest pipeline is reworked.
 6. Switch the webapp over (the code changes below), re-running the migration with `--apply --replace` just before, so edits made in the meantime are included. Then retire `Property`.
 7. Extras: not migrated yet. Every garment starts with `extras: []`.
 
-Setting up a cluster from scratch:
+Setting up a database from scratch:
 
 ```bash
 node scripts/setup-db.mjs                      # collections, validators, indexes, vocabulary
@@ -232,9 +232,9 @@ node scripts/migrate-garments.mjs              # dry run: report only
 node scripts/migrate-garments.mjs --apply      # add --replace to re-run
 ```
 
-Both scripts take `--db <name>` to build a different database on the same cluster. Local development uses `wikipoell-dev`, built the same way and refreshed by re-running the migration with `--replace`. Production (`wikipoell`) is never touched from a laptop.
+Both scripts default to `spur-biter` and take `--db <name>` for another database in the same cluster; both refuse `wikipoell`, the old app's. Local development uses `pinch-seam` (refreshed by re-running the migration with `--db pinch-seam --replace`).
 
-The webapp and the ingest pipeline must not point at the new cluster before their code is updated. Both still write the old format, and the new cluster's validators reject it.
+The ingest pipeline must not point at the new databases before its code is updated: it still writes the old format, and their validators reject it.
 
 ### Webapp surfaces affected
 

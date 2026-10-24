@@ -18,23 +18,17 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",
     "paths": {
-      "@/styles/*": ["styles/*"],
-      "@/components/*": ["components/*"],
-      "@/ui/*": ["styles/components/ui/*"],
-      "@/lib/*": ["lib/*"],
-      "@/models/*": ["models/*"]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
   ],
-  "exclude": ["node_modules", "wikipoell-ingest", "web"]
+  "exclude": ["node_modules", "wikipoell-ingest", "scripts"]
 }

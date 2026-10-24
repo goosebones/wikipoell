@@ -9,7 +9,6 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
-/__pycache__
 
 # testing
 /coverage
@@ -41,8 +40,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# vscode
-.vscode
+# python (wikipoell-ingest)
+__pycache__/
 
-# project specific stuff
-certificates
+# editor
+.vscode

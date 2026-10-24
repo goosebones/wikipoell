@@ -1,12 +1,14 @@
+// Runs before every request (Next.js's "proxy", formerly middleware) so Clerk
+// can read the session cookie. Nothing is blocked here; pages decide for
+// themselves who may see them.
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
 export default clerkMiddleware();
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
+    // Everything except Next.js internals and static files.
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
