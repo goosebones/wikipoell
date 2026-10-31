@@ -31,7 +31,7 @@ export type Model = {
   suggestedCategory: string;
 };
 
-export type GarmentStatus = "pending" | "published" | "rejected";
+type GarmentStatus = "pending" | "published" | "rejected";
 
 export type Garment = {
   _id: ObjectId;

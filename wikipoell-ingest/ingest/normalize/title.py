@@ -1,6 +1,6 @@
 """Format a listing title into house style.
 
-Extends `formatTitle()` from `legacy/agent-review/review.js`. The legacy version
+Extends `formatTitle()` from the old JS agent-review script. That version
 stripped one trailing `/COLOR` segment; the live ccp-room catalog often carries
 two or three (`…HOOSIE/19/st`, `…JKT/010/blck`), so that left 119 of 579 titles
 with a slash still in them.

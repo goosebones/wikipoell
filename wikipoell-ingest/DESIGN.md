@@ -300,7 +300,6 @@ wikipoell-ingest/
 │       ├── ccp_room.py
 │       ├── the_library.py
 │       └── …one file per remaining site
-└── legacy/                   today's ccp-room/, the-library/, agent-review/, data/ — kept, not maintained
 ```
 
 Dependencies: `httpx`, `selectolax` (fast HTML parsing), `pydantic`. No Selenium, no Pillow — image conversion stays in the webapp, and the LLM is reached over plain HTTP rather than a vendor SDK.

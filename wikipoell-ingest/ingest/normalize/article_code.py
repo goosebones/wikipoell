@@ -1,6 +1,6 @@
 """Parse CCP article codes.
 
-Ported from `legacy/ccp-room/backfill-article-codes.js`, which is the stricter
+Ported from the old ccp-room JS backfill script, which is the stricter
 of the two regexes that existed (it handles `=` in procedure and material, and
 the accessory-only short form).
 

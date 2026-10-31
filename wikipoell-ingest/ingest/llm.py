@@ -4,9 +4,8 @@ Runs through OpenRouter's OpenAI-compatible chat-completions endpoint, so the
 model is a config value rather than a code change. Only listings the router
 sends here are processed, so most garments never cost a call.
 
-The prompt is ported from `legacy/agent-review/review.js`, including its use
-of past human corrections as few-shot examples — the whole point of keeping
-the AgentCorrection collection.
+The prompt is ported from the old JS agent-review script, including its use
+of past human corrections (AgentCorrection) as few-shot examples.
 
 Text-only by default; images are attached when the text alone was not enough
 (`--images auto`) or always (`--images always`).

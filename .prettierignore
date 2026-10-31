@@ -5,6 +5,3 @@ next-env.d.ts
 
 # a separate project with its own config (see wikipoell-ingest/README.md)
 wikipoell-ingest/
-
-# one-off database scripts and their seed data
-scripts/

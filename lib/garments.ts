@@ -21,7 +21,7 @@ import { byCode, nodeHref, nodeLabel } from "@/lib/tree";
 import { getVocabulary, type Vocabulary } from "@/lib/vocabulary";
 import type { Garment, TreeNode } from "@/types";
 
-export const PER_PAGE = 48;
+const PER_PAGE = 48;
 
 // TODO: revisit which sorts to offer. Title and model may not be very useful;
 // choose the options that are (also listed under "Revisit" in PLAN.md).

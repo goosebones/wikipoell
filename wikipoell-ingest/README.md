@@ -159,9 +159,6 @@ the title is then published exactly as written, skipping both `format_title()`
 and the `title_unformatted` flag that would otherwise send it to the LLM to
 have a name invented for it. Only `ink` sets it today.
 
-`scripts/dump_ink_titles.py` plus the webapp's `scripts/retitle-ink.mjs`
-applied this to the garments stored before the rule existed.
-
 ## Images
 
 Every image is copied to R2, never hotlinked, and deduplicated on its
@@ -192,11 +189,4 @@ attributed to.
 Requests go out with httpx's default user agent; no browser string is spoofed.
 All nine sources were verified to respond normally to it.
 
-
 The webapp's eslint/prettier ignore this folder wholesale.
-
-## legacy/
-
-The scrapers this replaces: the ccp-room JS scripts, the Library notebooks, and
-`agent-review/review.js`. Kept for reference, not maintained. Their logic has
-been ported into `ingest/normalize/`.

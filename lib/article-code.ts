@@ -51,7 +51,7 @@ export function cleanArticleCode(raw: string) {
   );
 }
 
-export type ParsedCode = {
+type ParsedCode = {
   type: string;
   gender: string;
   model: string;
@@ -64,7 +64,7 @@ export type ParsedCode = {
 };
 
 // The code's parts as written, or null if it matches none of the forms.
-export function parseArticleCode(raw: string): ParsedCode | null {
+function parseArticleCode(raw: string): ParsedCode | null {
   const text = cleanArticleCode(raw);
   const head = (m: RegExpMatchArray, dashed = "") => ({
     type: m[1],
@@ -111,7 +111,7 @@ export function parseArticleCode(raw: string): ParsedCode | null {
 // vocabulary entry it names (`id` and `href` are null when the code isn't in
 // the vocabulary; `name` is also null for codes with no description yet).
 // `href` leads to the entry's page, or to the archive filtered to it.
-export type DecodedPart = {
+type DecodedPart = {
   title: string;
   field: FilterField;
   code: string;

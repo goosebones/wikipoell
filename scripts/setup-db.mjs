@@ -1,31 +1,22 @@
 /**
- * Create the collections, validators and indexes described in SCHEMA.md on
- * the new database (spur-biter unless --db says otherwise), and seed the
- * vocabulary in scripts/seed/.
+ * Create the collections, validators and indexes described in SCHEMA.md
+ * (on spur-biter unless --db says otherwise). It holds no data: a new
+ * database gets its documents copied from an existing one.
  *
  *   node scripts/setup-db.mjs                    # MONGODB_URL, database "spur-biter"
  *   node scripts/setup-db.mjs --db pinch-seam    # a different database
  *   node scripts/setup-db.mjs --dry-run          # print the plan, write nothing
  *
- * Idempotent. Validators are (re)applied on every run. Seed documents are
- * inserted only when their _id is missing, so later edits are never
- * overwritten by a re-run.
+ * Idempotent: validators are (re)applied and indexes ensured on every run.
  */
-import { existsSync, readFileSync } from "fs";
 import { resolve } from "path";
 import { MongoClient } from "mongodb";
 
-process.loadEnvFile(resolve(import.meta.dirname, "../.env"));
+process.loadEnvFile(resolve(import.meta.dirname, "../.env.local"));
 
 const dbFlag = process.argv.indexOf("--db");
 const DB_NAME = dbFlag > 0 ? process.argv[dbFlag + 1] : "spur-biter";
-// The old app's live database shares the cluster; its documents don't fit
-// the new validators, so it is never touched.
-if (DB_NAME === "wikipoell") {
-  throw new Error('Refusing to set up "wikipoell": the old app still uses it.');
-}
 const dryRun = process.argv.includes("--dry-run");
-const seedDir = resolve(import.meta.dirname, "seed");
 
 // One slug segment: lowercase letters and digits, single hyphens between.
 const SEG = "[a-z0-9]+(-[a-z0-9]+)*";
@@ -36,7 +27,6 @@ const CATEGORY_ID = "^[a-zA-Z0-9]+(\\.[a-zA-Z0-9]+)*$";
 
 const str = { bsonType: "string" };
 const strOrNull = { bsonType: ["string", "null"] };
-const strArray = { bsonType: "array", items: str };
 
 /** Flat vocabulary: types, genders, procedures, processes. */
 const flatVocabulary = {
@@ -224,14 +214,13 @@ const collections = {
     ],
   },
 
-  // Unchanged from the current cluster.
+  // No validator.
   users: {
     indexes: [{ key: { userId: 1 }, unique: true }, { key: { deletedAt: 1 } }],
   },
   homepagebackgrounds: {
     indexes: [{ key: { imageUrl: 1 }, unique: true }, { key: { active: 1 } }],
   },
-  agentcorrections: { indexes: [{ key: { garmentId: 1 }, unique: true }] },
   ingestruns: { indexes: [{ key: { startedAt: -1 } }] },
 };
 
@@ -250,14 +239,10 @@ for (const [name, { validator, indexes = [] }] of Object.entries(collections)) {
         validationAction: "error",
       }
     : {};
-  const seedPath = resolve(seedDir, `${name}.json`);
-  const seed = existsSync(seedPath)
-    ? JSON.parse(readFileSync(seedPath, "utf8"))
-    : [];
 
   if (dryRun) {
     console.log(
-      `  ${name}: ${existing.has(name) ? "exists" : "create"}, ${indexes.length} indexes, ${seed.length} seed docs`,
+      `  ${name}: ${existing.has(name) ? "exists" : "create"}, ${indexes.length} indexes`,
     );
     continue;
   }
@@ -268,22 +253,8 @@ for (const [name, { validator, indexes = [] }] of Object.entries(collections)) {
   const col = db.collection(name);
   for (const { key, ...opts } of indexes) await col.createIndex(key, opts);
 
-  let inserted = 0;
-  if (seed.length) {
-    const res = await col.bulkWrite(
-      seed.map((doc) => ({
-        updateOne: {
-          filter: { _id: doc._id },
-          update: { $setOnInsert: doc },
-          upsert: true,
-        },
-      })),
-    );
-    inserted = res.upsertedCount;
-  }
-  const count = await col.countDocuments();
   console.log(
-    `  ${name}: ${count} docs (${inserted} seeded), ${indexes.length} indexes`,
+    `  ${name}: ${await col.countDocuments()} docs, ${indexes.length} indexes`,
   );
 }
 

@@ -1,6 +1,6 @@
 """Resolve a listing to one of the archive's 45 categories.
 
-Keyword rules ported from `mapCategory()` in `legacy/ccp-room/scrape.js`. The
+Keyword rules ported from `mapCategory()` in the old ccp-room JS scraper. The
 site's own section (or entry URL) narrows the search first; the title decides
 within it. Anything unresolved returns None and routes to a human — guessing a
 category is worse than asking.

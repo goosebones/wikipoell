@@ -14,8 +14,7 @@ export default defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // A separate project, and one-off database scripts in plain Node.
+    // A separate project with its own tooling.
     "wikipoell-ingest/**",
-    "scripts/**",
   ]),
 ]);

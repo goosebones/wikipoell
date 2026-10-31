@@ -1,32 +1,28 @@
-# Garment schema — attribute refactor
+# Database schema
 
-Status: **agreed in discussion, not yet implemented.** The ingest pipeline is out of scope for this pass and will be revisited separately.
+The documents the app stores, collection by collection. `scripts/setup-db.mjs` applies the validators and indexes described here.
 
-## Goals
-
-- Make the **model** a first-class entity: a curated list with a name and a suggested category, and the basis of a garment's title.
-- **Derive the title** from the model instead of storing free text, with an explicit override.
-- Make **color** and **material** hierarchical, so a query for a parent returns everything beneath it.
-- Introduce **extras**: optional, hierarchical attributes for motifs such as rubber drip, prosthetic, stained, spur biter, tank sole, self edge, reflective, gloved.
-- Split the generic `Property` collection into one collection per field.
-
-Type, gender, procedure and process keep working as they do today. Type stays its own flat attribute and is not part of the category tree.
+- The **model** is a first-class entity: a curated list with a name and a suggested category, and the basis of a garment's title.
+- The **title** is derived from the model, with an explicit override.
+- **Color** and **material** are hierarchical, so a query for a parent returns everything beneath it.
+- **Extras** are optional, hierarchical attributes for motifs such as rubber drip, prosthetic, stained, spur biter, tank sole, self edge, reflective, gloved.
+- Type, gender, procedure and process are flat. Type is not part of the category tree.
 
 ## Vocabulary collections
 
-The `Property` collection is replaced by one collection per field. All of them share a base shape, so the generic code that reads vocabulary (filters, admin manager, unknown-value detection, search suggestions) stays generic. A single loader returns `{ type: [...], gender: [...], color: [...], ... }`.
+One collection per field. They share a base shape, and `lib/vocabulary.ts` loads them all in one call.
 
-| Collection   | Shape                                       | Hierarchy               |
-| ------------ | ------------------------------------------- | ----------------------- |
-| `models`     | `{ _id: "2600", label, suggestedCategory }` | flat                    |
-| `colors`     | `{ _id, label, code, parent }`              | any depth, path ids     |
-| `materials`  | `{ _id, label, code, parent }`              | any depth, path ids     |
-| `extras`     | `{ _id, label, parent }`                    | any depth, path ids     |
-| `types`      | `{ _id: slug, label, code }`                | flat                    |
-| `genders`    | `{ _id: slug, label, code }`                | flat                    |
-| `procedures` | `{ _id: slug, label, code }`                | flat                    |
-| `processes`  | `{ _id: slug, label, code }`                | flat                    |
-| `categories` | unchanged                                   | any depth, path ids     |
+| Collection   | Shape                                       | Hierarchy           |
+| ------------ | ------------------------------------------- | ------------------- |
+| `models`     | `{ _id: "2600", label, suggestedCategory }` | flat                |
+| `colors`     | `{ _id, label, code, parent }`              | any depth, path ids |
+| `materials`  | `{ _id, label, code, parent }`              | any depth, path ids |
+| `extras`     | `{ _id, label, parent }`                    | any depth, path ids |
+| `types`      | `{ _id: slug, label, code }`                | flat                |
+| `genders`    | `{ _id: slug, label, code }`                | flat                |
+| `procedures` | `{ _id: slug, label, code }`                | flat                |
+| `processes`  | `{ _id: slug, label, code }`                | flat                |
+| `categories` | unchanged                                   | any depth, path ids |
 
 ### Hierarchy conventions
 
@@ -45,14 +41,14 @@ Every segment of an `_id` (and the whole `_id` of a flat collection) is a lowerc
 - A slug is **suggested from the code** when a node is created, can be edited at that point, and is **never recomputed** afterwards.
 - The default suggestion is: lowercase; `*` → `star`, with a count when repeated; any other run of non-alphanumeric characters → `-`.
 
-  | Code      | Slug        |
-  | --------- | ----------- |
-  | `19*`     | `19-star`   |
-  | `19**`    | `19-star2`  |
-  | `X=NIT`   | `x-nit`     |
-  | `ON EDGE` | `on-edge`   |
-  | `14 ORG`  | `14-org`    |
-  | `010B`    | `010b`      |
+  | Code      | Slug       |
+  | --------- | ---------- |
+  | `19*`     | `19-star`  |
+  | `19**`    | `19-star2` |
+  | `X=NIT`   | `x-nit`    |
+  | `ON EDGE` | `on-edge`  |
+  | `14 ORG`  | `14-org`   |
+  | `010B`    | `010b`     |
 
 - Symbols are spelled out rather than stripped, because stripping merges different codes (`19` is grey and `19**` is rust).
 - Slugs are unique within a collection (enforced by an index on `_id`), so a collision is caught when the node is created.
@@ -166,7 +162,7 @@ Procedures and processes are joined with `-`. When the material or color is a no
 ### Publishing rules
 
 - An unknown model blocks publishing: the model must exist in `models` first.
-- Unknown values in any other vocabulary keep blocking, as today.
+- Unknown values in any other vocabulary block publishing.
 - Extras never block publishing.
 
 ## User data
@@ -205,48 +201,11 @@ Corrections suggested by signed-in users, added with the rebuild (milestone 14).
 - `proposed` is free text. An admin applies an accepted suggestion with the edit screen, so it never writes to the target directly.
 - `current` is recorded by the server, not taken from the form.
 
-## Migration outline
+## Databases
 
-The data moves to a **new database in the same cluster** as the old app (`MONGODB_URL`, project `carols-vision`): production is `spur-biter`, development `pinch-seam`. The old app's database, `wikipoell`, is only ever read, so falling back means pointing the app at it again. (The data first lived in a separate project, `MONGODB_URL_2`; it moved into the original one on 2026-10-16, and the separate project is no longer used.)
+All in the `carols-vision` Atlas cluster:
 
-1. ✅ Model list generated from live data, verified by hand, seeded into `models`.
-2. ✅ `colors` and `materials` trees built and verified by hand.
-3. ✅ Flat collections (`types`, `genders`, `procedures`, `processes`) seeded from `Property`.
-4. ✅ Garments copied and rewritten by `scripts/migrate-garments.mjs`:
-   - color and material codes become node ids via `seed/value-map.json`
-   - `process` and `procedure` become `[String]` of slugs
-   - `title` and `__v` are dropped; `overrideTitle: null` and `extras: []` are added
-   - `category` is taken from the model's `suggestedCategory` whenever the garment has a model
-   - hand fixes for missing or single-layer materials and colors come from `seed/garment-fixes.json`
-   - a garment without a model becomes `pending`
-   - `_id`, images, `source`, `ingest` and timestamps are kept unchanged, so garment URLs survive
-5. ✅ `users`, `homepagebackgrounds` and `ingestruns` copied as they are. `agentcorrections` is deliberately **not** copied; it stays in the old database until the ingest pipeline is reworked.
-6. Switch the webapp over (the code changes below), re-running the migration with `--apply --replace` just before, so edits made in the meantime are included. Then retire `Property`.
-7. Extras: not migrated yet. Every garment starts with `extras: []`.
+- `spur-biter` is production.
+- `pinch-seam` is development.
 
-Setting up a database from scratch:
-
-```bash
-node scripts/setup-db.mjs                      # collections, validators, indexes, vocabulary
-node scripts/migrate-garments.mjs              # dry run: report only
-node scripts/migrate-garments.mjs --apply      # add --replace to re-run
-```
-
-Both scripts default to `spur-biter` and take `--db <name>` for another database in the same cluster; both refuse `wikipoell`, the old app's. Local development uses `pinch-seam` (refreshed by re-running the migration with `--db pinch-seam --replace`).
-
-The ingest pipeline must not point at the new databases before its code is updated: it still writes the old format, and their validators reject it.
-
-### Webapp surfaces affected
-
-- **Vocabulary readers:** `lib/properties.js`, `components/context/property-context-provider.jsx`, `app/layout.jsx`, `app/api/properties/`
-- **Admin:**
-  - vocabulary management: `app/admin/properties/`, `app/api/admin/property/`, `components/admin/properties/`, `components/admin/shared/property-modal.jsx`
-  - review: `field-with-add.jsx`, `garment-field-grid.jsx`, `garment-review-card.jsx`
-- **Garment forms and display:** `app/garment/create/page.jsx`, `app/garment/[slug]/page.jsx`, `components/garment/edit-garment-modal.jsx`, `components/garment/garment-card.jsx`
-- **Filtering and search:**
-  - `components/filter/filter-menu-client.jsx` (becomes tree filters)
-  - `app/category/[...slug]/` and `lib/garments.js` (fix the segment-boundary prefix match, and escape user-supplied ids before they go into a regex)
-  - `app/api/search-suggestions/`
-  - `lib/garments.js`, including `getSimilarGarments`
-- **Review logic and helpers:** `lib/admin-garment-properties.js`, `lib/ingest-review.js`, `lib/ingest-reevaluate.js`, `lib/patch-garment.js` (`normalizeProcedure` goes away), `lib/garment-utils.js` (`getGarmentCode`)
-- **Ingest (deferred):** `app/api/ingest/context/`, `wikipoell-ingest/ingest/normalize/vocabulary.py`, `models.py`
+To set up a new database, run `node scripts/setup-db.mjs --db <name>` (add `--dry-run` to preview), then copy the documents in from an existing database.

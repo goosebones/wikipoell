@@ -11,7 +11,7 @@ by the attributes his article codes encode (type, gender, model, procedure,
 material, process, color), plus category and extras. Signed-in users keep
 favorites and suggest corrections; admins review, edit and curate.
 
-- `PLAN.md`: the rebuild's milestones and decisions.
+- `PLAN.md`: the work still ahead.
 - `SCHEMA.md`: the database, collection by collection.
 
 ## Commands
@@ -64,14 +64,13 @@ They live in the `carols-vision` Atlas cluster:
 
 - `spur-biter` is production.
 - `pinch-seam` is development; `.env.local` points here.
-- `wikipoell` is the old app's database. Never write to it.
 
-`scripts/setup-db.mjs` creates collections, validators, indexes and seeds. `scripts/migrate-garments.mjs` migrated the old data. Both take `--db`.
+`scripts/setup-db.mjs` creates the collections, validators and indexes (`--db <name>`, `--dry-run`).
 
 ## wikipoell-ingest/
 
-The scraping and ingest pipeline is a separate project that shares this repo and the root `.env`. Read its `README.md` before touching it. The app's tsconfig, eslint and prettier all ignore it.
+The scraping and ingest pipeline is a separate Python project that shares this repo. It is paused until its rework (`PLAN.md`). Read its `README.md` before touching it. The app's tsconfig, eslint and prettier ignore it.
 
 ## Environment
 
-See `.env.example`. Locally the app reads `.env.local`; the root `.env` belongs to `wikipoell-ingest/` and the scripts.
+See `.env.example`. Locally the app and `scripts/setup-db.mjs` read `.env.local`. `wikipoell-ingest/` has its own `.env`.

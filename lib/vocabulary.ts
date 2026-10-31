@@ -84,5 +84,3 @@ export function vocabularyTrees(vocab: Vocabulary) {
     extras: vocab.extras,
   };
 }
-
-export type VocabularyTrees = ReturnType<typeof vocabularyTrees>;

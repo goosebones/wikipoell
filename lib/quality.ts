@@ -60,7 +60,7 @@ export const ISSUES = {
     }),
   },
 } as const;
-export type Issue = keyof typeof ISSUES;
+type Issue = keyof typeof ISSUES;
 
 export function isIssue(value: unknown): value is Issue {
   return typeof value === "string" && Object.hasOwn(ISSUES, value);
@@ -123,7 +123,7 @@ export async function getBulkGarments(
 
 // What a bulk edit does to its field: set (or clear, with no value) a
 // single-value field, or add or remove a value in a list field.
-export type BulkOp = "set" | "add" | "remove";
+type BulkOp = "set" | "add" | "remove";
 
 // Applies one change to many garments, after checking the field, the
 // operation and the value against the vocabulary. Setting a model also sets
