@@ -1,9 +1,17 @@
 """darklands.berlin — custom Drupal storefront.
 
-Men's and women's CCP pages are separate, which is where gender comes from —
-the detail page does not state it. The article code sits in a bare `<p>` on
-the detail page, so it is found by matching the code shape rather than a
-selector, which survives the markup being re-themed.
+Navigation: the HTML base, over separate men's and women's CCP pages, which
+is where gender comes from (the detail page does not state it).
+
+Images: the detail page's product gallery.
+
+Attributes: the article code sits in a bare `<p>` in the product info, so it
+is found by matching the code shape rather than a selector, which survives
+the markup being re-themed. Category from title keywords, or failing that the
+vendor category.
+
+Details: the schema.org `category` ("Boots"), the composition line that
+follows the code ("100% Cordovan Leather"), and the sizes.
 """
 
 from __future__ import annotations
@@ -11,11 +19,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from selectolax.parser import HTMLParser
-
-from ingest.models import RawListing
+from ingest.models import Attributes, Detail
 from ingest.normalize.article_code import parse_article_code
-from ingest.sources.html_catalog import HtmlCatalogSource
+from ingest.sources.extract import clean, json_ld_product, node_text
+from ingest.sources.html_catalog import HtmlCatalogSource, Page
 
 BASE_URL = "https://darklands.berlin"
 _PRODUCT_PATH = re.compile(r"/tiefgarage/carol-christian-poell[^/]*/.+")
@@ -44,10 +51,11 @@ _CATEGORY_KEYWORDS = [
 ]
 
 
-def guess_category(title: str | None) -> str | None:
-    text = (title or "").upper()
+def guess_category(text: str | None) -> str | None:
+    """An archive category from keywords in a title or a vendor category."""
+    upper = (text or "").upper()
     for keywords, category in _CATEGORY_KEYWORDS:
-        if any(k in text for k in keywords):
+        if any(k in upper for k in keywords):
             return category
     return None
 
@@ -65,40 +73,52 @@ class DarklandsSource(HtmlCatalogSource):
     def is_product_link(self, href: str) -> bool:
         return bool(_PRODUCT_PATH.search(href))
 
-    def parse_detail(
-        self, url: str, tree: HTMLParser, hints: dict[str, Any]
-    ) -> RawListing | None:
-        h1 = tree.css_first("h1")
-        title = (h1.text() or "").strip() if h1 else ""
-        if not title:
-            return None
+    def title(self, item: Page) -> str:
+        # Trimmed but not collapsed, as when the stored hashes were computed.
+        h1 = item.tree.css_first("h1")
+        return (h1.text() or "").strip() if h1 else ""
 
-        # The code is its own paragraph; match on shape so a re-theme does not
-        # break it.
-        code = None
-        for node in tree.css("p, span, div"):
+    def _code_node(self, item: Page):
+        for node in item.tree.css("p, span, div"):
             text = (node.text() or "").strip()
             if (
                 6 <= len(text) <= 48
                 and _CODE_LIKE.match(text)
                 and parse_article_code(text)
             ):
-                code = text
-                break
+                return node
+        return None
 
-        images = []
-        for img in tree.css(".product__images img, img.product__image"):
+    def images(self, item: Page) -> list[str]:
+        out = []
+        for img in item.tree.css(".product__images img, img.product__image"):
             src = img.attributes.get("src")
             if src:
-                images.append(src if src.startswith("http") else BASE_URL + src)
+                out.append(src if src.startswith("http") else BASE_URL + src)
+        return out
 
-        return RawListing(
-            site_key=self.site_key(url),
-            url=url,
-            title=title,
-            article_code=code,
-            images=list(dict.fromkeys(images)),
-            gender_hint=hints.get("gender"),
-            category_hint=guess_category(title),
-            raw={"gender_from": "entry page"},
+    def attributes(self, item: Page) -> Attributes:
+        code = self._code_node(item)
+        vendor_category = json_ld_product(item.tree).get("category")
+        return Attributes(
+            article_code=(code.text() or "").strip() if code else None,
+            gender=item.hints.get("gender"),
+            category=guess_category(self.title(item))
+            or guess_category(vendor_category),
         )
+
+    def details(self, item: Page) -> dict[str, str]:
+        code = self._code_node(item)
+        # The composition is the paragraph after the code's.
+        composition = code.next if code is not None else None
+        while composition is not None and composition.tag != "p":
+            composition = composition.next
+        sizes = node_text(item.tree.css_first(".product__sizes"))
+        return {
+            Detail.VENDOR_CATEGORY: clean(json_ld_product(item.tree).get("category")),
+            Detail.COMPOSITION: node_text(composition),
+            Detail.SIZES: re.sub(r"^Sizes:\s*", "", sizes),
+        }
+
+    def raw(self, item: Page) -> dict[str, Any]:
+        return {"gender_from": "entry page"}

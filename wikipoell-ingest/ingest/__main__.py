@@ -1,6 +1,13 @@
 """CLI entry point.
 
     python -m ingest run [source ...] [--dry-run] [--limit N] [--images MODE]
+    python -m ingest inspect SOURCE [--limit N] [--json]
+    python -m ingest sources
+
+`inspect` scrapes a source and prints what it read for each garment —
+identity, images, attributes, details — without classifying, contacting the
+archive or writing anything. It is the tool for building and checking a
+source module.
 
 Sources are positional. With none given, every registered source runs.
 Unknown names fail before any network request is made.
@@ -9,8 +16,11 @@ Unknown names fail before any network request is made.
 from __future__ import annotations
 
 import argparse
+import itertools
+import json
 import sys
 import time
+from dataclasses import asdict
 
 from ingest.client import WikipoellClient
 from ingest.config import Config
@@ -55,6 +65,11 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--trigger", choices=("manual", "cron"), default="manual")
     run.add_argument("--quiet", action="store_true", help="per-source totals only")
 
+    inspect = sub.add_parser("inspect", help="print what a source reads, write nothing")
+    inspect.add_argument("source", choices=sorted(REGISTRY), metavar="SOURCE")
+    inspect.add_argument("--limit", type=int, default=5, help="listings to read")
+    inspect.add_argument("--json", action="store_true", help="one JSON object a line")
+
     sub.add_parser("sources", help="list registered sources")
     return parser
 
@@ -63,6 +78,29 @@ def cmd_sources() -> int:
     for name, cls in sorted(REGISTRY.items()):
         print(f"  {name:14} {cls.label}")
     return 0
+
+
+def cmd_inspect(args: argparse.Namespace) -> int:
+    (source,) = resolve([args.source])
+    try:
+        for listing in itertools.islice(source.listings(), args.limit):
+            if args.json:
+                print(json.dumps(asdict(listing), ensure_ascii=False))
+                continue
+            print(f"\n{listing.title}\n  {listing.url}  (key {listing.site_key})")
+            print(f"  images: {len(listing.images)}  {(listing.images or [''])[0]}")
+            for name, value in asdict(listing.attributes).items():
+                if value:
+                    print(f"  {name:12} {value}")
+            for label, text in listing.details.items():
+                print(f"  · {label}: {text[:160]}")
+            if listing.description:
+                print(f"  description: {listing.description[:160]}")
+        for where, message in source.problems:
+            print(f"\n✗ {where}: {message}")
+    finally:
+        source.close()
+    return 1 if source.problems else 0
 
 
 def cmd_run(args: argparse.Namespace) -> int:
@@ -178,6 +216,8 @@ def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "sources":
         return cmd_sources()
+    if args.command == "inspect":
+        return cmd_inspect(args)
     return cmd_run(args)
 
 

@@ -134,12 +134,17 @@ class LlmReviewer:
 
     def _user_text(self, draft: Draft, missing: list[str]) -> str:
         listing = draft.listing
+        attrs = listing.attributes
+        details = "".join(
+            f"{label}: {text[:300]}\n" for label, text in listing.details.items()
+        )
         return (
             f"Listing title: {listing.title}\n"
-            f"Article code: {listing.article_code or '(none shown)'}\n"
-            f"SKU: {listing.sku or '(none)'}\n"
-            f"Site section / hints: category={listing.category_hint}, "
-            f"gender={listing.gender_hint}, color={listing.color_hint}\n"
+            f"Article code: {attrs.article_code or '(none shown)'}\n"
+            f"SKU: {attrs.sku or '(none)'}\n"
+            f"Site section / hints: category={attrs.category}, "
+            f"gender={attrs.gender}, color={attrs.color}\n"
+            f"{details}"
             f"Description: {(listing.description or '(none)')[:600]}\n\n"
             f"Deterministic pass produced: "
             f"{json.dumps(draft.field_values(), ensure_ascii=False)}\n"

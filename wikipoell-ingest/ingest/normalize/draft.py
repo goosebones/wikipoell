@@ -27,7 +27,8 @@ def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
     if title:
         draft.set("title", title, CODE_CONFIDENCE, Origin.TITLE)
 
-    parsed = parse_article_code(listing.article_code)
+    attrs = listing.attributes
+    parsed = parse_article_code(attrs.article_code)
     if parsed and parsed.ambiguous:
         # `AM/2603-IN 6` vs `PF/0916-ASA/8`: identical shape, and only the
         # vocabulary says whether the dashed token is a procedure or a
@@ -60,24 +61,24 @@ def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
         draft.set("material", parsed.material, CODE_CONFIDENCE, Origin.CODE)
         draft.set("process", parsed.process, CODE_CONFIDENCE, Origin.CODE)
         draft.set("color", parsed.color, CODE_CONFIDENCE, Origin.CODE)
-    elif listing.article_code:
+    elif attrs.article_code:
         # The site showed a code we cannot read. That is a signal in itself:
         # never guess past it.
         draft.code_unparseable = True
 
     # Site-supplied hints fill gaps the code did not, and never override it.
-    if listing.color_hint and "color" not in draft.fields:
-        draft.set("color", listing.color_hint, HINT_CONFIDENCE, Origin.HINT)
-    if listing.gender_hint and "gender" not in draft.fields:
-        draft.set("gender", listing.gender_hint, HINT_CONFIDENCE, Origin.HINT)
+    if attrs.color and "color" not in draft.fields:
+        draft.set("color", attrs.color, HINT_CONFIDENCE, Origin.HINT)
+    if attrs.gender and "gender" not in draft.fields:
+        draft.set("gender", attrs.gender, HINT_CONFIDENCE, Origin.HINT)
 
     # A source may hand us either a section name to run keyword rules against
     # (ccp-room: "leather", "footwear") or an already-resolved category
     # (the-library maps its Shopify tags directly). Trust the latter.
-    if vocab.knows_category(listing.category_hint):
-        draft.set("category", listing.category_hint, HINT_CONFIDENCE, Origin.HINT)
+    if vocab.knows_category(attrs.category):
+        draft.set("category", attrs.category, HINT_CONFIDENCE, Origin.HINT)
     else:
-        category = resolve_category(listing.category_hint, title)
+        category = resolve_category(attrs.category, title)
         if category:
             draft.set("category", category, TITLE_CONFIDENCE, Origin.TITLE)
 

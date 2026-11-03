@@ -1,38 +1,40 @@
 """thelibrary1994.com — Shopify storefront.
 
-Two things make this source different from ccp-room:
+Navigation and images: the Shopify base (`/products.json`, vendor "Carol
+Christian Poell").
 
-1. **The article code is split across three labels** in `body_html`:
-   `MODEL: MM/2144`, `MATERIAL: ROOMS-PTC (100% KANGAROO)`, `COLOUR: 10 (BLACK)`.
-   No product carries a full code in one piece — verified across all 361.
-   Reassembling them gives `MM/2144 ROOMS-PTC/10`, which the shared parser in
-   `normalize/article_code.py` reads without modification.
+Attributes: **the article code is split across three labels** in `body_html`:
+`MODEL: MM/2144`, `MATERIAL: ROOMS-PTC (100% KANGAROO)`, `COLOUR: 10 (BLACK)`.
+No product carries a full code in one piece. Reassembling them gives
+`MM/2144 ROOMS-PTC/10`, which the shared parser reads without modification.
+Gender and category come from tags (`gender_men`, `footwear_boots`), which are
+far more reliable than keyword-matching the title.
 
-2. **Tags carry structured hints** — `footwear_boots`, `gender_men` — which are
-   far more reliable than keyword-matching the title.
+Details: the material and colour labels as written, glosses included
+(`ROOMS-PTC (100% KANGAROO)`, `10 (BLACK)`), plus the base's product type,
+sizes and tags. The description carries the shop's prose about the piece.
 
-Site key is `/products/<handle>`, matching the URL path the existing 313
-garments were backfilled from.
+Site key is `/products/<handle>`.
 """
 
 from __future__ import annotations
 
 import html
 import re
-from typing import Any
 
-from ingest.models import RawListing
-from ingest.sources.shopify import ShopifySource
+from ingest.models import Attributes, Detail
+from ingest.sources.shopify import Product, ShopifySource
 
 BASE_URL = "https://thelibrary1994.com"
 
-# <strong>MODEL:</strong><span> MM/2144</span> — the label set is inconsistent
+# <strong>MODEL:</strong><span> MM/2144</span>, or <b>MODEL:</b> MM/2149 on
+# listings added since autumn 2026 — the label set is inconsistent
 # in the source data ("COLOR", and "METERIAL" twice), so accept the variants.
 # The colon is sometimes inside the <strong> and sometimes after it, which is
 # why the trailing colon is stripped from the value as well (_LEADING_COLON):
 # without that, codes came out as ": 7" and broke the article-code parser.
 _LABEL = re.compile(
-    r"<strong>\s*(MODEL|MATERIAL|METERIAL|COLOUR|COLOR)\s*:?\s*</strong>"
+    r"<(?:strong|b)>\s*(MODEL|MATERIAL|METERIAL|COLOUR|COLOR)\s*:?\s*</(?:strong|b)>"
     r"\s*(?:<span>)?\s*([^<]*)",
     re.I,
 )
@@ -40,7 +42,6 @@ _LEADING_COLON = re.compile(r"^\s*:\s*")
 # Strip a parenthetical gloss: "ROOMS-PTC (100% KANGAROO)" -> "ROOMS-PTC",
 # "10 (BLACK)" -> "10".
 _GLOSS = re.compile(r"\s*[\(\[].*$")
-_TAGS = re.compile(r"<[^>]+>")
 
 # Shopify tag prefix -> archive category.
 _CATEGORY_BY_TAG = {
@@ -69,7 +70,8 @@ _CATEGORY_BY_TAG = {
 _GENDER_BY_TAG = {"men": "M", "women": "F", "male": "M", "female": "F"}
 
 
-def _labels(body_html: str | None) -> dict[str, str]:
+def _written(body_html: str | None) -> dict[str, str]:
+    """MODEL, MATERIAL and COLOUR as written, glosses included."""
     out: dict[str, str] = {}
     for label, value in _LABEL.findall(body_html or ""):
         key = label.upper()
@@ -77,11 +79,18 @@ def _labels(body_html: str | None) -> dict[str, str]:
             key = "MATERIAL"
         if key == "COLOR":
             key = "COLOUR"
-        cleaned = _LEADING_COLON.sub("", html.unescape(value))
-        cleaned = _GLOSS.sub("", cleaned).strip().upper()
-        if cleaned and key not in out:
-            out[key] = cleaned
+        text = _LEADING_COLON.sub("", html.unescape(value)).strip()
+        if text and key not in out:
+            out[key] = text
     return out
+
+
+def _labels(body_html: str | None) -> dict[str, str]:
+    """The same labels as codes: glosses stripped, upper case."""
+    labels = {
+        k: _GLOSS.sub("", v).strip().upper() for k, v in _written(body_html).items()
+    }
+    return {k: v for k, v in labels.items() if v}
 
 
 def build_article_code(labels: dict[str, str]) -> str | None:
@@ -106,39 +115,27 @@ class TheLibrarySource(ShopifySource):
     label = "The Library"
     base_url = BASE_URL
 
-    def to_listing(self, product: dict[str, Any]) -> RawListing | None:
-        handle = (product.get("handle") or "").strip()
-        if not handle:
-            return None
-
-        labels = _labels(product.get("body_html"))
-        category_hint = next(
-            (
-                _CATEGORY_BY_TAG[tag]
-                for tag in product.get("tags", [])
-                if tag in _CATEGORY_BY_TAG
-            ),
-            None,
-        )
-        gender_tag = self.tag_value(product, "gender")
-        description = _TAGS.sub(" ", product.get("body_html") or "")
-        description = html.unescape(re.sub(r"\s+", " ", description)).strip()
-
-        return RawListing(
-            site_key=f"/products/{handle}",
-            url=f"{BASE_URL}/products/{handle}",
-            title=(product.get("title") or "").strip(),
-            sku=self.first_sku(product),
+    def attributes(self, item: Product) -> Attributes:
+        labels = _labels(item.get("body_html"))
+        return Attributes(
             article_code=build_article_code(labels),
-            description=description[:2000] or None,
-            images=self.image_urls(product),
-            gender_hint=_GENDER_BY_TAG.get((gender_tag or "").lower()),
-            category_hint=category_hint,
-            color_hint=labels.get("COLOUR"),
-            raw={
-                "id": product.get("id"),
-                "product_type": product.get("product_type"),
-                "tags": product.get("tags"),
-                "labels": labels,
-            },
+            sku=self.first_sku(item),
+            gender=_GENDER_BY_TAG.get((self.tag_value(item, "gender") or "").lower()),
+            category=next(
+                (
+                    _CATEGORY_BY_TAG[t]
+                    for t in item.get("tags", [])
+                    if t in _CATEGORY_BY_TAG
+                ),
+                None,
+            ),
+            color=labels.get("COLOUR"),
         )
+
+    def details(self, item: Product) -> dict[str, str]:
+        written = _written(item.get("body_html"))
+        return {
+            Detail.MATERIAL: written.get("MATERIAL", ""),
+            Detail.COLOR: written.get("COLOUR", ""),
+            **super().details(item),
+        }

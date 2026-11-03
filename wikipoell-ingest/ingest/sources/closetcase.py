@@ -1,24 +1,27 @@
 """closetcase.co — Shopify storefront.
 
-The whole shop is `vendor: CCP`, and the **product title is the article code**
-(`AM/2793-IN/ST CORSS / 01`), so there is nothing to infer from prose. Codes
-are spaced idiosyncratically, which `clean_article_code()` handles.
+Navigation and images: the Shopify base (`/products.json`). The whole shop is
+`vendor: CCP`.
 
-Category comes from the `CATEGORY_*` tag, which is cleaner than `product_type`
-(that field mixes casing and singular/plural: "Shoes", "JACKETS", "rings").
+Attributes: **the product title is the article code**
+(`AM/2793-IN/ST CORSS / 01`), spaced idiosyncratically, which the shared
+cleaner handles. Category comes from the `CATEGORY_*` tag, which is cleaner
+than `product_type` (that mixes casing and singular/plural: "Shoes",
+"JACKETS", "rings").
+
+Details: the `COLOR_*` tag as the color name, and the description's lines as
+features — the shop writes them as a list ("Treated and distressed leather",
+"Oxide / rust drops"), minus its contact boilerplate. Plus the base's product
+type, sizes and tags.
 """
 
 from __future__ import annotations
 
-import html
-import re
-from typing import Any
-
-from ingest.models import RawListing
-from ingest.sources.shopify import ShopifySource
+from ingest.models import Attributes, Detail
+from ingest.sources.extract import html_lines
+from ingest.sources.shopify import Product, ShopifySource
 
 BASE_URL = "https://closetcase.co"
-_TAGS = re.compile(r"<[^>]+>")
 
 _CATEGORY_BY_TAG = {
     "JACKETS": "outerwear.jackets",
@@ -46,6 +49,9 @@ _CATEGORY_BY_TAG = {
     "SOCKS": "accessories.socks",
 }
 
+# Lines of the shop's own boilerplate, not about the garment.
+_BOILERPLATE = ("contact us", "for further details", "interested in a purchase")
+
 
 class ClosetcaseSource(ShopifySource):
     name = "closetcase"
@@ -53,38 +59,28 @@ class ClosetcaseSource(ShopifySource):
     base_url = BASE_URL
     vendor = "CCP"
 
-    def to_listing(self, product: dict[str, Any]) -> RawListing | None:
-        handle = (product.get("handle") or "").strip()
-        if not handle:
-            return None
-
-        tags = product.get("tags") or []
-        category_hint = next(
-            (
-                _CATEGORY_BY_TAG[tag[len("CATEGORY_") :]]
-                for tag in tags
-                if tag.startswith("CATEGORY_")
-                and tag[len("CATEGORY_") :] in _CATEGORY_BY_TAG
-            ),
-            None,
+    def attributes(self, item: Product) -> Attributes:
+        categories = (
+            _CATEGORY_BY_TAG.get(tag.removeprefix("CATEGORY_"))
+            for tag in item.get("tags", [])
+            if tag.startswith("CATEGORY_")
         )
-        description = _TAGS.sub(" ", product.get("body_html") or "")
-        description = html.unescape(re.sub(r"\s+", " ", description)).strip()
-        title = (product.get("title") or "").strip()
-
-        return RawListing(
-            site_key=f"/products/{handle}",
-            url=f"{BASE_URL}/products/{handle}",
-            title=title,
-            sku=self.first_sku(product),
+        return Attributes(
             # The title *is* the code here; there is no separate field.
-            article_code=title or None,
-            description=description[:2000] or None,
-            images=self.image_urls(product),
-            category_hint=category_hint,
-            raw={
-                "id": product.get("id"),
-                "product_type": product.get("product_type"),
-                "tags": tags,
-            },
+            article_code=self.title(item) or None,
+            sku=self.first_sku(item),
+            category=next((c for c in categories if c), None),
         )
+
+    def details(self, item: Product) -> dict[str, str]:
+        features = [
+            line
+            for line in html_lines(item.get("body_html"))
+            if not any(b in line.lower() for b in _BOILERPLATE)
+        ]
+        color = (self.tag_value(item, "COLOR") or "").title()
+        return {
+            Detail.COLOR: color,
+            Detail.FEATURES: "; ".join(features),
+            **super().details(item),
+        }

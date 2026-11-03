@@ -1,14 +1,15 @@
 // The admin review queue at /admin, laid out for desktop: pending garments,
 // each with its photos on the left and a grid of its properties on the
 // right, problem cells tinted (red blocks publishing, amber needs a look),
-// each showing how the ingest pipeline read it and how sure it was,
-// with Edit, Publish and Reject; then open correction suggestions (what
+// each showing how the ingest pipeline read it and how sure it was, then
+// what else the listing said (vendor category, composition…), with Edit,
+// Publish and Reject; then open correction suggestions (what
 // they're about, the field's value now and as suggested, who sent it, and
 // Apply, Mark accepted and Dismiss). Admins only; everyone else gets the 404
 // page.
 import Image from "next/image";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 import { AdminNav } from "@/components/admin-nav";
 import { Container } from "@/components/container";
 import { GarmentReview, SuggestionReview } from "@/components/review-actions";
@@ -75,6 +76,16 @@ async function Queue() {
                   />
                 ))}
               </dl>
+              {g.details.length > 0 && (
+                <dl className="mt-3 grid grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-[13px]">
+                  {g.details.map((d) => (
+                    <Fragment key={d.label}>
+                      <dt className="text-muted-foreground">{d.label}</dt>
+                      <dd>{d.text}</dd>
+                    </Fragment>
+                  ))}
+                </dl>
+              )}
               {g.notes.length > 0 && (
                 <ul className="mt-3 space-y-1 text-[13px] text-muted-foreground">
                   {g.notes.map((note) => (

@@ -123,6 +123,19 @@ class Runner:
                     )
                     print(f"   ✗ {listing.site_key}: {exc}")
 
+            # Products the source could not read (a dead page, odd markup).
+            for where, message in source.problems:
+                stats.failed += 1
+                report.failures.append(
+                    {
+                        "source": source.name,
+                        "siteKey": "",
+                        "url": where,
+                        "message": message,
+                    }
+                )
+                print(f"   ✗ {where}: {message}")
+
             if unchanged_ids and not self.dry_run:
                 self.client.touch(self.run_id, unchanged_ids)
 
@@ -214,6 +227,8 @@ class Runner:
             "reasons": decision.reasons,
             "stage": stage,
             "fields": draft.review_fields(),
+            # What else the listing said, for the person reviewing it.
+            "details": draft.listing.details,
         }
         if draft.llm_confidence is not None:
             review["llm"] = {

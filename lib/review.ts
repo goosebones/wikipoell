@@ -136,6 +136,11 @@ export async function getPendingGarments() {
       images: g.images.map((i) => i.url),
       cells,
       notes,
+      // What else the listing said, as label and text.
+      details: Object.entries(review?.details ?? {}).map(([label, text]) => ({
+        label,
+        text,
+      })),
       source: g.source,
       runId: g.ingest?.runId ?? null,
       hasModel: !!g.model,

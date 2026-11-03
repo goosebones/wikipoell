@@ -53,7 +53,7 @@ def decide(
         human.append(f"unknown_category:{category}")
 
     if draft.code_unparseable:
-        code = draft.listing.article_code or ""
+        code = draft.listing.attributes.article_code or ""
         human.append(f"code_unparseable:{code}")
 
     # A title that is only an article code, or still carries raw punctuation,

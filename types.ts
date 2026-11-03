@@ -66,6 +66,9 @@ export type Garment = {
         { value: string | string[]; confidence: number; origin: string }
       >;
       llm?: { notes?: string };
+      // Everything else the listing said: vendor category, composition,
+      // color name… (label → text).
+      details?: Record<string, string>;
     };
   };
   createdAt: Date;

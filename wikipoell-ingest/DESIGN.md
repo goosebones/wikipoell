@@ -48,30 +48,42 @@ All nine respond 200 to a plain request and render products server-side. No head
 
 **Politeness** (DECIDED as "be smart"): one request at a time per source, a configurable delay between requests (default 1.5 s), honour `Retry-After` on 429, and sources run sequentially. No user-agent spoofing — httpx's default identifies the client honestly, and all nine sources were verified to serve it normally. A source that throws is recorded as failed in the run and the run moves on.
 
-### Source contract (PROPOSED)
+### Source contract (DECIDED)
+
+A source answers four questions, one method each (`ingest/sources/base.py`):
 
 ```python
-class Source(Protocol):
-    name: str    # "ccp-room" — stored on the garment, used in the dedup index
-    label: str   # "CCP-ROOM" — display label, matches existing source.label values
+class Source[Item]:
+    name: str    # "ccp-room": stored on the garment, used in the dedup index
+    label: str   # "CCP-ROOM": display label
 
-    def listings(self) -> Iterator[RawListing]: ...
+    def items(self) -> Iterator[Item]: ...           # 1. navigation
+    def images(self, item) -> list[str]: ...         # 2. images, display order
+    def attributes(self, item) -> Attributes: ...    # 3. what the site states
+    def details(self, item) -> dict[str, str]: ...   # 4. everything else useful
+
+    def site_key(self, item) -> str | None: ...      # identity
+    def url(self, item) -> str: ...
+    def title(self, item) -> str: ...
+    def description(self, item) -> str | None: ...
+
+@dataclass
+class Attributes:          # in the site's own terms; the code first
+    article_code, sku, gender, category, color
 
 @dataclass
 class RawListing:
-    site_key: str            # stable per-site id (SKU or URL path)
-    url: str
-    title: str
-    sku: str | None
-    article_code: str | None # verbatim, if the site shows one
-    description: str | None
-    images: list[str]        # absolute URLs, in display order
-    gender_hint: str | None  # from the entry point, if the site splits by gender
-    category_hint: str | None
-    raw: dict                # anything else, for the LLM and for debugging
+    site_key, url, title, images, attributes, description,
+    details: dict[str, str]   # Detail labels: vendor category, composition, ...
+    title_is_final, raw
 ```
 
-A module's whole job is to turn a site into `RawListing`s. It does no classification. This is what keeps modules small and independently replaceable when a site changes its HTML.
+A module's whole job is to turn a site into `RawListing`s. It does no
+classification. This is what keeps modules small and independently
+replaceable when a site changes its HTML. `ShopifySource`,
+`WooCommerceSource` and `HtmlCatalogSource` implement navigation for their
+kind of shop. Details go to the review record and the LLM prompt, and are not
+part of the content hash.
 
 ## 4. Pipeline per listing
 

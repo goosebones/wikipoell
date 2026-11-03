@@ -1,18 +1,21 @@
 """lazzariweb.it — PrestaShop.
 
-Reads the **detail page**, not the listing card. An earlier version took the
-article code out of the card's `img alt`, which needed only three requests for
-the whole catalog but was quietly wrong: on 21 of 65 products the alt yielded
-a doubled fragment (`LM/2698 LM/2698`) that still *parses* — as material `LM`,
-colour `2698`. That put a model number in the colour field of 35 garments.
+Navigation: the HTML base, over the paginated CCP brand page, following each
+product to its **detail page**. An earlier version took the article code from
+the listing card's `img alt`, which needed only three requests for the whole
+catalog but was quietly wrong: on 21 of 65 products the alt yielded a doubled
+fragment (`LM/2698 LM/2698`) that still *parses*, as material `LM` and colour
+`2698`.
 
-The detail page carries `<span itemprop="mpn" class="reference">` with the
-real code (`LM/2698-IN CORS-PTC/010`), present on all 65 products rather than
-56. One request per product is worth that.
+Images: the scoped `.js-qv-product-images` gallery (~6 per garment), at full
+size. Scope matters: a broad `img` sweep picks up other brands' products.
 
-The scoped `.js-qv-product-images` gallery also yields ~6 images per garment
-instead of the 2 on the card. Scope matters: a broad `img` sweep of the page
-picks up related products from other brands entirely.
+Attributes: `<span itemprop="mpn" class="reference">` carries the real code
+(`LM/2698-IN CORS-PTC/010`). Category from title keywords.
+
+Details: the data sheet (`dl.data-sheet`: "Color", "Composition"). The long
+description, which often says how a piece was dyed and what it is lined with,
+is the description.
 """
 
 from __future__ import annotations
@@ -20,11 +23,10 @@ from __future__ import annotations
 import re
 from typing import Any
 
-from selectolax.parser import HTMLParser
-
-from ingest.models import RawListing
+from ingest.models import Attributes, Detail
 from ingest.sources.darklands import guess_category
-from ingest.sources.html_catalog import HtmlCatalogSource
+from ingest.sources.extract import clean, definition_list, node_text
+from ingest.sources.html_catalog import HtmlCatalogSource, Page
 
 BASE_URL = "https://www.lazzariweb.it"
 START_URL = f"{BASE_URL}/en/carol-christian-poell-m-15.html"
@@ -41,23 +43,16 @@ class LazzariSource(HtmlCatalogSource):
     def is_product_link(self, href: str) -> bool:
         return bool(_PRODUCT_PATH.search(href))
 
-    def parse_detail(
-        self, url: str, tree: HTMLParser, hints: dict[str, Any]
-    ) -> RawListing | None:
-        h1 = tree.css_first("h1")
-        title = re.sub(r"\s+", " ", (h1.text() or "").strip()) if h1 else ""
-        if not title:
-            return None
+    def site_key(self, item: Page) -> str | None:
+        return item.url.replace(BASE_URL, "").split("?")[0]
 
-        # The brand and any embedded code are stripped centrally by
-        # format_title(); the raw heading is kept here as the source of truth.
-        reference = tree.css_first("[itemprop=mpn], .reference")
-        code = (
-            re.sub(r"\s+", " ", (reference.text() or "").strip()) if reference else None
-        )
+    def description(self, item: Page) -> str | None:
+        node = item.tree.css_first("#description, .product-description")
+        return clean(node.text() if node else "")[:2000] or None
 
-        images = []
-        for img in tree.css(".js-qv-product-images img"):
+    def images(self, item: Page) -> list[str]:
+        out = []
+        for img in item.tree.css(".js-qv-product-images img"):
             src = (
                 img.attributes.get("data-image-large-src")
                 or img.attributes.get("data-full-size-image-url")
@@ -65,20 +60,25 @@ class LazzariSource(HtmlCatalogSource):
                 or ""
             )
             if src.startswith("http"):
-                images.append(src.split("?")[0])
+                out.append(src.split("?")[0])
+        return out
 
-        description = ""
-        node = tree.css_first("#description, .product-description")
-        if node:
-            description = re.sub(r"\s+", " ", node.text() or "").strip()
-
-        return RawListing(
-            site_key=url.replace(BASE_URL, "").split("?")[0],
-            url=url,
-            title=title,
-            article_code=code or None,
-            description=description[:2000] or None,
-            images=list(dict.fromkeys(images)),
-            category_hint=guess_category(title),
-            raw={"reference": code},
+    def attributes(self, item: Page) -> Attributes:
+        reference = node_text(item.tree.css_first("[itemprop=mpn], .reference"))
+        return Attributes(
+            article_code=reference or None,
+            category=guess_category(self.title(item)),
         )
+
+    def details(self, item: Page) -> dict[str, str]:
+        sheet = definition_list(item.tree.css_first("dl.data-sheet"))
+        return {
+            Detail.COLOR: sheet.pop("Color", ""),
+            Detail.COMPOSITION: sheet.pop("Composition", ""),
+            **sheet,
+        }
+
+    def raw(self, item: Page) -> dict[str, Any]:
+        return {
+            "reference": node_text(item.tree.css_first("[itemprop=mpn], .reference"))
+        }

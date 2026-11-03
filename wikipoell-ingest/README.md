@@ -32,6 +32,7 @@ Then:
 
 ```bash
 .venv/bin/python -m ingest sources                      # what's registered
+.venv/bin/python -m ingest inspect ccp-room --limit 5   # what a source reads
 .venv/bin/python -m ingest run --dry-run                # everything, writes nothing
 .venv/bin/python -m ingest run ccp-room --dry-run       # one source
 .venv/bin/python -m ingest run ccp-room --limit 20      # live, capped
@@ -85,9 +86,10 @@ RawListing → change detect → normalise → route → [LLM] → images → wr
             content hash            publish | llm | human
 ```
 
-A **source module** does one thing: turn a site into `RawListing`s. It does no
-classification at all, which is what keeps modules small and replaceable when a
-site changes its markup.
+A **source module** does one thing: turn a site into `RawListing`s, each with
+its identity, images, attributes and details (see "Adding a source"). It does
+no classification at all, which is what keeps modules small and replaceable
+when a site changes its markup.
 
 Everything after that is shared:
 
@@ -104,32 +106,80 @@ Nothing here touches MongoDB. Every read and write goes through the webapp's
 
 ## Adding a source
 
-1. Subclass `Source` in `ingest/sources/<name>.py`, set `name` and `label`,
-   implement `listings()`.
-2. Pick a **site key** — a stable per-site id. It must be unique per listing
-   and survive re-scrapes; see `DESIGN.md` §2 for the two existing choices.
-3. Register it in `ingest/sources/__init__.py`.
-4. `--dry-run --limit 20`, read the output, then widen.
+Every source answers the same four questions, one method each, on the base
+class in `ingest/sources/base.py`:
 
-Use `self.get_text(url)` / `self.get_json(url)` rather than httpx directly —
+| Question | Method | Returns |
+| --- | --- | --- |
+| **Navigation**: how to reach every garment | `items()` | one item per garment: a JSON product, a parsed detail page, a catalog node |
+| **Images**: where its photos are | `images(item)` | absolute URLs in display order; the first is the cover |
+| **Attributes**: what the site states about its classification | `attributes(item)` | `Attributes`: the article code above all, plus gender, category and color where given separately |
+| **Details**: anything else useful for classifying it | `details(item)` | label → text under `Detail` labels: vendor category, composition, color and material names, feature lines, sizes |
+
+Plus identity and text: `site_key(item)`, `url(item)`, `title(item)` and
+`description(item)`, which the content hash is built from. The base turns
+these into `RawListing`s, drops duplicate images and empty details, and
+records unreadable products as run failures instead of ending the source.
+
+Details are for a person or the LLM, never classified. Take what is about
+*this* garment: a composition line, the shop's own category, a color name, a
+descriptive name where the title is a code, bullet-like feature lines
+("Oxide / rust drops"). Leave out shop boilerplate: shipping, store hours,
+contact lines, other products.
+
+Most shops are one of three kinds, each with a base that implements
+navigation, images and the obvious details:
+
+| Base | For | Navigation |
+| --- | --- | --- |
+| `ShopifySource` | Shopify | `/products.json`, filtered by vendor |
+| `WooCommerceSource` | WooCommerce | the Store API; you decide which products are CCP |
+| `HtmlCatalogSource` | anything server-rendered | brand pages (paginated), each product's detail page |
+
+`ingest/sources/extract.py` has the helpers for reading pages: prose to text,
+labeled rows and `<dl>`s to pairs, schema.org product data, meta tags.
+
+Steps:
+
+1. Look at the site: a listing page and two or three product pages. Note
+   where the code, photos and labeled fields are, and whether the page has
+   schema.org data (`json_ld_product`).
+2. Create `ingest/sources/<name>.py` on the fitting base. Set `name` and
+   `label`, and write the hooks the base doesn't cover. Open the file with a
+   docstring answering the four questions for this site, as the existing
+   modules do.
+3. Pick a **site key**: a stable per-site id, unique per listing, that survives
+   re-scrapes. The bases default to the URL path.
+4. Register it in `ingest/sources/__init__.py`.
+5. Read what it extracts, with nothing classified or written:
+   `python -m ingest inspect <name> --limit 10` (`--json` for the full record).
+   Then `run <name> --dry-run --limit 20`, then widen.
+
+Use `self.get_text(url)` / `self.get_json(url)` rather than httpx directly:
 they carry the rate limiting, retries and Retry-After handling.
+
+**Changing an existing source:** the content hash covers the title, SKU,
+article code, description and image URLs. Changing how any of those is read
+makes every stored listing of that source look changed, and new image URLs
+make human-reviewed garments append their photos again. Details are not
+hashed and can change freely.
 
 ## Sources
 
-All nine are live. Where a source publishes article codes, most listings
-classify deterministically; where it does not, they reach the review queue by
-design rather than by guesswork.
+Where a source publishes article codes, most listings classify
+deterministically; where it does not, they reach the review queue by design
+rather than by guesswork.
 
-| Source        | Platform         | How it reads                                                                |
-| ------------- | ---------------- | --------------------------------------------------------------------------- |
-| `ccp-room`    | custom, one page | 579 listings from a single request — the whole catalog is in `data-*` attrs |
-| `the-library` | Shopify          | `/products.json`; code is split across MODEL/MATERIAL/COLOUR labels         |
-| `closetcase`  | Shopify          | `/products.json`; the product **title is the article code**                 |
-| `thirdshed`   | WooCommerce      | Store API; names are article codes, brand never appears                     |
-| `lazzari`     | PrestaShop       | Listing pages only — the card's `img alt` carries the full code             |
-| `darklands`   | custom           | Detail pages; gender from the men's/women's entry page                      |
-| `ink`         | custom           | Detail pages; `h1` is the code, gender from the entry page                  |
-| `shelter2`    | JP hosted cart   | Detail pages; Japanese titles, but the codes are not                        |
+| Source | Platform | Attributes from | Details |
+| --- | --- | --- | --- |
+| `ccp-room` | custom, one page | `data-article`, `data-color`, the section | color name, composition |
+| `the-library` | Shopify | MODEL / MATERIAL / COLOUR labels, gender and category tags | material and colour as written, product type, sizes, tags |
+| `closetcase` | Shopify | the **title is the code**; `CATEGORY_*` tag | color tag, feature lines, product type, tags |
+| `thirdshed` | WooCommerce | the name is the code; brand never appears | descriptive name, feature lines |
+| `lazzari` | PrestaShop | the detail page's `mpn` reference | data sheet: color, composition |
+| `darklands` | custom | the code paragraph; gender from the entry page | schema.org category, composition, sizes |
+| `ink` | custom | the `h1` is the code; gender from the entry page | descriptive name, collection, material, sizes |
+| `shelter2` | JP hosted cart | 品番 (article number) joined with the color option's code | English name, 素材 (material), colors, sizes |
 
 Four of them need one request per product, because the content hash is built
 from detail-page data and there is nothing to compare without fetching it.
@@ -187,6 +237,6 @@ also needs `INGEST_SYSTEM_USER_ID` — the Clerk user pipeline garments are
 attributed to.
 
 Requests go out with httpx's default user agent; no browser string is spoofed.
-All nine sources were verified to respond normally to it.
+All eight sources were verified to respond normally to it.
 
 The webapp's eslint/prettier ignore this folder wholesale.

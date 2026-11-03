@@ -1,6 +1,8 @@
 """The shapes that flow through the pipeline.
 
 RawListing  — what a source module produces. No classification.
+Attributes  — what the site itself states about a garment's classification.
+Detail      — the labels for everything else a listing says about a garment.
 FieldValue  — one normalised field, with why we believe it.
 Draft       — a listing's fields after normalisation (and maybe the LLM).
 Decision    — where the draft goes: publish, llm, or human.
@@ -32,19 +34,56 @@ class Route(StrEnum):
 
 
 @dataclass(frozen=True)
+class Attributes:
+    """What the site states about a garment's classification, in its terms.
+
+    The article code carries most of it. The rest fills gaps the code leaves,
+    and never overrides it.
+    """
+
+    article_code: str | None = None  # verbatim, as the site writes it
+    sku: str | None = None
+    gender: str | None = None  # "M" or "F"
+    # An archive category id when the site's own category maps to one
+    # ("footwear.boots"); otherwise a section name for the keyword rules.
+    category: str | None = None
+    color: str | None = None  # a color code ("010"), never a color name
+
+
+class Detail(StrEnum):
+    """Labels for what else a listing says about the garment.
+
+    None of it is classified; it is kept for the reviewer and the LLM, which
+    is where a composition line or a vendor category earns its keep. Sources
+    use these labels where they fit so the same fact reads the same way from
+    every site, and may add their own.
+    """
+
+    NAME = "Name"  # a descriptive product name, where the title is a code
+    VENDOR_CATEGORY = "Vendor category"
+    TAGS = "Tags"
+    COLOR = "Color"  # the site's color name ("Black", "white (01)")
+    MATERIAL = "Material"  # the site's material name ("CORDOVAN")
+    COMPOSITION = "Composition"  # "100% Cordovan Leather", "50% LE - 50% PE"
+    FEATURES = "Features"  # bullet-like lines: "Oxide / rust drops"
+    SIZES = "Sizes"
+    COLLECTION = "Collection"
+
+
+@dataclass(frozen=True)
 class RawListing:
     """One product as a site presents it. Source modules produce only this."""
 
     site_key: str
     url: str
     title: str
-    sku: str | None = None
-    article_code: str | None = None
-    description: str | None = None
     images: list[str] = field(default_factory=list)
-    gender_hint: str | None = None
-    category_hint: str | None = None
-    color_hint: str | None = None
+    attributes: Attributes = field(default_factory=Attributes)
+    # The listing's own prose, as plain text. Part of the content hash.
+    description: str | None = None
+    # Label → text: everything else on the page about this garment that could
+    # help classify it. Not part of the content hash.
+    details: dict[str, str] = field(default_factory=dict)
     # True when the site's title is the only name the product has and should
     # be published exactly as written — see `ink`, whose h1 is the article
     # code. Suppresses both reformatting and the `title_unformatted` flag.
@@ -54,14 +93,16 @@ class RawListing:
     def content_hash(self) -> str:
         """Stable digest of everything we'd re-process if it changed.
 
-        Deliberately excludes site_key and url (identity, not content) and
-        anything we derive ourselves.
+        Deliberately excludes site_key and url (identity, not content),
+        anything we derive ourselves, and `details`: those were added after
+        the stored hashes were computed, and including them would make every
+        existing listing look changed.
         """
         payload = json.dumps(
             {
                 "title": self.title,
-                "sku": self.sku,
-                "article_code": self.article_code,
+                "sku": self.attributes.sku,
+                "article_code": self.attributes.article_code,
                 "description": self.description,
                 "images": sorted(self.images),
             },
