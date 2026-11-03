@@ -63,6 +63,20 @@ export function toggleFilter(
   return result;
 }
 
+// A garment grid's URL. The defaults (newest, grid) are left out, so the
+// plain listing is just the base path.
+export function gridHref(
+  base: string,
+  filters: Filters,
+  sort: string,
+  view: string,
+) {
+  return filterHref(base, filters, {
+    ...(sort !== "newest" && { sort }),
+    ...(view !== "grid" && { view }),
+  });
+}
+
 // A page's URL with these filters and any other params:
 // filterHref("/model/2600", { color: ["black.010"] }) → "/model/2600?color=black.010".
 export function filterHref(
@@ -93,45 +107,51 @@ export function filterQuery(filters: Filters) {
   );
 }
 
-// Per field, how many garments have each value (exact matches, by id).
-export type FieldCounts = Partial<Record<FilterField, Record<string, number>>>;
-
-// One choice in the filter panel, with how many garments it would show and
-// the choices nested beneath it.
-export type FilterOption = {
+// One choice in the filter panel, ready to draw: how many garments it would
+// show, the URL that switches it on or off, whether it is on, whether
+// something beneath it is on (so it starts open), and the choices beneath it.
+export type FilterChoice = {
   id: string;
   label: string;
   count: number;
-  children: FilterOption[];
+  href: string;
+  active: boolean;
+  open: boolean;
+  children: FilterChoice[];
 };
 
-// The filter panel's contents. `available` decides which values are offered
-// (each field's values, plus their parents so trees stay whole, in code
-// order); `counts` gives the number shown beside each, where a parent counts
-// everything beneath it. Flat vocabularies become one-level trees, so the
-// panel draws every field the same way. Fields without values are left out.
-export function filterSections(
+// One field's choices in the filter panel. `available` decides which values
+// are offered (the field's values, plus their parents so trees stay whole, in
+// code order); `counts` gives the number shown beside each, where a parent
+// counts everything beneath it. Flat vocabularies become one-level trees, so
+// the panel draws every field the same way. `href` builds a URL from the
+// visitor's filters.
+export function filterChoices(
   vocab: Vocabulary,
-  available: FieldCounts,
-  counts: FieldCounts,
+  field: FilterField,
+  available: Record<string, number>,
+  counts: Record<string, number>,
+  filters: Filters,
+  href: (filters: Filters) => string,
 ) {
-  const trees = vocabularyTrees(vocab);
-
-  return FILTER_FIELDS.map((field) => {
-    const tree = trees[field];
-    const ids = Object.keys(available[field] ?? {});
-    const nodes = new Set(ids.flatMap((id) => ancestors(tree, id)));
-    const totals = rollUp(tree, counts[field] ?? {});
-    const under = (parent: string | null): FilterOption[] =>
-      [...nodes]
-        .filter((n) => n.parent === parent)
-        .sort(byCode)
-        .map((n) => ({
-          id: n._id,
-          label: nodeLabel(n),
-          count: totals[n._id] ?? 0,
-          children: under(n._id),
-        }));
-    return { field, options: under(null) };
-  }).filter((section) => section.options.length > 0);
+  const tree = vocabularyTrees(vocab)[field];
+  const nodes = new Set(
+    Object.keys(available).flatMap((id) => ancestors(tree, id)),
+  );
+  const totals = rollUp(tree, counts);
+  const on = filters[field] ?? [];
+  const under = (parent: string | null): FilterChoice[] =>
+    [...nodes]
+      .filter((n) => n.parent === parent)
+      .sort(byCode)
+      .map((n) => ({
+        id: n._id,
+        label: nodeLabel(n),
+        count: totals[n._id] ?? 0,
+        href: href(toggleFilter(filters, field, n._id)),
+        active: on.includes(n._id),
+        open: on.some((id) => id.startsWith(`${n._id}.`)),
+        children: under(n._id),
+      }));
+  return under(null);
 }

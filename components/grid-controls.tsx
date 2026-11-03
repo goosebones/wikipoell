@@ -27,6 +27,7 @@ export function GridControls({
         <Link
           key={s}
           href={href({ sort: s, view })}
+          rel="nofollow"
           className={option(s === sort)}
         >
           {SORTS[s]}
@@ -38,6 +39,7 @@ export function GridControls({
         <Link
           key={v}
           href={href({ sort, view: v })}
+          rel="nofollow"
           scroll={false}
           className={option(v === view)}
         >

@@ -8,11 +8,10 @@ import { type Filter, ObjectId } from "mongodb";
 import { cacheLife, cacheTag } from "next/cache";
 import { garments } from "@/lib/db";
 import {
-  FILTER_FIELDS,
   filterQuery,
-  type FieldCounts,
+  filterChoices,
   filterHref,
-  filterSections,
+  gridHref,
   type FilterField,
   type Filters,
 } from "@/lib/filters";
@@ -138,56 +137,56 @@ export async function countGarments(filters: Filters) {
   return garments.countDocuments(published(filters));
 }
 
-// The filter panel's sections for a page's grid. It offers the values that
-// occur among the garments passing the page's own filters, so the choices stay
-// put as the visitor ticks; each shows how many garments it would give with
-// the visitor's current filters. Fields the page already narrows are left
-// out. Cached like the cards.
-export async function getFilterSections(
+// One field's choices in the filter panel of a page's grid (its links keep
+// the grid's sort and view). It offers the values that occur among the
+// garments passing the page's own filters, so the choices stay put as the
+// visitor ticks; each shows how many garments it would give with the
+// visitor's current filters. Cached like the cards.
+export async function getFilterChoices(
+  basePath: string,
   pageFilters: Filters,
   filters: Filters,
+  sort: Sort,
+  view: string,
+  field: FilterField,
 ) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
   const [vocab, available, counts] = await Promise.all([
     getVocabulary(),
-    countValues(pageFilters, {}),
-    countValues(pageFilters, filters),
+    countValues(pageFilters, {}, field),
+    countValues(pageFilters, filters, field),
   ]);
-  return filterSections(vocab, available, counts);
+  return filterChoices(vocab, field, available, counts, filters, (f) =>
+    gridHref(basePath, f, sort, view),
+  );
 }
 
-// For each field the page doesn't narrow, how many published garments have
-// each value, given the page's filters and the visitor's filters on every
-// other field. A field's own filters are left out because ticking more of its
-// values adds garments rather than narrowing them. Cached like the cards.
-async function countValues(pageFilters: Filters, filters: Filters) {
+// How many published garments have each of a field's values, given the
+// page's filters and the visitor's filters on every other field. The field's
+// own filters are left out because ticking more of its values adds garments
+// rather than narrowing them. Cached like the cards.
+async function countValues(
+  pageFilters: Filters,
+  filters: Filters,
+  field: FilterField,
+) {
   "use cache";
   cacheLife("hours");
   cacheTag("garments");
-  const fields = FILTER_FIELDS.filter((field) => !pageFilters[field]);
-  const rows = await Promise.all(
-    fields.map((field) => {
-      const others = { ...filters, ...pageFilters };
-      delete others[field];
-      return garments
-        .aggregate<{ _id: string; n: number }>([
-          { $match: published(others) },
-          // Procedure and process are lists; this counts each value once per
-          // garment (and passes single values through unchanged).
-          { $unwind: `$${field}` },
-          { $group: { _id: `$${field}`, n: { $sum: 1 } } },
-        ])
-        .toArray();
-    }),
-  );
-  return Object.fromEntries(
-    fields.map((field, i) => [
-      field,
-      Object.fromEntries(rows[i].map((r) => [r._id, r.n])),
-    ]),
-  ) as FieldCounts;
+  const others = { ...filters, ...pageFilters };
+  delete others[field];
+  const rows = await garments
+    .aggregate<{ _id: string; n: number }>([
+      { $match: published(others) },
+      // Procedure and process are lists; this counts each value once per
+      // garment (and passes single values through unchanged).
+      { $unwind: `$${field}` },
+      { $group: { _id: `$${field}`, n: { $sum: 1 } } },
+    ])
+    .toArray();
+  return Object.fromEntries(rows.map((r) => [r._id, r.n]));
 }
 
 // A single published garment by its id, or null if the id is malformed or no

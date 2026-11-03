@@ -14,19 +14,21 @@ import { FilterSheet } from "@/components/filter-sheet";
 import { GarmentFeed } from "@/components/garment-feed";
 import { GridControls, type View } from "@/components/grid-controls";
 import {
+  FILTER_FIELDS,
   filterHref,
   type Filters,
+  gridHref,
   hasFilters,
   parseFilters,
 } from "@/lib/filters";
 import {
   countGarments,
-  getFilterSections,
+  getFilterChoices,
   getGarmentCards,
   parseSort,
   type Sort,
 } from "@/lib/garments";
-import { loadMoreGarments } from "@/app/garments/actions";
+import { loadFilterChoices, loadMoreGarments } from "@/app/garments/actions";
 import { isAdmin } from "@/lib/auth";
 
 export async function GarmentBrowser({
@@ -45,28 +47,38 @@ export async function GarmentBrowser({
   const filtered = hasFilters(filters);
   // The page's own filters win over the visitor's on the same field.
   const all = { ...filters, ...scope };
+  // The panel offers the fields the page doesn't narrow itself. Only those
+  // with a ticked choice come with their choices; the rest load when opened.
+  const fields = FILTER_FIELDS.filter((field) => !scope[field]);
   const [{ cards, hasMore }, sections, count, admin] = await Promise.all([
     getGarmentCards(1, sort, all),
-    getFilterSections(scope, filters),
+    Promise.all(
+      fields.map(async (field) => ({
+        field,
+        choices: filters[field]
+          ? await getFilterChoices(basePath, scope, filters, sort, view, field)
+          : null,
+      })),
+    ),
     countGarments(all),
     isAdmin(),
   ]);
 
-  // Defaults are left out of the URL, so the plain listing is just basePath.
-  const href = (choice: { sort?: Sort; view?: View; filters?: Filters }) => {
-    const s = choice.sort ?? sort;
-    const v = choice.view ?? view;
-    return filterHref(basePath, choice.filters ?? filters, {
-      ...(s !== "newest" && { sort: s }),
-      ...(v !== "grid" && { view: v }),
-    });
-  };
+  const href = (choice: { sort?: Sort; view?: View; filters?: Filters }) =>
+    gridHref(
+      basePath,
+      choice.filters ?? filters,
+      choice.sort ?? sort,
+      choice.view ?? view,
+    );
 
+  // Keyed on the grid's state, so choices loaded for one URL aren't kept
+  // after a click moves to another.
   const panel = (
     <FilterPanel
+      key={`${sort} ${view} ${JSON.stringify(filters)}`}
       sections={sections}
-      filters={filters}
-      href={(f) => href({ filters: f })}
+      load={loadFilterChoices.bind(null, basePath, scope, filters, sort, view)}
     />
   );
 
@@ -99,6 +111,7 @@ export async function GarmentBrowser({
             {count.toLocaleString("en")} matching ·{" "}
             <Link
               href={href({ filters: {} })}
+              rel="nofollow"
               scroll={false}
               className="hover:text-foreground hover:underline"
             >
