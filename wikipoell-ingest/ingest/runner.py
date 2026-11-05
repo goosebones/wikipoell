@@ -11,13 +11,13 @@ import time
 import uuid
 from dataclasses import asdict, dataclass, field
 
-from ingest.client import WikipoellClient
 from ingest.images import ImageCopier
 from ingest.models import Decision, Draft, RawListing, Route
 from ingest.normalize.draft import normalize
 from ingest.normalize.vocabulary import Vocabulary
 from ingest.route import decide, missing_fields
 from ingest.sources.base import Source
+from ingest.store import Store
 
 
 @dataclass
@@ -66,7 +66,7 @@ class RunReport:
 class Runner:
     def __init__(
         self,
-        client: WikipoellClient,
+        store: Store,
         vocab: Vocabulary,
         *,
         run_id: str,
@@ -78,7 +78,7 @@ class Runner:
         llm=None,
         image_concurrency: int = 6,
     ) -> None:
-        self.client = client
+        self.store = store
         self.vocab = vocab
         self.run_id = run_id
         self.dry_run = dry_run
@@ -87,7 +87,7 @@ class Runner:
         self.threshold = threshold
         self.verbose = verbose
         self.llm = llm
-        self.images = ImageCopier(client, concurrency=image_concurrency)
+        self.images = ImageCopier(store, concurrency=image_concurrency)
 
     def close(self) -> None:
         self.images.close()
@@ -100,7 +100,7 @@ class Runner:
         print(f"\n── {source.name} " + "─" * (60 - len(source.name)))
 
         try:
-            existing = self.client.existing(source.name)
+            existing = self.store.existing(source.name)
             print(f"   {len(existing)} known garments")
 
             unchanged_ids: list[str] = []
@@ -137,7 +137,7 @@ class Runner:
                 print(f"   ✗ {where}: {message}")
 
             if unchanged_ids and not self.dry_run:
-                self.client.touch(self.run_id, unchanged_ids)
+                self.store.touch(self.run_id, unchanged_ids)
 
             if stats.listingsFound == 0:
                 # The classic silent breakage: the site changed its markup and
@@ -166,7 +166,7 @@ class Runner:
 
         # `--force` re-runs the current parser and vocabulary over listings the
         # site has not changed — how a fix to either reaches garments already
-        # stored. Human-reviewed garments are still skipped: the server drops
+        # stored. Human-reviewed garments are still skipped: the store drops
         # field changes on those, so forcing them costs an LLM call and a PATCH
         # and changes nothing.
         unchanged = known is not None and known.content_hash == content_hash
@@ -181,7 +181,7 @@ class Runner:
         stage = "deterministic"
         if decision.route is Route.LLM:
             if known is not None and known.human_reviewed:
-                # The server discards field changes on a human-reviewed
+                # The store discards field changes on a human-reviewed
                 # garment, so an LLM call here buys nothing but latency.
                 decision = Decision(
                     Route.HUMAN, [*decision.reasons, "llm_skipped_human_reviewed"]
@@ -244,7 +244,7 @@ class Runner:
             #
             # If any of its images predate the pipeline they carry no source
             # url, nothing can be matched, and copying would duplicate
-            # everything — so copy nothing. The server enforces this too.
+            # everything — so copy nothing. The store enforces this too.
             fresh = (
                 [u for u in listing.images if u not in known.image_source_urls]
                 if known.images_matchable
@@ -252,15 +252,14 @@ class Runner:
             )
             image_group_id = str(uuid.uuid4())
             copied = self._copy_images(listing, image_group_id, stats, urls=fresh)
-            self.client.update_garment(
+            self.store.update_garment(
                 known.id,
-                {
-                    "runId": self.run_id,
-                    "publish": decision.publish,
-                    "fields": draft.field_values(),
-                    "images": copied.images,
-                    "ingest": {"contentHash": content_hash, "review": review},
-                },
+                run_id=self.run_id,
+                publish=decision.publish,
+                fields=self.vocab.to_garment(draft.field_values()),
+                images=copied.images,
+                content_hash=content_hash,
+                review=review,
             )
             stats.updated += 1
             return
@@ -268,28 +267,25 @@ class Runner:
         image_group_id = str(uuid.uuid4())
         copied = self._copy_images(listing, image_group_id, stats)
         if not copied.ok:
-            # The API requires at least one image, and a garment with none is
-            # not worth publishing anyway.
+            # A garment with no photos is not worth publishing.
             raise RuntimeError(
                 f"no images could be copied ({len(copied.failures)} failed)"
             )
 
-        self.client.create_garment(
-            {
-                "publish": decision.publish,
-                "fields": draft.field_values(),
-                "images": copied.images,
-                "imageGroupId": image_group_id,
-                "source": {"label": source.label, "url": listing.url},
-                "ingest": {
-                    "source": source.name,
-                    "siteKey": listing.site_key,
-                    "sourceUrl": listing.url,
-                    "contentHash": content_hash,
-                    "runId": self.run_id,
-                    "review": review,
-                },
-            }
+        self.store.create_garment(
+            run_id=self.run_id,
+            publish=decision.publish,
+            fields=self.vocab.to_garment(draft.field_values()),
+            images=copied.images,
+            image_group_id=image_group_id,
+            source_label=source.label,
+            ingest={
+                "source": source.name,
+                "siteKey": listing.site_key,
+                "sourceUrl": listing.url,
+                "contentHash": content_hash,
+                "review": review,
+            },
         )
         stats.created += 1
 

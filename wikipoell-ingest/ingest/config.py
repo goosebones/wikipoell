@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
+from urllib.parse import urlparse
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 ENV_FILE = PROJECT_ROOT / ".env"
@@ -28,17 +29,15 @@ REQUIRED_FIELDS = ("category", "type", "gender", "model", "material", "color")
 # Jewelry has no color code — silver rings and chains simply don't carry one.
 COLOR_EXEMPT_CATEGORY_PREFIX = "accessories.jewelry"
 
-# Every field the pipeline may set on a garment.
-GARMENT_FIELDS = (
-    "title",
-    "category",
-    "type",
-    "gender",
-    "model",
-    "procedure",
-    "material",
-    "process",
-    "color",
+# What a run cannot start without.
+REQUIRED_ENV = (
+    "MONGODB_URL",
+    "INGEST_DB",
+    "R2_S3_API_URL",
+    "R2_ACCESS_KEY_ID",
+    "R2_SECRET_ACCESS_KEY",
+    "R2_BUCKET_NAME",
+    "R2_PUBLIC_URL",
 )
 
 
@@ -58,35 +57,45 @@ def load_dotenv(path: Path = ENV_FILE) -> None:
 
 @dataclass(frozen=True)
 class Config:
-    api_url: str
-    api_token: str
+    mongodb_url: str
+    #: pinch-seam (development) or spur-biter (production).
+    db_name: str
+    #: The garment bucket: S3 endpoint (origin only), keys, name, public URL.
+    r2_endpoint: str
+    r2_access_key_id: str
+    r2_secret_access_key: str
+    r2_bucket: str
+    r2_public_url: str
+    #: The site whose cache a run refreshes, and the token its
+    #: /api/revalidate route expects. Optional: without them new garments
+    #: show once the hourly cache expires.
+    site_url: str | None
+    revalidate_token: str | None
     openrouter_api_key: str | None
     llm_model: str
     request_delay: float
     llm_threshold: float
     #: Images copied in parallel within one garment.
     image_concurrency: int
-    # Trust store for the API connection only; never applies to scraped sites.
-    # Set INGEST_CA_BUNDLE when the webapp is served over HTTPS with a
-    # locally-issued certificate, pointing at the issuing CA. The hostname in
-    # WIKIPOELL_API_URL must match that certificate.
-    api_ca_bundle: str | None
 
     @classmethod
-    def load(cls) -> Config:
+    def load(cls, db_name: str | None = None) -> Config:
+        """`db_name` (from --db) overrides INGEST_DB."""
         load_dotenv()
-        api_url = os.environ.get("WIKIPOELL_API_URL", "http://localhost:3000")
-        ca_bundle = os.environ.get("INGEST_CA_BUNDLE") or None
-        if ca_bundle:
-            resolved = Path(ca_bundle).expanduser()
-            if not resolved.is_absolute():
-                resolved = (PROJECT_ROOT / resolved).resolve()
-            if not resolved.exists():
-                raise RuntimeError(f"INGEST_CA_BUNDLE does not exist: {resolved}")
-            ca_bundle = str(resolved)
+        missing = [k for k in REQUIRED_ENV if not os.environ.get(k)]
+        if missing:
+            raise SystemExit(f"Missing in wikipoell-ingest/.env: {', '.join(missing)}")
+        endpoint = urlparse(os.environ["R2_S3_API_URL"])
         return cls(
-            api_url=api_url.rstrip("/"),
-            api_token=os.environ.get("INGEST_API_TOKEN", ""),
+            mongodb_url=os.environ["MONGODB_URL"],
+            db_name=db_name or os.environ["INGEST_DB"],
+            r2_endpoint=f"{endpoint.scheme}://{endpoint.netloc}",
+            r2_access_key_id=os.environ["R2_ACCESS_KEY_ID"],
+            r2_secret_access_key=os.environ["R2_SECRET_ACCESS_KEY"],
+            r2_bucket=os.environ["R2_BUCKET_NAME"],
+            r2_public_url=os.environ["R2_PUBLIC_URL"].rstrip("/"),
+            site_url=(os.environ.get("SITE_URL") or "").rstrip("/") or None,
+            revalidate_token=os.environ.get("REVALIDATE_TOKEN") or None,
             openrouter_api_key=os.environ.get("OPENROUTER_API_KEY"),
             llm_model=os.environ.get("INGEST_LLM_MODEL", DEFAULT_LLM_MODEL),
             request_delay=float(os.environ.get("INGEST_REQUEST_DELAY", "1.5")),
@@ -94,17 +103,4 @@ class Config:
             llm_threshold=float(
                 os.environ.get("INGEST_LLM_THRESHOLD", LLM_CONFIDENCE_THRESHOLD)
             ),
-            api_ca_bundle=ca_bundle,
         )
-
-    @property
-    def api_verify(self) -> str | bool:
-        """What httpx should verify the API's certificate against."""
-        return self.api_ca_bundle or True
-
-    def require_token(self) -> str:
-        if not self.api_token:
-            raise RuntimeError(
-                "INGEST_API_TOKEN is not set — add it to the repo-root .env"
-            )
-        return self.api_token

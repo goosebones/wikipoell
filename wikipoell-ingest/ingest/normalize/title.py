@@ -1,5 +1,9 @@
 """Format a listing title into house style.
 
+Garments no longer store a title (the model's label is the title), so this
+only tidies the listing's own title for the review queue ("Listed as") and
+for the category keyword rules.
+
 Extends `formatTitle()` from the old JS agent-review script. That version
 stripped one trailing `/COLOR` segment; the live ccp-room catalog often carries
 two or three (`…HOOSIE/19/st`, `…JKT/010/blck`), so that left 119 of 579 titles
@@ -8,8 +12,7 @@ with a slash still in them.
 Slashes cannot simply be cut at the first occurrence: a handful of real titles
 contain one (`HAAR/DARK BROWN HAIR TIE`, and one that begins with an article
 code). So trailing segments are stripped only while they look like metadata —
-short and space-free. That takes slash-bearing titles from 542 to 9, and those
-nine are genuinely malformed and route to a person.
+short and space-free. That takes slash-bearing titles from 542 to 9.
 """
 
 from __future__ import annotations
@@ -132,16 +135,3 @@ def format_title(raw: str | None) -> str | None:
     text = _WORD_START.sub(lambda m: m.group(1) + m.group(2).upper(), text)
     text = _DOUBLED_WORD.sub(r"\1", text)
     return text.strip() or None
-
-
-def is_well_formed(title: str | None) -> bool:
-    """True when a title is safe to publish without a person looking at it.
-
-    Rejects the leftovers that mean the source data was odd: too short, still
-    carrying a slash, or with no letters in it at all.
-    """
-    if not title or len(title) < 3:
-        return False
-    if "/" in title:
-        return False
-    return any(ch.isalpha() for ch in title)

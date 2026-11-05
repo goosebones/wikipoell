@@ -15,18 +15,13 @@ One-time setup, from this directory:
 ```bash
 python3 -m venv .venv
 .venv/bin/pip install -e ".[dev]"    # deps + ruff, editable
-cp .env.example .env                 # then fill in INGEST_API_TOKEN
+cp .env.example .env                 # then fill it in (see Environment)
 ```
 
-The pipeline talks to the webapp's API, so **the webapp has to be running**.
-`WIKIPOELL_API_URL` in `.env` must point at it:
-
-| Webapp command  | Serves                                              | Set `WIKIPOELL_API_URL` to |
-| --------------- | --------------------------------------------------- | -------------------------- |
-| `npm run start` | `http://localhost:3000`                             | `http://localhost:3000`    |
-| `npm run dev`   | `https://localhost` (port 443, locally-issued cert) | needs `INGEST_CA_BUNDLE`   |
-
-`npm run start` needs a production build first (`npm run build`). Use that one.
+The pipeline writes straight to the archive's MongoDB database and the garment
+photo bucket; nothing else needs to be running. `INGEST_DB` picks the
+database: `pinch-seam` for development, `spur-biter` for production, and
+`run --db NAME` overrides it for one run.
 
 Then:
 
@@ -51,8 +46,9 @@ An unknown name fails before any network request is made.
 | `--limit N` | stop after N listings per source. Use it the first time a new module runs              |
 | `--force`   | reprocess listings the site has not changed. Sources must be named                     |
 | `--quiet`   | per-source totals only, no per-listing lines                                           |
-| `--images`  | `auto` (default) / `always` / `never` — when the LLM sees images (Phase 2)             |
-| `--no-llm`  | skip the LLM pass (Phase 2)                                                            |
+| `--images`  | `auto` (default) / `always` / `never` — when the LLM sees images                       |
+| `--no-llm`  | skip the LLM pass                                                                      |
+| `--db NAME` | write to this database instead of `INGEST_DB`                                          |
 
 ### Applying a fix to garments already stored
 
@@ -70,13 +66,13 @@ Two things it deliberately does not do:
 
 - **It will not run without named sources.** Forcing all nine is hours of
   scraping and roughly one LLM call per garment, which is rarely the intent.
-- **It still skips human-reviewed garments.** The server discards field changes
-  on those, so forcing them would cost an LLM call and a PATCH to change
+- **It still skips human-reviewed garments.** The store discards field changes
+  on those, so forcing them would cost an LLM call and a write to change
   nothing. They stay in the `unchanged` count.
 
-For a vocabulary addition specifically, prefer the admin **Re-check queue**
-button: it re-tests recorded blockers against the current vocabulary with no
-scraping and no LLM at all. `--force` is for when the _parsing_ changed.
+`--force` is for when the _parsing_ changed. For a vocabulary addition, a
+`recheck` command that re-tests pending garments' blockers without scraping is
+planned (PLAN.md).
 
 ## How it works
 
@@ -101,8 +97,13 @@ Everything after that is shared:
   outside it is recorded, never coerced
 - `route.py` — the publish / llm / human decision and its reasons
 
-Nothing here touches MongoDB. Every read and write goes through the webapp's
-`/api/ingest/*`, so Mongoose stays the single definition of a garment.
+`store.py` is the only module that touches MongoDB and R2. The database's
+validators (the webapp's `scripts/setup-db.mjs`) enforce the garment shape;
+the store enforces the two rules that matter most: human-reviewed garments
+keep their fields, and published garments are never demoted. Vocabulary
+codes are translated to node ids on the way in (`normalize/vocabulary.py`),
+and a known model supplies the category. At the end of a real run the store
+asks the site to refresh its cache (`POST /api/revalidate`).
 
 ## Adding a source
 
@@ -161,8 +162,10 @@ they carry the rate limiting, retries and Retry-After handling.
 **Changing an existing source:** the content hash covers the title, SKU,
 article code, description and image URLs. Changing how any of those is read
 makes every stored listing of that source look changed, and new image URLs
-make human-reviewed garments append their photos again. Details are not
-hashed and can change freely.
+make garments append their photos again. Details are not hashed and can change
+freely. If image URLs must change, run
+`python -m ingest replace-images <name>` before the next normal run: it swaps
+stored garments' photos for the new ones and leaves their fields alone.
 
 ## Sources
 
@@ -217,24 +220,25 @@ Every image is copied to R2, never hotlinked, and deduplicated on its
 
 ## Environment
 
-Reads this project's own `.env` — copy `.env.example` and fill it in.
-Shell-exported values take precedence. It does **not** read the webapp's
-`.env` at the repo root; the two are independent.
+Reads this project's own `.env`: copy `.env.example` and fill it in.
+Shell-exported values take precedence. It does not read the webapp's env
+files.
 
-|                            |                                                                                                                                                                                                       |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `WIKIPOELL_API_URL`        | default `http://localhost:3000`                                                                                                                                                                       |
-| `INGEST_API_TOKEN`         | service token for `/api/ingest/*`                                                                                                                                                                     |
-| `OPENROUTER_API_KEY`       | for the LLM pass; not needed with `--no-llm`                                                                                                                                                          |
-| `INGEST_LLM_MODEL`         | OpenRouter model slug, default `openai/gpt-5.6-luna`. Must accept images — the `--images auto` retry attaches them                                                                                    |
-| `INGEST_CA_BUNDLE`         | CA for the API's certificate when it is HTTPS with a local cert. Supports `~` and project-relative paths. Applies to the API only — scraped sites use the normal trust store                          |
-| `INGEST_IMAGE_CONCURRENCY` | images copied in parallel within one garment, default 6. Measured here: serial 1.19 s/image, 6 → 0.43, 10 → 0.36, 16 → no further gain — the webapp's WebP conversion is the ceiling, not the network |
-| `INGEST_REQUEST_DELAY`     | seconds between requests to one site, default 1.5                                                                                                                                                     |
-| `INGEST_LLM_THRESHOLD`     | auto-publish confidence floor, default 0.90                                                                                                                                                           |
+| | |
+| --- | --- |
+| `MONGODB_URL` | the archive's cluster (the webapp's `MONGODB_URL`) |
+| `INGEST_DB` | `pinch-seam` (development) or `spur-biter` (production); `--db` overrides |
+| `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | a token that can write to the garment bucket |
+| `R2_BUCKET_NAME`, `R2_S3_API_URL`, `R2_PUBLIC_URL` | the garment bucket, its S3 endpoint, and its public address |
+| `SITE_URL`, `REVALIDATE_TOKEN` | the site to refresh after a run, and the token its `/api/revalidate` expects (the same value as the webapp's `REVALIDATE_TOKEN`). Optional |
+| `OPENROUTER_API_KEY` | for the LLM pass; not needed with `--no-llm` |
+| `INGEST_LLM_MODEL` | OpenRouter model slug, default `openai/gpt-5.6-luna`. Must accept images; the `--images auto` retry attaches them |
+| `INGEST_IMAGE_CONCURRENCY` | images copied in parallel within one garment, default 6 |
+| `INGEST_REQUEST_DELAY` | seconds between requests to one site, default 1.5 |
+| `INGEST_LLM_THRESHOLD` | auto-publish confidence floor, default 0.90 |
 
-`INGEST_API_TOKEN` must match the value in the **webapp's** `.env`, which
-also needs `INGEST_SYSTEM_USER_ID` — the Clerk user pipeline garments are
-attributed to.
+New garments are attributed to the user every existing pipeline garment
+already has.
 
 Requests go out with httpx's default user agent; no browser string is spoofed.
 All eight sources were verified to respond normally to it.

@@ -1,7 +1,8 @@
 """CLI entry point.
 
-    python -m ingest run [source ...] [--dry-run] [--limit N] [--images MODE]
+    python -m ingest run [source ...] [--dry-run] [--limit N] [--db NAME]
     python -m ingest inspect SOURCE [--limit N] [--json]
+    python -m ingest replace-images SOURCE [--dry-run] [--limit N] [--db NAME]
     python -m ingest sources
 
 `inspect` scrapes a source and prints what it read for each garment —
@@ -20,14 +21,16 @@ import itertools
 import json
 import sys
 import time
+import uuid
+from collections import Counter
 from dataclasses import asdict
 
-from ingest.client import WikipoellClient
 from ingest.config import Config
+from ingest.images import ImageCopier
 from ingest.llm import LlmReviewer
-from ingest.normalize.vocabulary import Vocabulary
 from ingest.runner import Runner, RunReport, new_run_id, stats_to_json
 from ingest.sources import REGISTRY, resolve
+from ingest.store import Store
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -48,6 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="do everything except write: no garments, no images, no run record",
     )
     run.add_argument("--limit", type=int, help="max listings per source")
+    run.add_argument("--db", help="database to write to (default: INGEST_DB from .env)")
     run.add_argument(
         "--force",
         action="store_true",
@@ -69,6 +73,15 @@ def build_parser() -> argparse.ArgumentParser:
     inspect.add_argument("source", choices=sorted(REGISTRY), metavar="SOURCE")
     inspect.add_argument("--limit", type=int, default=5, help="listings to read")
     inspect.add_argument("--json", action="store_true", help="one JSON object a line")
+
+    replace = sub.add_parser(
+        "replace-images",
+        help="swap stored garments' photos for the ones the source reads now",
+    )
+    replace.add_argument("source", choices=sorted(REGISTRY), metavar="SOURCE")
+    replace.add_argument("--dry-run", action="store_true", help="only count them")
+    replace.add_argument("--limit", type=int, help="max listings to read")
+    replace.add_argument("--db", help="database (default: INGEST_DB from .env)")
 
     sub.add_parser("sources", help="list registered sources")
     return parser
@@ -103,8 +116,54 @@ def cmd_inspect(args: argparse.Namespace) -> int:
     return 1 if source.problems else 0
 
 
+def cmd_replace_images(args: argparse.Namespace) -> int:
+    """For when a source's image URLs change: a normal run would see every
+    stored garment as changed and append its photos a second time. Fields are
+    not touched, and a listing's other changes are not picked up."""
+    config = Config.load(args.db)
+    (source,) = resolve([args.source])
+    print(f"database: {config.db_name}")
+    counts = Counter()
+    with Store(config) as store:
+        known = store.existing(source.name)
+        copier = ImageCopier(store, concurrency=config.image_concurrency)
+        try:
+            for listing in itertools.islice(source.listings(), args.limit):
+                garment = known.get(listing.site_key)
+                if garment is None:
+                    counts["not stored"] += 1
+                elif not listing.images or not garment.images_matchable:
+                    counts["skipped"] += 1
+                elif set(listing.images) <= garment.image_source_urls:
+                    counts["already current"] += 1
+                elif args.dry_run:
+                    counts["would replace"] += 1
+                else:
+                    group = str(uuid.uuid4())
+                    copied = copier.copy(listing.images, group)
+                    if copied.failures:  # keep the old set rather than lose photos
+                        counts["failed"] += 1
+                        print(f"  ✗ {listing.site_key}: {copied.failures[0]}")
+                        continue
+                    store.replace_images(
+                        garment.id,
+                        images=copied.images,
+                        image_group_id=group,
+                        content_hash=listing.content_hash(),
+                    )
+                    counts["replaced"] += 1
+                    print(f"  ✓ {listing.site_key}: {len(copied.images)} photos")
+        finally:
+            copier.close()
+            source.close()
+        if counts["replaced"]:
+            print(f"site    : cache refresh {store.refresh_site()}")
+    print(f"totals  : {dict(counts)}")
+    return 1 if counts["failed"] else 0
+
+
 def cmd_run(args: argparse.Namespace) -> int:
-    config = Config.load()
+    config = Config.load(args.db)
     if args.force and not args.sources:
         print(
             "--force without a source would reprocess every listing of every "
@@ -116,7 +175,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     sources = resolve(args.sources)  # raises on unknown names, before any I/O
     names = [s.name for s in sources]
 
-    print(f"api     : {config.api_url}")
+    print(f"database: {config.db_name}")
     print(f"sources : {', '.join(names)}")
     print(
         f"mode    : {'DRY RUN — nothing will be written' if args.dry_run else 'live'}"
@@ -127,12 +186,14 @@ def cmd_run(args: argparse.Namespace) -> int:
         print("force   : reprocessing unchanged listings (reviewed ones skipped)")
 
     started = time.monotonic()
-    with WikipoellClient(config) as client:
-        context = client.context()
-        vocab = Vocabulary.from_context(context)
-        corrections = context.get("corrections", [])
+    with Store(config) as store:
+        vocab = store.vocabulary()
+        # Worked examples for the LLM come back in phase 3, from garments a
+        # person has corrected.
+        corrections: list[dict] = []
+        codes = sum(len(v) for k, v in vocab.ids.items() if k != "model")
         print(
-            f"vocab   : {sum(len(v) for v in vocab.values.values())} property values, "
+            f"vocab   : {codes} codes, {len(vocab.models)} models, "
             f"{len(vocab.categories)} categories"
         )
 
@@ -159,9 +220,8 @@ def cmd_run(args: argparse.Namespace) -> int:
         if args.dry_run:
             run_id = f"dry-run-{new_run_id()[:8]}"
         else:
-            run_id = client.create_run(
+            run_id = store.create_run(
                 sources=names,
-                dry_run=False,
                 images=args.images,
                 limit=args.limit,
                 trigger=args.trigger,
@@ -171,7 +231,7 @@ def cmd_run(args: argparse.Namespace) -> int:
 
         report = RunReport(run_id=run_id)
         runner = Runner(
-            client,
+            store,
             vocab,
             run_id=run_id,
             dry_run=args.dry_run,
@@ -195,13 +255,14 @@ def cmd_run(args: argparse.Namespace) -> int:
         any_failed = any(s.status == "failed" for s in report.sources)
 
         if not args.dry_run:
-            client.update_run(
+            store.finish_run(
                 run_id,
                 status="failed" if any_failed else "completed",
                 sources=stats_to_json(report.sources),
                 totals=totals,
                 failures=report.failures,
             )
+            print(f"site    : cache refresh {store.refresh_site()}")
 
     elapsed = time.monotonic() - started
     print("\n" + "─" * 62)
@@ -218,6 +279,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_sources()
     if args.command == "inspect":
         return cmd_inspect(args)
+    if args.command == "replace-images":
+        return cmd_replace_images(args)
     return cmd_run(args)
 
 

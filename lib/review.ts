@@ -44,6 +44,7 @@ const LOW_CONFIDENCE = 0.7;
 // Where the pipeline read a value from, in plain words.
 const ORIGINS: Record<string, string> = {
   code: "from the code",
+  model: "from the model",
   title: "from the title",
   llm: "AI",
 };

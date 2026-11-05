@@ -68,12 +68,23 @@ The pipeline (`wikipoell-ingest/`) has been paused since the rebuild. It still t
 
 | Phase     | Scope                                                                                                                                                                                                                                             | Done when                                                                                                                                      |
 | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| **1**     | App: `/api/revalidate` and its env. Ingest: `.env` rework (`MONGODB_URL`, `INGEST_DB`, garment R2 keys, `OPENROUTER_API_KEY`, `SITE_URL`, `REVALIDATE_TOKEN`), the store, vocabulary loading with code → id, models required, category from model | `python -m ingest run ccp-room --dry-run --no-llm` against `pinch-seam` routes every listing sensibly, and existing garments show as unchanged |
+| **1** ✅  | App: `/api/revalidate` and its env. Ingest: `.env` rework (`MONGODB_URL`, `INGEST_DB`, garment R2 keys, `OPENROUTER_API_KEY`, `SITE_URL`, `REVALIDATE_TOKEN`), the store, vocabulary loading with code → id, models required, category from model | `python -m ingest run ccp-room --dry-run --no-llm` against `pinch-seam` routes every listing sensibly, and existing garments show as unchanged |
 | **2**     | Real writes and images against `pinch-seam`, then one source with `--limit` on `spur-biter`                                                                                                                                                       | New garments appear on the site with photos, and `/admin/runs` shows the run                                                                   |
 | **3**     | LLM pass on the new vocabulary, with examples from corrected garments                                                                                                                                                                             | Held-back listings arrive in the queue with sensible drafts and notes                                                                          |
 | **4**     | Extras matching, and the `backfill-extras` command                                                                                                                                                                                                | Extras show on garments and filter correctly                                                                                                   |
 | **5**     | All nine sources on `spur-biter`; README and DESIGN.md rewritten to match                                                                                                                                                                         | A full run completes and the queue is manageable                                                                                               |
 | **Later** | A scheduled GitHub Action; a `recheck` command that publishes pending garments once their blockers exist (in place of the old re-check button)                                                                                                    | —                                                                                                                                              |
+
+### Phase 1 notes
+
+- New garments are attributed to the one user every existing pipeline garment has; the store reads it off them.
+- A known model's suggested category wins, unless the site's own category is more specific within it ("footwear" keeps "footwear.sneakers").
+- On ccp-room the new pipeline writes the same ids as the stored garments for every field except a handful of hand-corrected ones, which it never overwrites. One difference is deliberate: variant codes like `010B` now map to their own node (`black.010.010b`) instead of the parent.
+
+### Before phase 2
+
+- **`REVALIDATE_TOKEN` in Vercel** (Production), the same value as in `.env.local` and `wikipoell-ingest/.env`, and `SITE_URL=https://wikipoell.com` in the ingest `.env` for production runs. Without them, a run's garments show once the hourly cache expires.
+- **Darklands photos.** The scraper now reads the largest size each page offers (`max_1300x1300`). Run `python -m ingest replace-images darklands --db spur-biter` before any other Darklands run on production; otherwise stored garments look changed and append their photos a second time.
 
 ## Revisit
 

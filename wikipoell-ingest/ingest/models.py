@@ -24,6 +24,7 @@ class Origin(StrEnum):
     SKU = "sku"  # parsed from the site's SKU
     TITLE = "title"  # inferred from the listing title
     HINT = "hint"  # given by the site (section, entry URL, …)
+    MODEL = "model"  # the model's suggested category
     LLM = "llm"
 
 
@@ -86,7 +87,7 @@ class RawListing:
     details: dict[str, str] = field(default_factory=dict)
     # True when the site's title is the only name the product has and should
     # be published exactly as written — see `ink`, whose h1 is the article
-    # code. Suppresses both reformatting and the `title_unformatted` flag.
+    # code. Suppresses reformatting.
     title_is_final: bool = False
     raw: dict[str, Any] = field(default_factory=dict)
 
@@ -132,7 +133,7 @@ class Draft:
 
     listing: RawListing
     fields: dict[str, FieldValue] = field(default_factory=dict)
-    # (field, value) pairs whose value is not in the Property vocabulary.
+    # (field, code) pairs whose code is not in the vocabulary.
     unknown_values: list[tuple[str, str]] = field(default_factory=list)
     # True when the listing showed an article code we could not parse.
     code_unparseable: bool = False

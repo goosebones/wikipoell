@@ -107,6 +107,12 @@ def absolute(base: str, src: str | None) -> str:
     return urljoin(base + "/", src.strip()) if src else ""
 
 
+def largest_in_srcset(srcset: str | None) -> str:
+    """The last URL of a `srcset`, which sites list smallest first; "" if none."""
+    entries = [e.strip() for e in (srcset or "").split(",") if e.strip()]
+    return entries[-1].split()[0] if entries else ""
+
+
 def joined(values: list[str] | None) -> str:
     """A list as one detail line: "7, 8, 9, 10"."""
     return ", ".join(v for v in (clean(v) for v in values or []) if v)

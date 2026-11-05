@@ -18,6 +18,8 @@ from ingest.normalize.vocabulary import VOCAB_FIELDS, Vocabulary
 CODE_CONFIDENCE = 1.0
 HINT_CONFIDENCE = 0.9
 TITLE_CONFIDENCE = 0.6
+# A model's suggested category is right for nearly all of its garments.
+MODEL_CONFIDENCE = 0.95
 
 
 def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
@@ -72,15 +74,25 @@ def normalize(listing: RawListing, vocab: Vocabulary) -> Draft:
     if attrs.gender and "gender" not in draft.fields:
         draft.set("gender", attrs.gender, HINT_CONFIDENCE, Origin.HINT)
 
-    # A source may hand us either a section name to run keyword rules against
-    # (ccp-room: "leather", "footwear") or an already-resolved category
-    # (the-library maps its Shopify tags directly). Trust the latter.
+    # The site's own category: either already resolved (the-library maps its
+    # Shopify tags directly) or a section name for the keyword rules
+    # (ccp-room: "leather", "footwear").
+    site_category, site_confidence, site_origin = None, 0.0, Origin.HINT
     if vocab.knows_category(attrs.category):
-        draft.set("category", attrs.category, HINT_CONFIDENCE, Origin.HINT)
+        site_category, site_confidence = attrs.category, HINT_CONFIDENCE
     else:
-        category = resolve_category(attrs.category, title)
-        if category:
-            draft.set("category", category, TITLE_CONFIDENCE, Origin.TITLE)
+        site_category = resolve_category(attrs.category, title)
+        site_confidence, site_origin = TITLE_CONFIDENCE, Origin.TITLE
+
+    # A known model settles the category, unless the site's is more specific
+    # within it: a model filed under "footwear" keeps "footwear.sneakers".
+    model_category = vocab.model_category(draft.get("model"))
+    if vocab.knows_category(model_category) and not (
+        site_category and site_category.startswith(f"{model_category}.")
+    ):
+        draft.set("category", model_category, MODEL_CONFIDENCE, Origin.MODEL)
+    elif site_category:
+        draft.set("category", site_category, site_confidence, site_origin)
 
     for name in VOCAB_FIELDS:
         if name in draft.fields:

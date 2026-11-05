@@ -3,7 +3,8 @@
 Navigation: the HTML base, over separate men's and women's CCP pages, which
 is where gender comes from (the detail page does not state it).
 
-Images: the detail page's product gallery.
+Images: the detail page's product gallery, at the largest size each photo's
+`srcset` offers (`max_1300x1300`). Its `src` is only a thumbnail.
 
 Attributes: the article code sits in a bare `<p>` in the product info, so it
 is found by matching the code shape rather than a selector, which survives
@@ -21,7 +22,12 @@ from typing import Any
 
 from ingest.models import Attributes, Detail
 from ingest.normalize.article_code import parse_article_code
-from ingest.sources.extract import clean, json_ld_product, node_text
+from ingest.sources.extract import (
+    clean,
+    json_ld_product,
+    largest_in_srcset,
+    node_text,
+)
 from ingest.sources.html_catalog import HtmlCatalogSource, Page
 
 BASE_URL = "https://darklands.berlin"
@@ -92,7 +98,8 @@ class DarklandsSource(HtmlCatalogSource):
     def images(self, item: Page) -> list[str]:
         out = []
         for img in item.tree.css(".product__images img, img.product__image"):
-            src = img.attributes.get("src")
+            attrs = img.attributes
+            src = largest_in_srcset(attrs.get("srcset")) or attrs.get("src")
             if src:
                 out.append(src if src.startswith("http") else BASE_URL + src)
         return out

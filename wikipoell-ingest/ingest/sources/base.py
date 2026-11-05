@@ -145,7 +145,7 @@ class Source[Item]:
         self._last_request = time.monotonic()
 
     def get(self, url: str) -> httpx.Response:
-        last_error: Exception | None = None
+        last_error: object = None
         for attempt in range(MAX_RETRIES):
             self._wait()
             try:
@@ -155,6 +155,8 @@ class Source[Item]:
                 time.sleep(2**attempt)
                 continue
 
+            if response.status_code == 429 or response.status_code >= 500:
+                last_error = f"HTTP {response.status_code}"
             if response.status_code == 429:
                 retry_after = response.headers.get("Retry-After")
                 pause = float(retry_after) if retry_after else 5.0 * (attempt + 1)

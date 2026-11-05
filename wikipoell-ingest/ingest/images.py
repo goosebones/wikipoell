@@ -1,9 +1,8 @@
-"""Copy source images into R2 via the webapp.
+"""Copy source images into R2.
 
 The archive owns its images. Hotlinking a retailer's CDN means the archive
-goes blank the day they re-platform, so every image is downloaded and handed
-to `/api/ingest/images`, which runs the same Sharp → WebP → R2 path the
-webapp uses for user uploads.
+goes blank the day they re-platform, so every image is downloaded, converted
+to WebP and stored by `Store.upload_image`.
 
 A garment's images all share one `imageGroupId`, matching how existing
 garments are stored (`<groupId>/<uuid>.webp`).
@@ -11,17 +10,15 @@ garments are stored (`<groupId>/<uuid>.webp`).
 
 from __future__ import annotations
 
-import mimetypes
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 
 import httpx
 
 TIMEOUT = 60.0
-MAX_BYTES = 10 * 1024 * 1024  # matches the API's own limit
-ALLOWED = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_BYTES = 20 * 1024 * 1024
 # Images within one garment are copied concurrently. Kept modest on purpose:
-# the work is spread across a source CDN and the webapp's Sharp conversion,
+# the work is spread across a source CDN and the WebP conversion,
 # and a garment rarely has more than ~20 images, so higher values buy little
 # while being noticeably less polite.
 DEFAULT_CONCURRENCY = 6
@@ -40,23 +37,15 @@ class ImageResult:
         return bool(self.images)
 
 
-def _content_type(response: httpx.Response, url: str) -> str | None:
-    header = (response.headers.get("content-type") or "").split(";")[0].strip()
-    if header in ALLOWED:
-        return header
-    guessed, _ = mimetypes.guess_type(url)
-    return guessed if guessed in ALLOWED else None
-
-
 class ImageCopier:
     def __init__(
         self,
-        client,
+        store,
         *,
         timeout: float = TIMEOUT,
         concurrency: int = DEFAULT_CONCURRENCY,
     ) -> None:
-        self.client = client
+        self.store = store
         self.concurrency = max(1, concurrency)
         # httpx.Client is thread-safe, and connection pooling across threads is
         # exactly what makes this worth doing.
@@ -121,15 +110,5 @@ class ImageCopier:
         if len(content) > MAX_BYTES:
             raise RuntimeError(f"too large ({len(content)} bytes)")
 
-        content_type = _content_type(response, url)
-        if content_type is None:
-            raw = (response.headers.get("content-type") or "unknown").split(";")[0]
-            raise RuntimeError(f"unsupported content-type {raw!r}")
-
-        filename = url.rsplit("/", 1)[-1].split("?")[0] or "image"
-        return self.client.upload_image(
-            image_group_id=image_group_id,
-            filename=filename,
-            content=content,
-            content_type=content_type,
-        )
+        # Anything the converter cannot read fails here, as one image.
+        return self.store.upload_image(image_group_id=image_group_id, content=content)
