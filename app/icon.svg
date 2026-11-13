@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The site icon: a black CCP boot whose tornado zip spirals down to the heel. -->
+  <rect width="64" height="64" rx="14" fill="#f2f0eb"/>
+  <g transform="translate(-3.2 -0.8)">
+    <path fill="#0b0b0b" d="M14.5 10.4C14.5 8.6 15.8 7.5 17.6 7.5H28.6C30.2 7.5 31 8.5 30.9 10.1L30.2 27C30 33.2 32.8 36.8 38 38.6C43.8 40.6 50.6 41.6 55.2 43.6C58.6 45.1 60.2 47.3 60.2 50.2V55.6C60.2 57.1 59.1 58 57.5 58H41C37 58 35 56.2 31.6 56.2H28.4V58H16.6C15.4 58 14.5 57.1 14.5 55.9Z"/>
+    <path d="M12 14.5C14.6 27 19.6 40 28.4 53.2" fill="none" stroke="#f2f0eb" stroke-width="2" stroke-linecap="round"/>
+  </g>
+</svg>
