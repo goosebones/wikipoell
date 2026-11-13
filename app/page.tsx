@@ -17,14 +17,14 @@ export default async function Home() {
 
   return (
     // The header is 3.5rem tall; the hero fills the rest of the screen.
-    <div className="relative isolate flex min-h-[calc(100svh-3.5rem)] items-center">
+    <div
+      data-hero
+      className="relative isolate flex min-h-[calc(100svh-3.5rem)] items-center"
+    >
       <HomeBackground images={backgrounds} />
-      <Container className="w-full py-16 text-white">
-        <p className="eyebrow text-white/70">wikipoell</p>
-        <h1 className="mt-3 max-w-xl text-4xl font-semibold tracking-tight sm:text-5xl">
-          Find any piece by model, material, color or code.
-        </h1>
-        <div className="mt-8 max-w-xl">
+      {/* Bottom padding lifts the centered search above the middle. */}
+      <Container className="w-full pb-[15svh] text-white">
+        <div className="max-w-xl">
           <SearchBox large />
         </div>
         <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-white/70">

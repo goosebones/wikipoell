@@ -4,7 +4,7 @@ import { Container } from "@/components/container";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-24 border-t border-muted">
+    <footer className="border-t border-muted">
       <Container className="py-8">
         <p className="eyebrow">Wikipoell · A Carol Christian Poell archive</p>
       </Container>
